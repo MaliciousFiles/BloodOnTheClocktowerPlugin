@@ -1,0 +1,7 @@
+name: Blood on the Clocktower
+version: '1.0-SNAPSHOT'
+main: io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower
+api-version: '1.21'
+authors: [ MaliciousFiles, Brainpower5 ]
+description: Implements the Blood on the Clocktower game in Minecraft
+website: https://github.com/MaliciousFiles/BloodOnTheClocktowerPlugin
