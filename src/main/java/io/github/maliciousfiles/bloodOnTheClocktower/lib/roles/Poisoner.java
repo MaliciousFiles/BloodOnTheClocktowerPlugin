@@ -32,13 +32,13 @@ public class Poisoner implements Role {
     }
 
     @Override
-    public float getNightOrder() {
-        return 15;
+    public float getFirstNightOrder() {
+        return 23;
     }
 
     @Override
-    public boolean shouldWake(Game game) {
-        return true;
+    public float getNormalNightOrder() {
+        return 11;
     }
 
     @Override

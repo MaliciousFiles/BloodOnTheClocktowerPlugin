@@ -19,6 +19,7 @@ public abstract class PlayerWrapper {
 
     public void giveInstruction(String instruction) {
         // TODO: make this stay on screen until dismissed somehow
+        // TODO: add setting for going into chat as well
         mcPlayer.sendActionBar(Component.text(instruction));
     }
     public void giveInfo(String info) {

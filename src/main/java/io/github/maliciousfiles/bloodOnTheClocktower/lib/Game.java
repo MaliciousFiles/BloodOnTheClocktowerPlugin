@@ -1,7 +1,5 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.lib;
 
-import com.google.common.collect.BiMap;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
@@ -33,16 +31,17 @@ public class Game {
     }
 
     private void runNight() throws ExecutionException, InterruptedException {
-        players.forEach(BOTCPlayer::tickEffects);
+        boolean isFirstNight = turn == 0;
+        players.sort((a, b) -> Float.compare(isFirstNight ? a.getRole().getFirstNightOrder() : a.getRole().getNormalNightOrder(),
+                                             isFirstNight ? b.getRole().getFirstNightOrder() : b.getRole().getNormalNightOrder()));
+
+        players.forEach(BOTCPlayer::onDusk);
 
         for (BOTCPlayer player : players) {
-            // TODO: Storyteller#prompt for player to wake up, with info on who they are
-            if (player.getRole().shouldWake(this)) {
-                player.setAwake(true);
-                player.getRole().doNightAction(player, this);
-                player.setAwake(false);
-            }
+            player.getRole().handleNight(player, this);
         }
+
+        players.forEach(BOTCPlayer::onDawn);
     }
 
     // TODO: put game execution in a thread, at some point in the hierarchy

@@ -29,13 +29,13 @@ public class Washerwoman implements Role {
     }
 
     @Override
-    public float getNightOrder() {
-        return 82;
+    public float getFirstNightOrder() {
+        return 40;
     }
 
     @Override
-    public boolean shouldWake(Game game) {
-        return game.getTurn() == 0;
+    public float getNormalNightOrder() {
+        return -1;
     }
 
     @Override

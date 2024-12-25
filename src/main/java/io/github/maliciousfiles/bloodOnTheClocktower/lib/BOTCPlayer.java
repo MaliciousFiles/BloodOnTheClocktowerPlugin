@@ -20,12 +20,20 @@ public class BOTCPlayer extends PlayerWrapper {
         return role;
     }
 
-    public void setAwake(boolean awake) {
-        // TODO: set player's wakefulness
+    public void wake() {
+        // TODO: Storyteller#prompt for player to wake up, with info on who they are, and make wake
     }
 
-    public void tickEffects() { // happens at start of night
-        statusEffects.removeIf(StatusEffect::tick);
+    public void sleep() {
+        // TODO
+    }
+
+    public void onDusk() { // happens at start of night
+        statusEffects.removeIf(StatusEffect::tickDusk);
+    }
+
+    public void onDawn() {
+        statusEffects.removeIf(StatusEffect::tickDawn);
     }
 
     public void addStatusEffect(StatusEffect effect) {

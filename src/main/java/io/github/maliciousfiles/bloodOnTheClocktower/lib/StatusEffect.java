@@ -21,11 +21,11 @@ public class StatusEffect {
         this.duration = duration;
     }
 
-    public boolean tick() {
-        return switch (endsOn) {
-            case NIGHT -> duration-- == 0;
-            case DAY -> --duration == 0;
-            case NEVER -> false;
-        };
+    public boolean tickDusk() {
+        return endsOn == EndsOn.NIGHT && --duration == 0;
+    }
+
+    public boolean tickDawn() {
+        return endsOn == EndsOn.DAY && --duration == 0;
     }
 }
