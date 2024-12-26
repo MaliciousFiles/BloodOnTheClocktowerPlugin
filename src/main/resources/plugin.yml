@@ -1,7 +1,12 @@
-name: Blood on the Clocktower
+name: BloodOnTheClocktower
 version: '1.0-SNAPSHOT'
 main: io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower
 api-version: '1.21'
 authors: [ MaliciousFiles, Brainpower5 ]
 description: Implements the Blood on the Clocktower game in Minecraft
 website: https://github.com/MaliciousFiles/BloodOnTheClocktowerPlugin
+commands:
+  botc-seats:
+    description: Set up seat presets for a BOTC game
+  test:
+    description: Test command
