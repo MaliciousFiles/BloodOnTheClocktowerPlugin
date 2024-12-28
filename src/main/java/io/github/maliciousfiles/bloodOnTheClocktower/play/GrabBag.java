@@ -24,25 +24,25 @@ import java.util.function.Consumer;
 
 public class GrabBag {
     private final boolean allowedToThrow, canTakeMultiple;
-    private final ItemStack[] contents;
+    private final List<ItemStack> contents;
     private int index;
 
     private List<UUID> playersTaken = new ArrayList<>();
     private List<ItemStack> remaining;
 
-    private GrabBag(boolean allowedToThrow, boolean canTakeMultiple, ItemStack... items) {
+    private GrabBag(boolean allowedToThrow, boolean canTakeMultiple, Collection<ItemStack> items) {
         this.allowedToThrow = allowedToThrow;
         this.canTakeMultiple = canTakeMultiple;
 
-        this.contents = items;
+        this.contents = List.copyOf(items);
         this.index = 0;
 
-        this.remaining = new ArrayList<>(Arrays.asList(items));
+        this.remaining = new ArrayList<>(items);
     }
 
 
     private static final NamespacedKey UUID_KEY = new NamespacedKey(BloodOnTheClocktower.instance, "grab_bag_uuid");
-    private static final int PERIOD = 5;
+    private static final int PERIOD = 10;
 
     private static final Map<String, GrabBag> grabBags = new HashMap<>();
 
@@ -68,9 +68,9 @@ public class GrabBag {
 
             List<ItemStack> items = new ArrayList<>();
             for (int i = 0; i < 4; i++) {
-                items.add(bag.contents[(bag.index+i) % bag.contents.length]);
+                items.add(bag.contents.get((bag.index+i) % bag.contents.size()));
             }
-            bag.index = Math.floorMod(bag.index-1, bag.contents.length);
+            bag.index = bag.index+1 % bag.contents.size();
 
             item.setData(DataComponentTypes.BUNDLE_CONTENTS, BundleContents.bundleContents(items));
         }
@@ -87,7 +87,7 @@ public class GrabBag {
         Bukkit.getPluginManager().registerEvents(new GrabBagHandler(), BloodOnTheClocktower.instance);
     }
 
-    public static ItemStack createGrabBag(Consumer<ItemMeta> setup, boolean allowedToThrow, boolean canTakeMultiple, ItemStack... items) {
+    public static ItemStack createGrabBag(Consumer<ItemMeta> setup, boolean allowedToThrow, boolean canTakeMultiple, Collection<ItemStack> items) {
         String uuid = UUID.randomUUID().toString();
         grabBags.put(uuid, new GrabBag(allowedToThrow, canTakeMultiple, items));
 

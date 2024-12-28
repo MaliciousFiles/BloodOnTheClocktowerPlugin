@@ -2,6 +2,8 @@ package io.github.maliciousfiles.bloodOnTheClocktower;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.commands.BOTCCommand;
 import io.github.maliciousfiles.bloodOnTheClocktower.commands.SeatsCommand;
+import io.github.maliciousfiles.bloodOnTheClocktower.lib.Role;
+import io.github.maliciousfiles.bloodOnTheClocktower.lib.RoleInfo;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.ScriptInfo;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.GrabBag;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.PacketManager;
@@ -15,6 +17,9 @@ import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public final class BloodOnTheClocktower extends JavaPlugin {
     public static BloodOnTheClocktower instance;
@@ -38,11 +43,24 @@ public final class BloodOnTheClocktower extends JavaPlugin {
 
         getCommand("test").setExecutor((sender, _, _, _) -> {
             if (sender instanceof Player player) {
-                ScriptDisplay.open(player);
-//                player.getInventory().addItem(GrabBag.createGrabBag(meta -> {
-//                    meta.displayName(Component.text("Grab Bag")
-//                            .decoration(TextDecoration.ITALIC, false));
-//                }, false, false, new ItemStack(Material.DIAMOND), new ItemStack(Material.EMERALD), new ItemStack(Material.GOLD_INGOT), new ItemStack(Material.IRON_INGOT), new ItemStack(Material.COPPER_INGOT), new ItemStack(Material.GOLD_NUGGET), new ItemStack(Material.IRON_NUGGET), new ItemStack(Material.DIAMOND_BLOCK)));
+                CompletableFuture<ScriptInfo> wait = new CompletableFuture<>();
+                ScriptDisplay.open(player, wait);
+
+                new Thread(() -> {
+                    ScriptInfo script;
+                    try {
+                        script = wait.get();
+                    } catch (InterruptedException | ExecutionException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    player.getInventory().addItem(GrabBag.createGrabBag(meta -> {
+                        meta.displayName(Component.text(script.name)
+                                .decoration(TextDecoration.ITALIC, false));
+                    }, false, false, script.roles.stream()
+                            .filter(r->r.type() != Role.Type.TRAVELLER && r.type() != Role.Type.FABLED)
+                            .map(RoleInfo::getItem).toList()));
+                }).start();
             }
             return true;
         });

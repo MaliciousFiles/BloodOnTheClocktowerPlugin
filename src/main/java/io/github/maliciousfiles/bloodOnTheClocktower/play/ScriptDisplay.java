@@ -34,6 +34,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public class ScriptDisplay implements Listener {
@@ -159,6 +160,7 @@ public class ScriptDisplay implements Listener {
     // . . . . . . . . .
     // . . . . . . . . .
 
+    private final CompletableFuture<ScriptInfo> result;
     private final Player player;
     private final int numPages;
     private List<String> scripts = getScripts();
@@ -170,7 +172,8 @@ public class ScriptDisplay implements Listener {
     private ItemStack previouslyHeldItem;
     private boolean saveAsNew;
 
-    private ScriptDisplay(Player player, Inventory inventory) {
+    private ScriptDisplay(Player player, Inventory inventory, CompletableFuture<ScriptInfo> result) {
+        this.result = result;
         this.inventory = inventory;
         this.player = player;
         numPages = Math.max((int) Math.ceil(scripts.size() / 18f), 1);
@@ -284,7 +287,7 @@ public class ScriptDisplay implements Listener {
             selected = -1;
             newScript();
         } else if (CONTINUE_ENABLED.equals(evt.getCurrentItem())) {
-            continueSelection();
+            finish();
         } else if (BACK.equals(evt.getCurrentItem())) {
             page--;
             renderPage();
@@ -306,17 +309,18 @@ public class ScriptDisplay implements Listener {
         } else if (RETURN.equals(evt.getCurrentItem())) {
             player.openInventory(inventory = Bukkit.createInventory(null, 45, Component.text("Script Display")));
             renderPage();
-        } else if (inventory.getSize() == 45 && (evt.getSlot() < 9 || (evt.getSlot() >= 18 && evt.getSlot() < 27))) {
+        } else if (inventory.getSize() == 45 && !EMPTY.equals(evt.getCurrentItem()) && (evt.getSlot() < 9 || (evt.getSlot() >= 18 && evt.getSlot() < 27))) {
             int idx = page * 18 + (evt.getSlot()/18)*9 + (evt.getSlot()%9);
             selected = selected == idx ? -1 : idx;
             renderPage();
         }
     }
 
-    private void continueSelection() {
-        Bukkit.broadcastMessage("Selected "+scripts.get(selected));
+    private void finish() {
         inventory.close();
         HandlerList.unregisterAll(this);
+
+        result.complete((ScriptInfo) config.get(scripts.get(selected)));
     }
 
     private void editScript() {
@@ -389,8 +393,6 @@ public class ScriptDisplay implements Listener {
     }
 
     private void finishScript(String script) {
-        player.getInventory().setItem(EquipmentSlot.HAND, previouslyHeldItem);
-
         if (script != null) {
             try {
                 List<JsonElement> obj = JsonParser.parseString(script).getAsJsonArray().asList();
@@ -440,6 +442,8 @@ public class ScriptDisplay implements Listener {
 
         renderPage();
         player.openInventory(inventory);
+
+        Bukkit.getScheduler().runTask(BloodOnTheClocktower.instance, () -> player.getInventory().setItem(EquipmentSlot.HAND, previouslyHeldItem));
     }
 
     @EventHandler
@@ -457,10 +461,10 @@ public class ScriptDisplay implements Listener {
         finishScript(String.join("", evt.getNewBookMeta().getPages()));
     }
 
-    public static void open(Player player) {
+    public static void open(Player player, CompletableFuture<ScriptInfo> result) {
         Inventory inventory = Bukkit.createInventory(null, 45, Component.text("Script Display"));
 
-        ScriptDisplay sd = new ScriptDisplay(player, inventory);
+        ScriptDisplay sd = new ScriptDisplay(player, inventory, result);
         Bukkit.getPluginManager().registerEvents(sd, BloodOnTheClocktower.instance);
         sd.renderPage();
 
