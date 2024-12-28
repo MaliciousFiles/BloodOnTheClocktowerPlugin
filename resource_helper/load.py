@@ -2,7 +2,12 @@ from PIL import Image, UnidentifiedImageError
 import requests
 
 def load(name, i):
-    Image.open(requests.get(f"https://quiz.bloodontheclocktower.com/img/characters/{name}.webp", stream=True).raw).convert("RGBA").save(f"../BOTC Resource Pack/assets/botc/textures/item/{name}.png")
+    html = requests.get(f"https://wiki.bloodontheclocktower.com/File:Icon_{name}.png").text
+    url = "https://wiki.bloodontheclocktower.com/images"+html.split('href="/images')[1].split('"')[0]
+
+    #Image.open(requests.get(f"https://quiz.bloodontheclocktower.com/img/characters/{name}.webp", stream=True).raw).convert("RGBA").save(f"../BOTC Resource Pack/assets/botc/textures/item/{name}.png")
+    Image.open(requests.get(url, stream=True).raw).convert("RGBA").crop((95.5, 95.5, 495.5, 495.5)).save(f"../BOTC Resource Pack/assets/botc/textures/item/{name}.png")
+    
     with open(f"../BOTC Resource Pack/assets/botc/models/item/{name}.json", "w") as f:
         f.write("""{
   "parent": "minecraft:item/generated",
@@ -30,6 +35,8 @@ IDs = {}
 with open("roles.txt") as r:
     i = 1
     for role in r.read().split("\n"):
+        if role == "": continue
+        
         role = role.lower().replace("'", "").replace(" ", "").replace("-", "")
 
         try:

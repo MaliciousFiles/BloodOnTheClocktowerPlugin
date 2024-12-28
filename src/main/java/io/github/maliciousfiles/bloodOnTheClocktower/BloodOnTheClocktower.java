@@ -2,6 +2,7 @@ package io.github.maliciousfiles.bloodOnTheClocktower;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.commands.BOTCCommand;
 import io.github.maliciousfiles.bloodOnTheClocktower.commands.SeatsCommand;
+import io.github.maliciousfiles.bloodOnTheClocktower.lib.ScriptInfo;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.GrabBag;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.PacketManager;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.ResourcePackHandler;
@@ -10,6 +11,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -25,6 +27,8 @@ public final class BloodOnTheClocktower extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
+
+        ConfigurationSerialization.registerClass(ScriptInfo.class);
 
         registerCommand("botc-seats", new SeatsCommand());
 

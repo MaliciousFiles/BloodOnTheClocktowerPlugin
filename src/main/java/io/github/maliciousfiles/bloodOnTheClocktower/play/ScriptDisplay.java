@@ -16,6 +16,7 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -38,6 +39,9 @@ import java.util.function.Consumer;
 
 public class ScriptDisplay implements Listener {
     private static final BOTCConfiguration config = BOTCConfiguration.getConfig("scripts.yml");
+    private static List<String> getScripts() {
+        return new ArrayList<>(config.getKeys(false).stream().sorted().toList());
+    }
 
     private static ItemStack create(Material material, Consumer<ItemMeta> metaConsumer) {
         ItemStack item = ItemStack.of(material);
@@ -104,7 +108,7 @@ public class ScriptDisplay implements Listener {
     private final Inventory inventory;
     private final Player player;
     private final int numPages;
-    private final List<String> scripts = new ArrayList<>(config.getKeys(false).stream().sorted().toList());
+    private List<String> scripts = getScripts();
 
     private int page = 0;
     private ItemStack previouslyHeldItem, book;
@@ -227,7 +231,8 @@ public class ScriptDisplay implements Listener {
 
                 String name = obj.getFirst().getAsJsonObject().get("name").getAsString();
                 String author = obj.getFirst().getAsJsonObject().get("author").getAsString();
-                if (author.equals("Author")) author = player.getName();
+                if (name.isEmpty()) name = "My Script";
+                if (author.isEmpty()) author = player.getName();
 
                 obj.removeFirst();
 
@@ -244,9 +249,10 @@ public class ScriptDisplay implements Listener {
                     return;
                 }
 
-                scripts.add(name);
                 config.set(name, new ScriptInfo(name, author, roleIds));
                 config.save();
+
+                scripts = getScripts();
             } catch (JsonParseException | UnsupportedOperationException | IllegalStateException | NullPointerException | NoSuchElementException e) {
                 player.sendMessage(Component.text("Invalid script format, try again", NamedTextColor.RED)
                         .append(Component.text("\n(make sure you copy as JSON from the script tool)", NamedTextColor.DARK_RED)));
