@@ -6,9 +6,9 @@
   "overrides": [
     {
       "predicate": {
-        "custom_model_data": 1
-      },
-      "model": "botc:item/undertaker"
+        "custom_model_data": 1,
+        "model": "botc:item/undertaker"
+      }
     }
   ]
 }
