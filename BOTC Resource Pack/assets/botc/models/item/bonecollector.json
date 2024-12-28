@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "botc:item/town_crier"
+    "layer0": "botc:item/bonecollector"
   }
 }

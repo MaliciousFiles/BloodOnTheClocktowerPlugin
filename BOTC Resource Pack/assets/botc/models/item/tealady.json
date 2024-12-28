@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "botc:item/pit_hag"
+    "layer0": "botc:item/tealady"
   }
 }

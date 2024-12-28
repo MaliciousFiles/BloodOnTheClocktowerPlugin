@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "botc:item/spirit_of_ivory"
+    "layer0": "botc:item/spiritofivory"
   }
 }

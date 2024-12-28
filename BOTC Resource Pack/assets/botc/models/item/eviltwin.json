@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "botc:item/organ_grinder"
+    "layer0": "botc:item/eviltwin"
   }
 }

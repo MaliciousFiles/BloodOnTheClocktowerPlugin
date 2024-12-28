@@ -110,7 +110,7 @@
         "predicate": {
             "custom_model_data": 18
         },
-        "model": "botc:item/fortune_teller"
+        "model": "botc:item/fortuneteller"
     },
     {
         "predicate": {
@@ -140,7 +140,7 @@
         "predicate": {
             "custom_model_data": 23
         },
-        "model": "botc:item/high_priestess"
+        "model": "botc:item/highpriestess"
     },
     {
         "predicate": {
@@ -254,7 +254,7 @@
         "predicate": {
             "custom_model_data": 42
         },
-        "model": "botc:item/poppy_grower"
+        "model": "botc:item/poppygrower"
     },
     {
         "predicate": {
@@ -302,7 +302,7 @@
         "predicate": {
             "custom_model_data": 50
         },
-        "model": "botc:item/snake_charmer"
+        "model": "botc:item/snakecharmer"
     },
     {
         "predicate": {
@@ -320,13 +320,13 @@
         "predicate": {
             "custom_model_data": 53
         },
-        "model": "botc:item/tea_lady"
+        "model": "botc:item/tealady"
     },
     {
         "predicate": {
             "custom_model_data": 54
         },
-        "model": "botc:item/town_crier"
+        "model": "botc:item/towncrier"
     },
     {
         "predicate": {
@@ -476,13 +476,13 @@
         "predicate": {
             "custom_model_data": 79
         },
-        "model": "botc:item/devils_advocate"
+        "model": "botc:item/devilsadvocate"
     },
     {
         "predicate": {
             "custom_model_data": 80
         },
-        "model": "botc:item/evil_twin"
+        "model": "botc:item/eviltwin"
     },
     {
         "predicate": {
@@ -518,13 +518,13 @@
         "predicate": {
             "custom_model_data": 86
         },
-        "model": "botc:item/organ_grinder"
+        "model": "botc:item/organgrinder"
     },
     {
         "predicate": {
             "custom_model_data": 87
         },
-        "model": "botc:item/pit_hag"
+        "model": "botc:item/pithag"
     },
     {
         "predicate": {
@@ -542,7 +542,7 @@
         "predicate": {
             "custom_model_data": 90
         },
-        "model": "botc:item/scarlet_woman"
+        "model": "botc:item/scarletwoman"
     },
     {
         "predicate": {
@@ -566,13 +566,13 @@
         "predicate": {
             "custom_model_data": 94
         },
-        "model": "botc:item/al_hadikhia"
+        "model": "botc:item/alhadikhia"
     },
     {
         "predicate": {
             "custom_model_data": 95
         },
-        "model": "botc:item/fang_gu"
+        "model": "botc:item/fanggu"
     },
     {
         "predicate": {
@@ -596,7 +596,7 @@
         "predicate": {
             "custom_model_data": 99
         },
-        "model": "botc:item/no_dashii"
+        "model": "botc:item/nodashii"
     },
     {
         "predicate": {
@@ -680,7 +680,7 @@
         "predicate": {
             "custom_model_data": 113
         },
-        "model": "botc:item/bone_collector"
+        "model": "botc:item/bonecollector"
     },
     {
         "predicate": {
@@ -758,7 +758,7 @@
         "predicate": {
             "custom_model_data": 126
         },
-        "model": "botc:item/hells_librarian"
+        "model": "botc:item/hellslibrarian"
     },
     {
         "predicate": {
@@ -800,7 +800,7 @@
         "predicate": {
             "custom_model_data": 133
         },
-        "model": "botc:item/spirit_of_ivory"
+        "model": "botc:item/spiritofivory"
     },
     {
         "predicate": {
@@ -812,7 +812,7 @@
         "predicate": {
             "custom_model_data": 135
         },
-        "model": "botc:item/storm_catcher"
+        "model": "botc:item/stormcatcher"
     }
   ]
 }

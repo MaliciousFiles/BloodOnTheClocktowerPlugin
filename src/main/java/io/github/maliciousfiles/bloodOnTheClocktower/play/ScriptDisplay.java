@@ -26,8 +26,10 @@ import org.bukkit.event.player.PlayerEditBookEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BundleMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -136,7 +138,33 @@ public class ScriptDisplay implements Listener {
             contents[i] = create(Material.BUNDLE, meta ->{
                 meta.displayName(Component.text(script)
                         .decoration(TextDecoration.ITALIC, false));
-                // TODO: fill bundle w/ script
+
+                ScriptInfo info = (ScriptInfo) config.get(script);
+                List<ItemStack> items = new ArrayList<>();
+
+                for (String roleId : info.roleIds) {
+                    Role role = null;
+                    try {
+                        role = Role.BY_ID.get(roleId).getConstructor().newInstance();
+                    } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    ItemStack item = ItemStack.of(Material.PAPER);
+                    ItemMeta itemMeta = item.getItemMeta();
+                    itemMeta.displayName(Component.text(role.getRoleName())
+                            .decoration(TextDecoration.ITALIC, false));
+                    itemMeta.lore(List.of(
+                            Component.text(role.getRoleDescription())
+                                    .decoration(TextDecoration.ITALIC, false)
+                                    .color(NamedTextColor.GRAY)));
+                    itemMeta.setCustomModelData(Role.CMD_IDs.get(roleId));
+                    item.setItemMeta(itemMeta);
+                    items.add(item);
+                }
+
+                //noinspection UnstableApiUsage
+                ((BundleMeta) meta).setItems(items);
             });
         }
 

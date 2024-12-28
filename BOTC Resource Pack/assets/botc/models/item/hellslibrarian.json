@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "botc:item/fortune_teller"
+    "layer0": "botc:item/hellslibrarian"
   }
 }

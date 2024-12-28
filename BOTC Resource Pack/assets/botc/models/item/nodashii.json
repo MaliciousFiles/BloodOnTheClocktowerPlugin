@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "botc:item/devils_advocate"
+    "layer0": "botc:item/nodashii"
   }
 }

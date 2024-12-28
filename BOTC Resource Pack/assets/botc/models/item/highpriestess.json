@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "botc:item/snake_charmer"
+    "layer0": "botc:item/highpriestess"
   }
 }
