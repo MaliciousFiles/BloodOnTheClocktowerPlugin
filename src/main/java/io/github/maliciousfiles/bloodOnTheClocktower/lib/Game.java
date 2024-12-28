@@ -16,6 +16,9 @@ public class Game {
     private List<BOTCPlayer> players;
     private int turn;
 
+    public static final int MINION_INFO_ORDER = 12;
+    private static final int DEMON_INFO_ORDER = 15;
+
     public BOTCPlayer getBOTCPlayer(Player mcPlayer) {
         return mcPlayerToBOTC.get(mcPlayer.getUniqueId());
     }
@@ -32,16 +35,36 @@ public class Game {
 
     private void runNight() throws ExecutionException, InterruptedException {
         boolean isFirstNight = turn == 0;
-        players.sort((a, b) -> Float.compare(isFirstNight ? a.getRole().getFirstNightOrder() : a.getRole().getNormalNightOrder(),
-                                             isFirstNight ? b.getRole().getFirstNightOrder() : b.getRole().getNormalNightOrder()));
+        players.sort((a, b) -> Float.compare(a.getRole().getNightOrder(), b.getRole().getNightOrder()));
 
         players.forEach(BOTCPlayer::onDusk);
 
+        boolean didMinionInfo = false;
+        boolean didDemonInfo = false;
         for (BOTCPlayer player : players) {
-            player.getRole().handleNight(player, this);
+            if (isFirstNight) {
+                if (!didMinionInfo && player.getRole().getNightOrder() > MINION_INFO_ORDER) {
+                    didMinionInfo = true;
+                    giveMinionInfo();
+                }
+                if (!didDemonInfo && player.getRole().getNightOrder() > DEMON_INFO_ORDER) {
+                    didDemonInfo = true;
+                    giveDemonInfo();
+                }
+            }
+
+            player.getRole().handleNight();
         }
 
         players.forEach(BOTCPlayer::onDawn);
+    }
+
+    private void giveMinionInfo() {
+        // TODO
+    }
+
+    private void giveDemonInfo() {
+        // TODO
     }
 
     // TODO: put game execution in a thread, at some point in the hierarchy

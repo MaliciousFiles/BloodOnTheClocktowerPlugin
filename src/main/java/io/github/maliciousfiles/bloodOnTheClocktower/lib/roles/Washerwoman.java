@@ -3,6 +3,7 @@ package io.github.maliciousfiles.bloodOnTheClocktower.lib.roles;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.BOTCPlayer;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.Game;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.Role;
+import io.github.maliciousfiles.bloodOnTheClocktower.lib.Storyteller;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.GetChoiceHook;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.SelectPlayerHook;
 import net.kyori.adventure.text.Component;
@@ -12,7 +13,13 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-public class Washerwoman implements Role {
+public class Washerwoman extends Role {
+    boolean hasInfo = false;
+
+    public Washerwoman(BOTCPlayer me, Game game) {
+        super(me, game);
+    }
+
     @Override
     public String getRoleName() {
         return "Washerwoman";
@@ -29,17 +36,26 @@ public class Washerwoman implements Role {
     }
 
     @Override
-    public float getFirstNightOrder() {
-        return 40;
+    public Type getType() { return Type.TOWNSFOLK; }
+
+    @Override
+    public float getNightOrder() { return 82; }
+
+    @Override
+    public void setup() {
+        Storyteller st = game.getStoryteller();
+        st.giveInstruction("Assign the Washerwoman's Townsfolk and Wrong reminder tokens");
+        st.assignReminderToken("Washerwoman", "Townsfolk");
+        st.assignReminderToken("Washerwoman", "Wrong");
     }
 
     @Override
-    public float getNormalNightOrder() {
-        return -1;
-    }
+    public void handleNight() throws ExecutionException, InterruptedException {
+        if (hasInfo) { return; }
+        hasInfo = true;
 
-    @Override
-    public void doNightAction(BOTCPlayer me, Game game) throws ExecutionException, InterruptedException {
+        me.wake();
+
         game.getStoryteller().giveInstruction("Select two players for the Washerwoman");
 
         CompletableFuture<List<BOTCPlayer>> selectPlayer = new CompletableFuture<>();
@@ -53,5 +69,8 @@ public class Washerwoman implements Role {
         Role role = getChoice.get();
 
         me.giveInfo("One of " + players.get(0).getName() + " and " + players.get(1).getName() + " is a " + role.getRoleName());
+
+        me.sleep();
     }
+
 }

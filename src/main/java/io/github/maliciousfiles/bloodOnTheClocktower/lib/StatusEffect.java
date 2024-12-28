@@ -11,12 +11,14 @@ public class StatusEffect {
 
     public final EffectType type;
     public final BOTCPlayer source;
+    public final Role sourceRole;
     public final EndsOn endsOn;
     private int duration;
 
-    public StatusEffect(EffectType type, int duration, EndsOn endsOn, @Nullable BOTCPlayer source) {
+    public StatusEffect(EffectType type, int duration, EndsOn endsOn, @Nullable BOTCPlayer source, @Nullable Role sourceRole) {
         this.type = type;
         this.source = source;
+        this.sourceRole = sourceRole;
         this.endsOn = endsOn;
         this.duration = duration;
     }
@@ -27,5 +29,9 @@ public class StatusEffect {
 
     public boolean tickDawn() {
         return endsOn == EndsOn.DAY && --duration == 0;
+    }
+
+    public boolean isActive() {
+        return source == null || (source.getRole() == sourceRole && source.hasAbility());
     }
 }

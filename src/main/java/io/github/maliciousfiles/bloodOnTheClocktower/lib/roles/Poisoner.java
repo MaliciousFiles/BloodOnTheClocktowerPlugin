@@ -5,15 +5,17 @@ import io.github.maliciousfiles.bloodOnTheClocktower.lib.Game;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.Role;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.StatusEffect;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.SelectPlayerHook;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-public class Poisoner implements Role {
+public class Poisoner extends Role {
+    public Poisoner(BOTCPlayer me, Game game) {
+        super(me, game);
+    }
+
     @Override
     public String getRoleName() {
         return "Poisoner";
@@ -30,17 +32,13 @@ public class Poisoner implements Role {
     }
 
     @Override
-    public float getFirstNightOrder() {
-        return 23;
-    }
+    public Type getType() { return Type.MINION; }
 
     @Override
-    public float getNormalNightOrder() {
-        return 11;
-    }
+    public float getNightOrder() { return 15; }
 
     @Override
-    public void doNightAction(BOTCPlayer me, Game game) throws InterruptedException, ExecutionException {
+    public void handleNight(BOTCPlayer me, Game game) throws InterruptedException, ExecutionException {
         me.giveInstruction("Choose a player to poison");
 
         CompletableFuture<List<BOTCPlayer>> future = new CompletableFuture<>();
@@ -48,7 +46,7 @@ public class Poisoner implements Role {
 
         BOTCPlayer poisoned = future.get().getFirst();
 
-        if (!me.isMalfunctioning()) {
+        if (!me.isImpaired()) {
             poisoned.addStatusEffect(new StatusEffect(StatusEffect.EffectType.POISONED,
                     1, StatusEffect.EndsOn.DAY, me));
         }

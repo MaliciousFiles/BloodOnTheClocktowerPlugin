@@ -9,6 +9,8 @@ import java.util.List;
 public class BOTCPlayer extends PlayerWrapper {
     private final Role role;
 
+    private boolean alive;
+
     private final List<StatusEffect> statusEffects = new ArrayList<>();
 
     public BOTCPlayer(Player mcPlayer, Role role, Game game) {
@@ -40,8 +42,16 @@ public class BOTCPlayer extends PlayerWrapper {
         statusEffects.add(effect);
     }
 
-    public boolean isMalfunctioning() {
+    public boolean isImpaired() {
         return statusEffects.stream().anyMatch(e -> e.type == StatusEffect.EffectType.DRUNK ||
                 e.type == StatusEffect.EffectType.POISONED);
+    }
+
+    public void die() {
+        // TODO
+    }
+
+    public boolean hasAbility() {
+        return alive && !isImpaired();
     }
 }

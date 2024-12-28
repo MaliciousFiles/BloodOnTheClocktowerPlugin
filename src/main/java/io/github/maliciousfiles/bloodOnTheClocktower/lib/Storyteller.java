@@ -7,4 +7,8 @@ public class Storyteller extends PlayerWrapper {
     public Storyteller(Player mcPlayer) {
         super(mcPlayer);
     }
+
+    public void assignReminderToken(String role, String token) {
+        // TODO
+    }
 }

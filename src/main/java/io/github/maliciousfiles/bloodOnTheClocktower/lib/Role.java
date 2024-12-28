@@ -9,8 +9,10 @@ import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-public interface Role {
-    Map<String, Class<? extends Role>> BY_ID = new ImmutableMap.Builder<String, Class<? extends Role>>()
+public abstract class Role {
+    public enum Type { TOWNSFOLK, OUTSIDER, MINION, DEMON, TRAVELLER }
+
+    public static final Map<String, Class<? extends Role>> BY_ID = new ImmutableMap.Builder<String, Class<? extends Role>>()
             .put("poisoner", Poisoner.class)
             .put("washerwoman", Washerwoman.class)
             // temp, to test TB
@@ -209,21 +211,25 @@ public interface Role {
             .put("stormcatcher", 166)
             .build();
 
-    String getRoleName();
-    String getRoleDescription();
-    Material getIcon();
-    float getFirstNightOrder(); // https://docs.google.com/spreadsheets/d/1eJkBC6rF-VU6J0h0KJvyiXjs2HLl6Yjzw9jfVYHOW34/edit
-    float getNormalNightOrder(); // https://docs.google.com/spreadsheets/d/1eJkBC6rF-VU6J0h0KJvyiXjs2HLl6Yjzw9jfVYHOW34/edit
+    protected final BOTCPlayer me;
+    protected final Game game;
 
-    default void handleNight(BOTCPlayer me, Game game) throws InterruptedException, ExecutionException {
-        if (game.getTurn() == 0 && getFirstNightOrder() >= 0 || game.getTurn() > 0 && getNormalNightOrder() >= 0) {
-            me.wake();
-            doNightAction(me, game);
-            me.sleep();
-        }
+    public Role(BOTCPlayer me, Game game) {
+        this.me = me;
+        this.game = game;
     }
-    void doNightAction(BOTCPlayer me, Game game) throws InterruptedException, ExecutionException;
 
-    enum DeathCause { STORY, EXECUTION, PLAYER }
-    default boolean canDieTo(DeathCause cause, @Nullable BOTCPlayer killer, Game game) { return true; }
+    public abstract String getRoleName();
+    public abstract String getRoleDescription();
+    public abstract Material getIcon();
+    public abstract Type getType();
+    public abstract float getNightOrder(); // https://docs.google.com/spreadsheets/d/1eJkBC6rF-VU6J0h0KJvyiXjs2HLl6Yjzw9jfVYHOW34/edit
+
+    public void setup() {}
+    public void handleNight() throws InterruptedException, ExecutionException {}
+
+    public enum DeathCause { STORY, EXECUTION, PLAYER }
+    public void handleDeathAttempt(DeathCause cause, @Nullable BOTCPlayer killer) {
+        me.die();
+    }
 }
