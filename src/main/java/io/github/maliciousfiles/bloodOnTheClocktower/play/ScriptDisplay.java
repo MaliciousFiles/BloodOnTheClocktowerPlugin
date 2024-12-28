@@ -1,5 +1,6 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.play;
 
+import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
@@ -153,16 +154,9 @@ public class ScriptDisplay implements Listener {
     // . . . . . . . . .
     // < . . n s . . . >
 
-    // . . . . . . . . .
-    // . . . . . . . . .
-    // . . . . . . . . .
-    // . . . . . . . . .
-    // . . . . . . . . .
-    // . . . . . . . . .
-
-    private final CompletableFuture<ScriptInfo> result;
+    private final CompletableFuture<List<RoleInfo>> result;
     private final Player player;
-    private final int numPages;
+    private final int numPages, numPlayers;
     private List<String> scripts = getScripts();
 
     private int selected = -1;
@@ -172,10 +166,14 @@ public class ScriptDisplay implements Listener {
     private ItemStack previouslyHeldItem;
     private boolean saveAsNew;
 
-    private ScriptDisplay(Player player, Inventory inventory, CompletableFuture<ScriptInfo> result) {
+    private boolean selectingRoles;
+    private List<RoleInfo> selectedRoles = new ArrayList<>();
+
+    private ScriptDisplay(Player player, Inventory inventory, int numPlayers, CompletableFuture<List<RoleInfo>> result) {
         this.result = result;
         this.inventory = inventory;
         this.player = player;
+        this.numPlayers = numPlayers;
         numPages = Math.max((int) Math.ceil(scripts.size() / 18f), 1);
     }
 
@@ -237,40 +235,122 @@ public class ScriptDisplay implements Listener {
     }
 
     private void renderViewScript() {
-        player.openInventory(inventory = Bukkit.createInventory(null, 54, Component.text("Script Display")));
+        if (!selectingRoles) player.openInventory(inventory = Bukkit.createInventory(null, 54, Component.text("Script Display")));
 
         ItemStack[] contents = inventory.getContents();
 
-        Map<Role.Type, List<ItemStack>> roles = new HashMap<>();
+        Map<Role.Type, List<RoleInfo>> roles = new HashMap<>();
         for (RoleInfo role : ((ScriptInfo) config.get(scripts.get(selected))).roles) {
-            roles.computeIfAbsent(role.type(), k -> new ArrayList<>()).add(role.getItem());
+            roles.computeIfAbsent(role.type(), k -> new ArrayList<>()).add(role);
         }
 
         int midpoint = roles.get(Role.Type.TOWNSFOLK).size()/2+1;
         for (int i = 0; i < 9; i++) {
-            contents[i] = i < midpoint ? roles.get(Role.Type.TOWNSFOLK).get(i) : TOWNSFOLK_FILLER;
+            RoleInfo role = i < midpoint ? roles.get(Role.Type.TOWNSFOLK).get(i) : null;
+            contents[i] = Optional.ofNullable(role).map(RoleInfo::getItem).orElse(TOWNSFOLK_FILLER);
+            if (selectedRoles.contains(role)) {
+                ItemMeta meta = contents[i].getItemMeta();
+                meta.setEnchantmentGlintOverride(true);
+                contents[i].setItemMeta(meta);
+            }
         }
         for (int i = 0; i < 9; i++) {
-            contents[i+9] = i+midpoint < roles.get(Role.Type.TOWNSFOLK).size() ? roles.get(Role.Type.TOWNSFOLK).get(i+midpoint) : TOWNSFOLK_FILLER;
+            RoleInfo role = i+midpoint < roles.get(Role.Type.TOWNSFOLK).size() ? roles.get(Role.Type.TOWNSFOLK).get(i+midpoint) : null;
+            contents[i+9] = Optional.ofNullable(role).map(RoleInfo::getItem).orElse(TOWNSFOLK_FILLER);
+            if (selectedRoles.contains(role)) {
+                ItemMeta meta = contents[i+9].getItemMeta();
+                meta.setEnchantmentGlintOverride(true);
+                contents[i+9].setItemMeta(meta);
+            }
         }
 
         for (int i = 0; i < 9; i++) {
-            contents[i+18] = i < roles.get(Role.Type.OUTSIDER).size() ? roles.get(Role.Type.OUTSIDER).get(i) : OUTSIDER_FILLER;
+            RoleInfo role = i < roles.get(Role.Type.OUTSIDER).size() ? roles.get(Role.Type.OUTSIDER).get(i) : null;
+            contents[i+18] = Optional.ofNullable(role).map(RoleInfo::getItem).orElse(OUTSIDER_FILLER);
+            if (selectedRoles.contains(role)) {
+                ItemMeta meta = contents[i+18].getItemMeta();
+                meta.setEnchantmentGlintOverride(true);
+                contents[i+18].setItemMeta(meta);
+            }
         }
 
         for (int i = 0; i < 9; i++) {
-            contents[i+27] = i < roles.get(Role.Type.MINION).size() ? roles.get(Role.Type.MINION).get(i) : MINION_FILLER;
+            RoleInfo role = i < roles.get(Role.Type.MINION).size() ? roles.get(Role.Type.MINION).get(i) : null;
+            contents[i+27] = Optional.ofNullable(role).map(RoleInfo::getItem).orElse(MINION_FILLER);
+            if (selectedRoles.contains(role)) {
+                ItemMeta meta = contents[i+27].getItemMeta();
+                meta.setEnchantmentGlintOverride(true);
+                contents[i+27].setItemMeta(meta);
+            }
         }
 
         for (int i = 0; i < 9; i++) {
-            contents[i+36] = i < roles.get(Role.Type.DEMON).size() ? roles.get(Role.Type.DEMON).get(i) : DEMON_FILLER;
+            RoleInfo role = i < roles.get(Role.Type.DEMON).size() ? roles.get(Role.Type.DEMON).get(i) : null;
+            contents[i+36] = Optional.ofNullable(role).map(RoleInfo::getItem).orElse(DEMON_FILLER);
+            if (selectedRoles.contains(role)) {
+                ItemMeta meta = contents[i+36].getItemMeta();
+                meta.setEnchantmentGlintOverride(true);
+                contents[i+36].setItemMeta(meta);
+            }
         }
 
-        for (int i = 0; i < 8; i++) {
-            contents[i+45] = i < roles.get(Role.Type.TRAVELLER).size() ? roles.get(Role.Type.TRAVELLER).get(i) : TRAVELLER_FILLER;
-        }
+        if (selectingRoles) {
+            ItemStack item = CONTINUE_ENABLED;
+            Component error = null;
+            if (selectedRoles.size() != numPlayers) {
+                item = CONTINUE_DISABLED.clone();
+                error = Component.text("Must have exactly as many roles as players ("+numPlayers+")", NamedTextColor.RED);
+            }
+            ItemMeta meta = item.getItemMeta();
 
-        contents[53] = RETURN;
+            List<Component> lore = Lists.newArrayList(
+                    Component.text("Townsfolk: ", NamedTextColor.GRAY)
+                            .append(Component.text(selectedRoles.stream().filter(r->r.type() == Role.Type.TOWNSFOLK).count(), RoleInfo.ROLE_COLORS.get(Role.Type.TOWNSFOLK)))
+                            .decoration(TextDecoration.ITALIC, false),
+                    Component.text("Outsiders: ", NamedTextColor.GRAY)
+                            .append(Component.text(selectedRoles.stream().filter(r->r.type() == Role.Type.OUTSIDER).count(), RoleInfo.ROLE_COLORS.get(Role.Type.OUTSIDER)))
+                            .decoration(TextDecoration.ITALIC, false),
+                    Component.text("Minions: ", NamedTextColor.GRAY)
+                            .append(Component.text(selectedRoles.stream().filter(r->r.type() == Role.Type.MINION).count(), RoleInfo.ROLE_COLORS.get(Role.Type.MINION)))
+                            .decoration(TextDecoration.ITALIC, false),
+                    Component.text("Demons: ", NamedTextColor.GRAY)
+                            .append(Component.text(selectedRoles.stream().filter(r->r.type() == Role.Type.DEMON).count(), RoleInfo.ROLE_COLORS.get(Role.Type.DEMON)))
+                            .decoration(TextDecoration.ITALIC, false)
+            );
+            if (error != null) lore.addAll(List.of(Component.empty(), error));
+
+            meta.lore(lore);
+            item.setItemMeta(meta);
+
+            contents[44] = item;
+
+            ItemStack infoItem = ItemStack.of(Material.PAPER);
+            ItemMeta infoMeta = infoItem.getItemMeta();
+            infoMeta.displayName(Component.text("Recommended Roles", NamedTextColor.GRAY)
+                    .decoration(TextDecoration.ITALIC, false));
+            infoMeta.lore(List.of(
+                    Component.text("Townsfolk: ", NamedTextColor.GRAY)
+                            .append(Component.text((int) Math.ceil(numPlayers/3.0)*2-1, RoleInfo.ROLE_COLORS.get(Role.Type.TOWNSFOLK)))
+                            .decoration(TextDecoration.ITALIC, false),
+                    Component.text("Outsiders: ", NamedTextColor.GRAY)
+                            .append(Component.text(numPlayers < 7 ? numPlayers%5 : (numPlayers-1)%6, RoleInfo.ROLE_COLORS.get(Role.Type.OUTSIDER)))
+                            .decoration(TextDecoration.ITALIC, false),
+                    Component.text("Minions: ", NamedTextColor.GRAY)
+                            .append(Component.text(numPlayers < 10 ? 1 : numPlayers < 13 ? 2 : 3, RoleInfo.ROLE_COLORS.get(Role.Type.MINION)))
+                            .decoration(TextDecoration.ITALIC, false),
+                    Component.text("Demons: ", NamedTextColor.GRAY)
+                            .append(Component.text(1, RoleInfo.ROLE_COLORS.get(Role.Type.DEMON)))
+                            .decoration(TextDecoration.ITALIC, false)
+            ));
+            infoItem.setItemMeta(infoMeta);
+            contents[43] = infoItem;
+        } else {
+            for (int i = 0; i < 8; i++) {
+                contents[i+45] = i < roles.get(Role.Type.TRAVELLER).size() ? roles.get(Role.Type.TRAVELLER).get(i).getItem() : TRAVELLER_FILLER;
+            }
+
+            contents[53] = RETURN;
+        }
 
         inventory.setContents(contents);
     }
@@ -287,44 +367,64 @@ public class ScriptDisplay implements Listener {
         if (!inventory.equals(evt.getClickedInventory())) return;
 
         evt.setCancelled(true);
-        if (NEW.equals(evt.getCurrentItem())) {
-            selected = -1;
-            newScript();
-        } else if (CONTINUE_ENABLED.equals(evt.getCurrentItem())) {
-            finish();
-        } else if (BACK.equals(evt.getCurrentItem())) {
-            page--;
-            renderPage();
-        } else if (FORWARD.equals(evt.getCurrentItem())) {
-            page++;
-            renderPage();
-        } else if (DELETE.equals(evt.getCurrentItem())) {
-            config.set(scripts.get(selected), null);
-            config.save();
 
-            scripts = getScripts();
-            selected = -1;
-            renderPage();
-        } else if (EDIT.equals(evt.getCurrentItem())) {
-            editScript();
-            selected = -1;
-        } else if (VIEW.equals(evt.getCurrentItem())) {
-            renderViewScript();
-        } else if (RETURN.equals(evt.getCurrentItem())) {
-            player.openInventory(inventory = Bukkit.createInventory(null, 45, Component.text("Script Display")));
-            renderPage();
-        } else if (inventory.getSize() == 45 && !EMPTY.equals(evt.getCurrentItem()) && (evt.getSlot() < 9 || (evt.getSlot() >= 18 && evt.getSlot() < 27))) {
-            int idx = page * 18 + (evt.getSlot()/18)*9 + (evt.getSlot()%9);
-            selected = selected == idx ? -1 : idx;
-            renderPage();
+        if (inventory.getSize() == 45 && !selectingRoles) {
+            if (NEW.equals(evt.getCurrentItem())) {
+                selected = -1;
+                newScript();
+            } else if (CONTINUE_ENABLED.equals(evt.getCurrentItem())) {
+                selectScript();
+            } else if (BACK.equals(evt.getCurrentItem())) {
+                page--;
+                renderPage();
+            } else if (FORWARD.equals(evt.getCurrentItem())) {
+                page++;
+                renderPage();
+            } else if (DELETE.equals(evt.getCurrentItem())) {
+                config.set(scripts.get(selected), null);
+                config.save();
+
+                scripts = getScripts();
+                selected = -1;
+                renderPage();
+            } else if (EDIT.equals(evt.getCurrentItem())) {
+                editScript();
+                selected = -1;
+            } else if (VIEW.equals(evt.getCurrentItem())) {
+                renderViewScript();
+            } else if (!EMPTY.equals(evt.getCurrentItem()) && (evt.getSlot() < 9 || (evt.getSlot() >= 18 && evt.getSlot() < 27))) {
+                int idx = page * 18 + (evt.getSlot()/18)*9 + (evt.getSlot()%9);
+                selected = selected == idx ? -1 : idx;
+                renderPage();
+            }
+        } else {
+            if (RETURN.equals(evt.getCurrentItem())) {
+                player.openInventory(inventory = Bukkit.createInventory(null, 45, Component.text("Script Display")));
+                renderPage();
+            } else if (CONTINUE_ENABLED.equals(evt.getCurrentItem())) {
+                selectRoles();
+            } else if (selectingRoles && Material.PAPER == Optional.ofNullable(evt.getCurrentItem()).map(ItemStack::getType).orElse(null)) {
+                RoleInfo role = RoleInfo.valueOf(evt.getCurrentItem().getItemMeta().getPersistentDataContainer().get(RoleInfo.ROLE_ID, PersistentDataType.STRING).toUpperCase());
+                if (selectedRoles.contains(role)) {
+                    selectedRoles.remove(role);
+                } else {
+                    selectedRoles.add(role);
+                }
+                renderViewScript();
+            }
         }
     }
 
-    private void finish() {
+    private void selectRoles() {
         inventory.close();
         HandlerList.unregisterAll(this);
 
-        result.complete((ScriptInfo) config.get(scripts.get(selected)));
+        result.complete(selectedRoles);
+    }
+
+    private void selectScript() {
+        selectingRoles = true;
+        renderViewScript();
     }
 
     private void editScript() {
@@ -465,13 +565,13 @@ public class ScriptDisplay implements Listener {
         finishScript(String.join("", evt.getNewBookMeta().getPages()));
     }
 
-    public static void open(Player player, CompletableFuture<ScriptInfo> result) {
+    public static void open(Player player, int numPlayers, CompletableFuture<List<RoleInfo>> result) {
         Inventory inventory = Bukkit.createInventory(null, 45, Component.text("Script Display"));
 
-        ScriptDisplay sd = new ScriptDisplay(player, inventory, result);
+        ScriptDisplay sd = new ScriptDisplay(player, inventory, numPlayers, result);
         Bukkit.getPluginManager().registerEvents(sd, BloodOnTheClocktower.instance);
         sd.renderPage();
 
-        player.openInventory(inventory);
+        BloodOnTheClocktower.runSync(() -> player.openInventory(inventory));
     }
 }

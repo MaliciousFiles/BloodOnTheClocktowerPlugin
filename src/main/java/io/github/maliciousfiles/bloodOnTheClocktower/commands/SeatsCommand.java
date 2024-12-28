@@ -3,11 +3,13 @@ package io.github.maliciousfiles.bloodOnTheClocktower.commands;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.BOTCConfiguration;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -19,6 +21,12 @@ public class SeatsCommand extends BOTCCommand {
     // remove: removes a seat from the given table
     // list: lists all seats in the given table
     private static final BOTCConfiguration config = BOTCConfiguration.getConfig("seats.yml");
+    public static Collection<String> getTables() {
+        return config.getKeys(false);
+    }
+    public static List<Location> getSeats(World world, String table) {
+        return config.getStringList(table).stream().map(s -> new Location(world, Integer.parseInt(s.split(",")[0]), Integer.parseInt(s.split(",")[1]), Integer.parseInt(s.split(",")[2]))).toList();
+    }
 
     private static final List<String> subCommands = List.of("create-table", "delete-table", "get-tables", "add", "remove", "list");
 
@@ -128,7 +136,7 @@ public class SeatsCommand extends BOTCCommand {
             return subCommands;
         } else if (args.length == 2) {
             if (args[0].equalsIgnoreCase("delete-table") || args[0].equalsIgnoreCase("add") || args[0].equalsIgnoreCase("remove") || args[0].equalsIgnoreCase("list")) {
-                return config.getKeys(false);
+                return getTables();
             }
         } else if (args.length == 3) {
             if (args[0].equalsIgnoreCase("remove")) {

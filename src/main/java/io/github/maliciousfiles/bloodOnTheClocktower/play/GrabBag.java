@@ -34,7 +34,9 @@ public class GrabBag {
         this.allowedToThrow = allowedToThrow;
         this.canTakeMultiple = canTakeMultiple;
 
-        this.contents = List.copyOf(items);
+        this.contents = new ArrayList<>(items);
+        Collections.shuffle(contents);
+
         this.index = 0;
 
         this.remaining = new ArrayList<>(items);
@@ -55,8 +57,6 @@ public class GrabBag {
     @SuppressWarnings("UnstableApiUsage")
     private static void checkInventory(Player player, Inventory inventory) {
         for (ItemStack item : inventory.getContents()) {
-            if (player.getInventory().getItemInMainHand().equals(item) || player.getInventory().getItemInOffHand().equals(item)) continue;
-
             String id = getId(item);
             if (id == null) continue;
 

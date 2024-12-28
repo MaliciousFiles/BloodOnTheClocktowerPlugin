@@ -1,13 +1,16 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.lib;
 
+import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.roles.Poisoner;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.w3c.dom.Text;
 
 import java.lang.reflect.InvocationTargetException;
@@ -229,6 +232,7 @@ public enum RoleInfo {
             Role.Type.DEMON, TextColor.color(119, 13, 14),
             Role.Type.FABLED, TextColor.color(255, 205, 0)
     );
+    public static final NamespacedKey ROLE_ID = new NamespacedKey(BloodOnTheClocktower.instance, "botc_role");
     public ItemStack getItem() {
         ItemStack item = ItemStack.of(Material.PAPER);
 
@@ -260,6 +264,7 @@ public enum RoleInfo {
 
         itemMeta.lore(lore);
         itemMeta.setCustomModelData(cmdID);
+        itemMeta.getPersistentDataContainer().set(ROLE_ID, PersistentDataType.STRING, id());
         item.setItemMeta(itemMeta);
 
         return item;

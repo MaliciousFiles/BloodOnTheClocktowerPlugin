@@ -8,5 +8,5 @@ website: https://github.com/MaliciousFiles/BloodOnTheClocktowerPlugin
 commands:
   botc-seats:
     description: Set up seat presets for a BOTC game
-  test:
-    description: Test command
+  botc-game:
+    description: Start a BOTC game

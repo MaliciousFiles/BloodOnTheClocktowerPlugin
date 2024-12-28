@@ -2,6 +2,7 @@ package io.github.maliciousfiles.bloodOnTheClocktower;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.commands.BOTCCommand;
 import io.github.maliciousfiles.bloodOnTheClocktower.commands.SeatsCommand;
+import io.github.maliciousfiles.bloodOnTheClocktower.commands.StartGameCommand;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.Role;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.RoleInfo;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.ScriptInfo;
@@ -9,6 +10,8 @@ import io.github.maliciousfiles.bloodOnTheClocktower.play.GrabBag;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.PacketManager;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.ResourcePackHandler;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.ScriptDisplay;
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.BundleContents;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
@@ -18,6 +21,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -29,6 +33,10 @@ public final class BloodOnTheClocktower extends JavaPlugin {
         getCommand(command).setTabCompleter(handler);
     }
 
+    public static void runSync(Runnable runnable) {
+        Bukkit.getScheduler().runTask(instance, runnable);
+    }
+
     @Override
     public void onEnable() {
         instance = this;
@@ -36,34 +44,11 @@ public final class BloodOnTheClocktower extends JavaPlugin {
         ConfigurationSerialization.registerClass(ScriptInfo.class);
 
         registerCommand("botc-seats", new SeatsCommand());
+        registerCommand("botc-game", new StartGameCommand());
 
         PacketManager.register();
         GrabBag.register();
         Bukkit.getPluginManager().registerEvents(new ResourcePackHandler(), this);
-
-        getCommand("test").setExecutor((sender, _, _, _) -> {
-            if (sender instanceof Player player) {
-                CompletableFuture<ScriptInfo> wait = new CompletableFuture<>();
-                ScriptDisplay.open(player, wait);
-
-                new Thread(() -> {
-                    ScriptInfo script;
-                    try {
-                        script = wait.get();
-                    } catch (InterruptedException | ExecutionException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                    player.getInventory().addItem(GrabBag.createGrabBag(meta -> {
-                        meta.displayName(Component.text(script.name)
-                                .decoration(TextDecoration.ITALIC, false));
-                    }, false, false, script.roles.stream()
-                            .filter(r->r.type() != Role.Type.TRAVELLER && r.type() != Role.Type.FABLED)
-                            .map(RoleInfo::getItem).toList()));
-                }).start();
-            }
-            return true;
-        });
     }
 
     @Override

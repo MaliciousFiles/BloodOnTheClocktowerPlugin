@@ -1,0 +1,67 @@
+package io.github.maliciousfiles.bloodOnTheClocktower.commands;
+
+import io.github.maliciousfiles.bloodOnTheClocktower.lib.Game;
+import io.github.maliciousfiles.bloodOnTheClocktower.play.GameInit;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+public class StartGameCommand extends BOTCCommand {
+    @Override
+    protected void doCommand(CommandSender sender, String[] args) {
+        if (args.length < 1) {
+            error(sender, "Must specify a table");
+            return;
+        }
+
+        String table = args[0];
+        if (!SeatsCommand.getTables().contains(table)) {
+            error(sender, "Table '" + table + "' does not exist");
+            return;
+        }
+
+        if (Arrays.stream(args).anyMatch(a->Arrays.stream(args).skip(1).filter(v->v.equals(a)).count()>1)) {
+            error(sender, "Duplicate players provided");
+            return;
+        }
+
+        List<Player> players = Arrays.stream(args).skip(1).map(Bukkit::getPlayer).toList();
+        if (players.contains(null)) {
+            error(sender, "Invalid player provided");
+            return;
+        }
+        if (players.size() < 5) {
+            error(sender, "Not enough players");
+            return;
+        }
+
+        List<Location> seats = SeatsCommand.getSeats(players.getFirst().getWorld(), table);
+        if (seats.size() < players.size()) {
+            error(sender, "Not enough seats");
+            return;
+        }
+
+        new Thread(() -> {
+            try {
+                GameInit.initGame(seats, players.getFirst(), players.subList(1, players.size()));
+            } catch (ExecutionException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
+    }
+
+    @Override
+    protected Collection<String> tabComplete(CommandSender sender, String[] args) {
+        if (args.length == 1) {
+            return SeatsCommand.getTables();
+        }
+
+        return Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(n->Arrays.stream(args).noneMatch(a->a.equalsIgnoreCase(n))).toList();
+    }
+}

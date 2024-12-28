@@ -14,7 +14,7 @@ def load(name, i):
         else: newdata.append(px)
     img.putdata(newdata)
     img.save(f"../BOTC Resource Pack/assets/botc/textures/item/{name}.png")
-    return
+    
     with open(f"../BOTC Resource Pack/assets/botc/models/item/{name}.json", "w") as f:
         f.write("""{
   "parent": "minecraft:item/generated",
