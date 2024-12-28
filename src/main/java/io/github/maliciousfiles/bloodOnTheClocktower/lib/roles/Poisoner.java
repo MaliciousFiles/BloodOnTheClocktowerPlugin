@@ -14,8 +14,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class Poisoner implements Role {
-    public static final Poisoner INSTANCE = new Poisoner();
-
     @Override
     public String getRoleName() {
         return "Poisoner";

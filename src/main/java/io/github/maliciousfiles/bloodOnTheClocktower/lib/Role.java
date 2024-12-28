@@ -1,12 +1,20 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.lib;
 
+import com.google.common.collect.ImmutableMap;
+import io.github.maliciousfiles.bloodOnTheClocktower.lib.roles.Poisoner;
+import io.github.maliciousfiles.bloodOnTheClocktower.lib.roles.Washerwoman;
 import org.bukkit.Material;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 public interface Role {
+    Map<String, Class<? extends Role>> BY_ID = new ImmutableMap.Builder<String, Class<? extends Role>>()
+            .put("poisoner", Poisoner.class)
+            .put("washerwoman", Washerwoman.class)
+            .build();
+
     String getRoleName();
     String getRoleDescription();
     Material getIcon();
