@@ -16,14 +16,14 @@ public class GetChoiceHook<D> extends MinecraftHook<InventoryClickEvent, D> {
         private final Object data;
         private final ItemStack item;
 
-        public Option(Object data, Component name, Material icon) {
+        public Option(Object data, Component name, ItemStack icon) {
             this(data, name, icon, List.of());
 
         }
-        public Option(Object data, Component name, Material icon, List<Component> lore) {
+        public Option(Object data, Component name, ItemStack icon, List<Component> lore) {
             this.data = data;
 
-            this.item = ItemStack.of(icon);
+            this.item = icon;
             ItemMeta meta = this.item.getItemMeta();
             meta.displayName(name);
             meta.lore(lore);

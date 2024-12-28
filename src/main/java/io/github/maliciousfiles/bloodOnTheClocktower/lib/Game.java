@@ -35,7 +35,7 @@ public class Game {
 
     private void runNight() throws ExecutionException, InterruptedException {
         boolean isFirstNight = turn == 0;
-        players.sort((a, b) -> Float.compare(a.getRole().getNightOrder(), b.getRole().getNightOrder()));
+        players.sort((a, b) -> Float.compare(a.getRole().info.nightOrder(), b.getRole().info.nightOrder()));
 
         players.forEach(BOTCPlayer::onDusk);
 
@@ -43,11 +43,11 @@ public class Game {
         boolean didDemonInfo = false;
         for (BOTCPlayer player : players) {
             if (isFirstNight) {
-                if (!didMinionInfo && player.getRole().getNightOrder() > MINION_INFO_ORDER) {
+                if (!didMinionInfo && player.getRole().info.nightOrder() > MINION_INFO_ORDER) {
                     didMinionInfo = true;
                     giveMinionInfo();
                 }
-                if (!didDemonInfo && player.getRole().getNightOrder() > DEMON_INFO_ORDER) {
+                if (!didDemonInfo && player.getRole().info.nightOrder() > DEMON_INFO_ORDER) {
                     didDemonInfo = true;
                     giveDemonInfo();
                 }

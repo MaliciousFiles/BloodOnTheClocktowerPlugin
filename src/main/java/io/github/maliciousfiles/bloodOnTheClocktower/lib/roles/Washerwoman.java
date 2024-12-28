@@ -1,13 +1,9 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.lib.roles;
 
-import io.github.maliciousfiles.bloodOnTheClocktower.lib.BOTCPlayer;
-import io.github.maliciousfiles.bloodOnTheClocktower.lib.Game;
-import io.github.maliciousfiles.bloodOnTheClocktower.lib.Role;
-import io.github.maliciousfiles.bloodOnTheClocktower.lib.Storyteller;
+import io.github.maliciousfiles.bloodOnTheClocktower.lib.*;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.GetChoiceHook;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.SelectPlayerHook;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Material;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -16,30 +12,7 @@ import java.util.concurrent.ExecutionException;
 public class Washerwoman extends Role {
     boolean hasInfo = false;
 
-    public Washerwoman(BOTCPlayer me, Game game) {
-        super(me, game);
-    }
-
-    @Override
-    public String getRoleName() {
-        return "Washerwoman";
-    }
-
-    @Override
-    public String getRoleDescription() {
-        return "You start knowing that one of two players is a particular Townsfolk";
-    }
-
-    @Override
-    public Material getIcon() {
-        return Material.LOOM;
-    }
-
-    @Override
-    public Type getType() { return Type.TOWNSFOLK; }
-
-    @Override
-    public float getNightOrder() { return 82; }
+    public Washerwoman(BOTCPlayer me, Game game, RoleInfo info) { super(me, game, info); }
 
     @Override
     public void setup() {
@@ -63,12 +36,12 @@ public class Washerwoman extends Role {
 
         CompletableFuture<Role> getChoice = new CompletableFuture<>();
         new GetChoiceHook<>(game.getRoles().stream().map(r->
-                new GetChoiceHook.Option(r, Component.text(r.getRoleName()), r.getIcon())).toList(), getChoice);
+                new GetChoiceHook.Option(r, Component.text(r.info.title()), r.info.getItem())).toList(), getChoice);
 
         List<BOTCPlayer> players = selectPlayer.get();
         Role role = getChoice.get();
 
-        me.giveInfo("One of " + players.get(0).getName() + " and " + players.get(1).getName() + " is a " + role.getRoleName());
+        me.giveInfo("One of " + players.get(0).getName() + " and " + players.get(1).getName() + " is a " + role.info.title());
 
         me.sleep();
     }

@@ -9,22 +9,20 @@ import java.util.Map;
 public class ScriptInfo implements ConfigurationSerializable {
 
     public final String name, author;
-    public final List<String> roleIds;
-    public final List<? extends Class<? extends Role>> roles;
+    public final List<RoleInfo> roles;
 
-    public ScriptInfo(String name, String author, List<String> roleIds) {
+    public ScriptInfo(String name, String author, List<RoleInfo> roles) {
         this.name = name;
         this.author = author;
-        this.roleIds = roleIds;
-        this.roles = roleIds.stream().map(Role.BY_ID::get).toList();
+        this.roles = roles;
     }
 
     @Override
     public @NotNull Map<String, Object> serialize() {
-        return Map.of("name", name, "author", author, "roles", roleIds);
+        return Map.of("name", name, "author", author, "roles", roles.stream().map(RoleInfo::name).toList());
     }
 
     public static ScriptInfo deserialize(Map<String, Object> args) {
-        return new ScriptInfo((String) args.get("name"), (String) args.get("author"), (List<String>) args.get("roles"));
+        return new ScriptInfo((String) args.get("name"), (String) args.get("author"), ((List<String>) args.get("roles")).stream().map(RoleInfo::valueOf).toList());
     }
 }
