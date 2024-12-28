@@ -246,8 +246,12 @@ public class ScriptDisplay implements Listener {
             roles.computeIfAbsent(role.type(), k -> new ArrayList<>()).add(role.getItem());
         }
 
-        for (int i = 0; i < 18; i++) {
-            contents[i] = i < roles.get(Role.Type.TOWNSFOLK).size() ? roles.get(Role.Type.TOWNSFOLK).get(i) : TOWNSFOLK_FILLER;
+        int midpoint = roles.get(Role.Type.TOWNSFOLK).size()/2+1;
+        for (int i = 0; i < 9; i++) {
+            contents[i] = i < midpoint ? roles.get(Role.Type.TOWNSFOLK).get(i) : TOWNSFOLK_FILLER;
+        }
+        for (int i = 0; i < 9; i++) {
+            contents[i+9] = i+midpoint < roles.get(Role.Type.TOWNSFOLK).size() ? roles.get(Role.Type.TOWNSFOLK).get(i+midpoint) : TOWNSFOLK_FILLER;
         }
 
         for (int i = 0; i < 9; i++) {

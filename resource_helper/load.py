@@ -6,8 +6,15 @@ def load(name, i):
     url = "https://wiki.bloodontheclocktower.com/images"+html.split('href="/images')[1].split('"')[0]
 
     #Image.open(requests.get(f"https://quiz.bloodontheclocktower.com/img/characters/{name}.webp", stream=True).raw).convert("RGBA").save(f"../BOTC Resource Pack/assets/botc/textures/item/{name}.png")
-    Image.open(requests.get(url, stream=True).raw).convert("RGBA").crop((95.5, 95.5, 495.5, 495.5)).save(f"../BOTC Resource Pack/assets/botc/textures/item/{name}.png")
-    
+    img = Image.open(requests.get(url, stream=True).raw).convert("RGBA").crop((95.5, 95.5, 495.5, 495.5))
+    data = img.getdata()
+    newdata = []
+    for px in data:
+        if px[3] < 255: newdata.append((255,255,255,0))
+        else: newdata.append(px)
+    img.putdata(newdata)
+    img.save(f"../BOTC Resource Pack/assets/botc/textures/item/{name}.png")
+    return
     with open(f"../BOTC Resource Pack/assets/botc/models/item/{name}.json", "w") as f:
         f.write("""{
   "parent": "minecraft:item/generated",
