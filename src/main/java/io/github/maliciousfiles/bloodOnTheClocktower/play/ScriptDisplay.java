@@ -154,7 +154,8 @@ public class ScriptDisplay implements Listener {
     // . . . . . . . . .
     // < . . n s . . . >
 
-    private final CompletableFuture<List<RoleInfo>> result;
+    private final CompletableFuture<ScriptInfo> scriptFuture;
+    private final CompletableFuture<List<RoleInfo>> rolesFuture;
     private final Player player;
     private final int numPages, numPlayers;
     private List<String> scripts = getScripts();
@@ -169,8 +170,9 @@ public class ScriptDisplay implements Listener {
     private boolean selectingRoles;
     private List<RoleInfo> selectedRoles = new ArrayList<>();
 
-    private ScriptDisplay(Player player, Inventory inventory, int numPlayers, CompletableFuture<List<RoleInfo>> result) {
-        this.result = result;
+    private ScriptDisplay(Player player, Inventory inventory, int numPlayers, CompletableFuture<ScriptInfo> script, CompletableFuture<List<RoleInfo>> roles) {
+        this.scriptFuture = script;
+        this.rolesFuture = roles;
         this.inventory = inventory;
         this.player = player;
         this.numPlayers = numPlayers;
@@ -419,12 +421,14 @@ public class ScriptDisplay implements Listener {
         inventory.close();
         HandlerList.unregisterAll(this);
 
-        result.complete(selectedRoles);
+        rolesFuture.complete(selectedRoles);
     }
 
     private void selectScript() {
         selectingRoles = true;
         renderViewScript();
+
+        scriptFuture.complete((ScriptInfo) config.get(scripts.get(selected)));
     }
 
     private void editScript() {
@@ -565,10 +569,10 @@ public class ScriptDisplay implements Listener {
         finishScript(String.join("", evt.getNewBookMeta().getPages()));
     }
 
-    public static void open(Player player, int numPlayers, CompletableFuture<List<RoleInfo>> result) {
+    public static void open(Player player, int numPlayers, CompletableFuture<ScriptInfo> script, CompletableFuture<List<RoleInfo>> roles) {
         Inventory inventory = Bukkit.createInventory(null, 45, Component.text("Script Display"));
 
-        ScriptDisplay sd = new ScriptDisplay(player, inventory, numPlayers, result);
+        ScriptDisplay sd = new ScriptDisplay(player, inventory, numPlayers, script, roles);
         Bukkit.getPluginManager().registerEvents(sd, BloodOnTheClocktower.instance);
         sd.renderPage();
 

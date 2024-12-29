@@ -1,7 +1,15 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.play;
 
+import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
+import org.checkerframework.checker.units.qual.C;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public abstract class PlayerWrapper {
     private final Player mcPlayer;
@@ -17,12 +25,24 @@ public abstract class PlayerWrapper {
         return mcPlayer.getName();
     }
 
-    public void giveInstruction(String instruction) {
-        // TODO: make this stay on screen until dismissed somehow
-        // TODO: add setting for going into chat as well
-        mcPlayer.sendActionBar(Component.text(instruction));
+    public CompletableFuture<Void> giveInstruction(Component instruction) {
+        CompletableFuture<Void> cancel = new CompletableFuture<>();
+
+        BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(BloodOnTheClocktower.instance,
+                () -> mcPlayer.sendActionBar(instruction),
+                0, 20);
+
+        Bukkit.getScheduler().runTaskAsynchronously(BloodOnTheClocktower.instance, () -> {
+            try {
+                cancel.get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+            }
+            task.cancel();
+        });
+        return cancel;
     }
-    public void giveInfo(String info) {
-        mcPlayer.sendMessage(Component.text(info));
+    public void giveInfo(Component info) {
+        mcPlayer.sendMessage(info);
     }
 }

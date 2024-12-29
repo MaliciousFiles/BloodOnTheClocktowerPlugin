@@ -1,6 +1,8 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.play;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
+import io.github.maliciousfiles.bloodOnTheClocktower.util.Option;
+import io.github.maliciousfiles.bloodOnTheClocktower.util.Pair;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.BundleContents;
 import org.bukkit.Bukkit;
@@ -20,33 +22,37 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-public class GrabBag {
-    private final boolean allowedToThrow, canTakeMultiple;
-    private final List<ItemStack> contents;
+public class GrabBag<D> {
+    private final List<Option<D>> contents;
     private int index;
 
-    private List<UUID> playersTaken = new ArrayList<>();
-    private List<ItemStack> remaining;
+    private final List<UUID> playersTaken = new ArrayList<>();
+    private final List<Option<D>> remaining;
+    private final List<Player> recipients;
 
-    private GrabBag(boolean allowedToThrow, boolean canTakeMultiple, Collection<ItemStack> items) {
-        this.allowedToThrow = allowedToThrow;
-        this.canTakeMultiple = canTakeMultiple;
+    private final Consumer<Pair<Player, D>> onGrab;
+    private final CompletableFuture<Map<Player, D>> future;
+    private final Map<Player, D> received = new HashMap<>();
 
-        this.contents = new ArrayList<>(items);
+    private GrabBag(Collection<Option<D>> options, List<Player> recipients, Consumer<Pair<Player, D>> onGrab, CompletableFuture<Map<Player, D>> future) {
+        this.recipients = recipients;
+        this.future = future;
+        this.onGrab = onGrab;
+        this.remaining = new ArrayList<>(options);
+        this.contents = new ArrayList<>(options);
         Collections.shuffle(contents);
 
         this.index = 0;
-
-        this.remaining = new ArrayList<>(items);
     }
 
 
     private static final NamespacedKey UUID_KEY = new NamespacedKey(BloodOnTheClocktower.instance, "grab_bag_uuid");
     private static final int PERIOD = 10;
 
-    private static final Map<String, GrabBag> grabBags = new HashMap<>();
+    private static final Map<String, GrabBag<?>> grabBags = new HashMap<>();
 
     private static String getId(ItemStack item) {
         if (item == null || !item.hasItemMeta()) return null;
@@ -55,12 +61,12 @@ public class GrabBag {
     }
 
     @SuppressWarnings("UnstableApiUsage")
-    private static void checkInventory(Player player, Inventory inventory) {
+    private static void checkInventory(Inventory inventory) {
         for (ItemStack item : inventory.getContents()) {
             String id = getId(item);
             if (id == null) continue;
 
-            GrabBag bag = grabBags.get(id);
+            GrabBag<?> bag = grabBags.get(id);
             if (bag == null) {
                 item.setAmount(0);
                 continue;
@@ -68,7 +74,7 @@ public class GrabBag {
 
             List<ItemStack> items = new ArrayList<>();
             for (int i = 0; i < 4; i++) {
-                items.add(bag.contents.get((bag.index+i) % bag.contents.size()));
+                items.add(bag.contents.get((bag.index+i) % bag.contents.size()).representation());
             }
             bag.index = bag.index+1 % bag.contents.size();
 
@@ -79,17 +85,17 @@ public class GrabBag {
     public static void register() {
         Bukkit.getScheduler().runTaskTimerAsynchronously(BloodOnTheClocktower.instance, () -> {
             for (Player player : Bukkit.getOnlinePlayers()) {
-                checkInventory(player, player.getOpenInventory().getTopInventory());
-                checkInventory(player, player.getOpenInventory().getBottomInventory());
+                checkInventory(player.getOpenInventory().getTopInventory());
+                checkInventory(player.getOpenInventory().getBottomInventory());
             }
         } ,0, PERIOD);
 
         Bukkit.getPluginManager().registerEvents(new GrabBagHandler(), BloodOnTheClocktower.instance);
     }
 
-    public static ItemStack createGrabBag(Consumer<ItemMeta> setup, boolean allowedToThrow, boolean canTakeMultiple, Collection<ItemStack> items) {
+    public static <D> ItemStack createGrabBag(Consumer<ItemMeta> setup, Collection<Option<D>> options, List<Player> recipients, Consumer<Pair<Player, D>> onGrab, CompletableFuture<Map<Player, D>> future) {
         String uuid = UUID.randomUUID().toString();
-        grabBags.put(uuid, new GrabBag(allowedToThrow, canTakeMultiple, items));
+        grabBags.put(uuid, new GrabBag<>(options, recipients, onGrab, future));
 
         ItemStack ret = ItemStack.of(Material.BUNDLE);
         ItemMeta meta = ret.getItemMeta();
@@ -100,17 +106,22 @@ public class GrabBag {
         return ret;
     }
 
-    private static ItemStack grab(Player player, GrabBag bag) {
+    private static <D> ItemStack grab(Player player, GrabBag<D> bag) {
         if (bag.remaining.isEmpty()) return ItemStack.empty();
-        if (!bag.canTakeMultiple && bag.playersTaken.contains(player.getUniqueId())) return ItemStack.empty();
+        if (bag.playersTaken.contains(player.getUniqueId())) return ItemStack.empty();
+        if (!bag.recipients.contains(player)) return ItemStack.empty();
 
         int idx = new Random().nextInt(bag.remaining.size());
 
-        ItemStack ret = bag.remaining.get(idx);
+        Option<D> ret = bag.remaining.get(idx);
         bag.remaining.remove(idx);
         bag.playersTaken.add(player.getUniqueId());
+        bag.received.put(player, ret.data());
 
-        return ret;
+        bag.onGrab.accept(Pair.of(player, ret.data()));
+        if (bag.remaining.isEmpty()) bag.future.complete(bag.received);
+
+        return ret.representation();
     }
 
     private static class GrabBagHandler implements Listener {
@@ -146,12 +157,6 @@ public class GrabBag {
         public void onUse(PlayerInteractEvent evt) {
             if (evt.getAction().isRightClick() && evt.getItem() != null && getId(evt.getItem()) != null) {
                 evt.setCancelled(true);
-
-                GrabBag bag = grabBags.get(getId(evt.getItem()));
-                if (!bag.allowedToThrow) return;
-
-                ((CraftPlayer) evt.getPlayer()).getHandle()
-                        .drop(CraftItemStack.asNMSCopy(grab(evt.getPlayer(), bag)), true);
             }
         }
     }

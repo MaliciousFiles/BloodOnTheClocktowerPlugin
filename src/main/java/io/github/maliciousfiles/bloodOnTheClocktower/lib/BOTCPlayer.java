@@ -7,15 +7,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BOTCPlayer extends PlayerWrapper {
-    private final Role role;
-
+    private RoleInfo roleInfo;
+    private Role role;
+    private Game game;
     private boolean alive;
-
     private final List<StatusEffect> statusEffects = new ArrayList<>();
 
-    public BOTCPlayer(Player mcPlayer, Role role, Game game) {
+    public BOTCPlayer(Player mcPlayer) {
         super(mcPlayer);
-        this.role = role;
+    }
+    public void setRole(RoleInfo role) {
+        this.roleInfo = role;
+    }
+    public void setGame(Game game) {
+        this.role = roleInfo.getInstance(this, game);
+        this.game = game;
     }
 
     public Role getRole() {

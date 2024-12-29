@@ -1,8 +1,10 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.lib.roles;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.*;
+import io.github.maliciousfiles.bloodOnTheClocktower.play.ChatComponents;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.GetChoiceHook;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.SelectPlayerHook;
+import io.github.maliciousfiles.bloodOnTheClocktower.util.Option;
 import net.kyori.adventure.text.Component;
 
 import java.util.List;
@@ -17,7 +19,7 @@ public class Washerwoman extends Role {
     @Override
     public void setup() {
         Storyteller st = game.getStoryteller();
-        st.giveInstruction("Assign the Washerwoman's Townsfolk and Wrong reminder tokens");
+        st.giveInstruction(Component.text("Assign the Washerwoman's Townsfolk and Wrong reminder tokens"));
         st.assignReminderToken("Washerwoman", "Townsfolk");
         st.assignReminderToken("Washerwoman", "Wrong");
     }
@@ -29,19 +31,19 @@ public class Washerwoman extends Role {
 
         me.wake();
 
-        game.getStoryteller().giveInstruction("Select two players for the Washerwoman");
+        game.getStoryteller().giveInstruction(Component.text("Select two players for the Washerwoman"));
 
         CompletableFuture<List<BOTCPlayer>> selectPlayer = new CompletableFuture<>();
         new SelectPlayerHook(game.getStoryteller(), game, 2, p->!p.equals(me), selectPlayer);
 
         CompletableFuture<Role> getChoice = new CompletableFuture<>();
         new GetChoiceHook<>(game.getRoles().stream().map(r->
-                new GetChoiceHook.Option(r, Component.text(r.info.title()), r.info.getItem())).toList(), getChoice);
+                new Option<>(r, r.info.getItem())).toList(), getChoice);
 
         List<BOTCPlayer> players = selectPlayer.get();
         Role role = getChoice.get();
 
-        me.giveInfo("One of " + players.get(0).getName() + " and " + players.get(1).getName() + " is a " + role.info.title());
+        me.giveInfo(Component.text("One of " + players.get(0).getName() + " and " + players.get(1).getName() + " is a " + ChatComponents.roleInfo(role.info)));
 
         me.sleep();
     }

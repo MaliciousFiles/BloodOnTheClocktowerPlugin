@@ -1,5 +1,6 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.lib;
 
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
@@ -9,12 +10,25 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 public class Game {
-    private Map<UUID, BOTCPlayer> mcPlayerToBOTC = new HashMap<>();
+    private final Map<UUID, BOTCPlayer> mcPlayerToBOTC = new HashMap<>();
 
-    private List<Role> rolesInPlay;
-    private Storyteller storyteller;
-    private List<BOTCPlayer> players;
+    private final ScriptInfo script;
+    private final List<Location> seats;
+    private final List<Role> rolesInPlay;
+    private final Storyteller storyteller;
+    private final List<BOTCPlayer> players;
     private int turn;
+
+    public Game(List<Location> seats, ScriptInfo script, Storyteller storyteller, List<BOTCPlayer> players) {
+        this.seats = seats;
+        this.script = script;
+        this.storyteller = storyteller;
+        this.players = players;
+        this.rolesInPlay = this.players.stream().map(BOTCPlayer::getRole).toList();
+        this.turn = 0;
+
+        players.forEach(p -> mcPlayerToBOTC.put(p.getPlayer().getUniqueId(), p));
+    }
 
     public static final int MINION_INFO_ORDER = 12;
     private static final int DEMON_INFO_ORDER = 15;

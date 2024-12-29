@@ -1,5 +1,6 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.commands;
 
+import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.Game;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.GameInit;
 import org.bukkit.Bukkit;
@@ -26,20 +27,21 @@ public class StartGameCommand extends BOTCCommand {
             return;
         }
 
-        if (Arrays.stream(args).anyMatch(a->Arrays.stream(args).skip(1).filter(v->v.equals(a)).count()>1)) {
-            error(sender, "Duplicate players provided");
-            return;
-        }
+        // TODO: for debugging
+//        if (Arrays.stream(args).anyMatch(a->Arrays.stream(args).skip(1).filter(v->v.equals(a)).count()>1)) {
+//            error(sender, "Duplicate players provided");
+//            return;
+//        }
 
         List<Player> players = Arrays.stream(args).skip(1).map(Bukkit::getPlayer).toList();
         if (players.contains(null)) {
             error(sender, "Invalid player provided");
             return;
         }
-        if (players.size() < 5) {
-            error(sender, "Not enough players");
-            return;
-        }
+//        if (players.size() < 5) {
+//            error(sender, "Not enough players");
+//            return;
+//        }
 
         List<Location> seats = SeatsCommand.getSeats(players.getFirst().getWorld(), table);
         if (seats.size() < players.size()) {
@@ -47,13 +49,13 @@ public class StartGameCommand extends BOTCCommand {
             return;
         }
 
-        new Thread(() -> {
+        Bukkit.getScheduler().runTaskAsynchronously(BloodOnTheClocktower.instance, () -> {
             try {
                 GameInit.initGame(seats, players.getFirst(), players.subList(1, players.size()));
             } catch (ExecutionException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
-        }).start();
+        });
     }
 
     @Override
