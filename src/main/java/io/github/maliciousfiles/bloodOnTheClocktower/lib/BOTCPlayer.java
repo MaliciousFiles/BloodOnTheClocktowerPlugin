@@ -11,7 +11,6 @@ public class BOTCPlayer extends PlayerWrapper {
     private Role role;
     private Game game;
     private boolean alive;
-    private final List<StatusEffect> statusEffects = new ArrayList<>();
 
     public BOTCPlayer(Player mcPlayer) {
         super(mcPlayer);
@@ -23,7 +22,6 @@ public class BOTCPlayer extends PlayerWrapper {
         this.role = roleInfo.getInstance(this, game);
         this.game = game;
     }
-
     public Role getRole() {
         return role;
     }
@@ -36,28 +34,28 @@ public class BOTCPlayer extends PlayerWrapper {
         // TODO
     }
 
-    public void onDusk() { // happens at start of night
-        statusEffects.removeIf(StatusEffect::tickDusk);
-    }
+//    public void onDusk() { // happens at start of night
+//        statusEffects.removeIf(StatusEffect::tickDusk);
+//    }
 
-    public void onDawn() {
-        statusEffects.removeIf(StatusEffect::tickDawn);
-    }
+//    public void onDawn() {
+//        statusEffects.removeIf(StatusEffect::tickDawn);
+//    }
 
-    public void addStatusEffect(StatusEffect effect) {
-        statusEffects.add(effect);
-    }
+//    public void addStatusEffect(StatusEffect effect) {
+//        statusEffects.add(effect);
+//    }
 
-    public boolean isImpaired() {
-        return statusEffects.stream().anyMatch(e -> e.type == StatusEffect.EffectType.DRUNK ||
-                e.type == StatusEffect.EffectType.POISONED);
-    }
+//    public boolean isImpaired() {
+//        return statusEffects.stream().anyMatch(e -> e.type == StatusEffect.EffectType.DRUNK ||
+//                e.type == StatusEffect.EffectType.POISONED);
+//    }
 
     public void die() {
         // TODO
     }
 
-    public boolean hasAbility() {
-        return alive && !isImpaired();
-    }
+//    public boolean hasAbility() {
+//        return alive && !isImpaired();
+//    }
 }

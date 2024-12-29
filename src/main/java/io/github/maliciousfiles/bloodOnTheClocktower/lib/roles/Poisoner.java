@@ -1,6 +1,10 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.lib.roles;
 
-import io.github.maliciousfiles.bloodOnTheClocktower.lib.*;
+import io.github.maliciousfiles.bloodOnTheClocktower.lib.BOTCPlayer;
+import io.github.maliciousfiles.bloodOnTheClocktower.lib.Game;
+import io.github.maliciousfiles.bloodOnTheClocktower.lib.Role;
+import io.github.maliciousfiles.bloodOnTheClocktower.lib.RoleInfo;
+//import io.github.maliciousfiles.bloodOnTheClocktower.lib.StatusEffect;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.SelectPlayerHook;
 import org.bukkit.Material;
 

@@ -10,7 +10,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 public class Game {
-    private final Map<UUID, BOTCPlayer> mcPlayerToBOTC = new HashMap<>();
+    private Map<UUID, BOTCPlayer> mcPlayerToBOTC = new HashMap<>();
 
     private final ScriptInfo script;
     private final List<Location> seats;
@@ -51,7 +51,7 @@ public class Game {
         boolean isFirstNight = turn == 0;
         players.sort((a, b) -> Float.compare(a.getRole().info.nightOrder(), b.getRole().info.nightOrder()));
 
-        players.forEach(BOTCPlayer::onDusk);
+//        players.forEach(BOTCPlayer::onDusk);
 
         boolean didMinionInfo = false;
         boolean didDemonInfo = false;
@@ -70,7 +70,7 @@ public class Game {
             player.getRole().handleNight();
         }
 
-        players.forEach(BOTCPlayer::onDawn);
+//        players.forEach(BOTCPlayer::onDawn);
     }
 
     private void giveMinionInfo() {
