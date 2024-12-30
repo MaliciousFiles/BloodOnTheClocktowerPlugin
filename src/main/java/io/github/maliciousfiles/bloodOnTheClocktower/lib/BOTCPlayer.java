@@ -12,6 +12,8 @@ public class BOTCPlayer extends PlayerWrapper {
     private Game game;
     private boolean alive;
 
+    public final List<ReminderToken> reminderTokensOnMe = new ArrayList<>();
+
     public BOTCPlayer(Player mcPlayer) {
         super(mcPlayer);
     }

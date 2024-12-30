@@ -1,9 +1,19 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.lib;
 
-public class ReminderToken {
-    enum Effect { NONE, DRUNK, POISONED }
+import javax.annotation.Nullable;
 
-    BOTCPlayer source;
-    BOTCPlayer target;
-    Effect effect;
+public class ReminderToken {
+    public enum Effect { NONE, DRUNK, POISONED }
+
+    public final String name;
+    @Nullable public final BOTCPlayer source;
+    public final Effect effect;
+    @Nullable public BOTCPlayer target;
+
+    public ReminderToken(String name, BOTCPlayer source, @Nullable BOTCPlayer target, Effect effect) {
+        this.name = name;
+        this.source = source;
+        this.target = target;
+        this.effect = effect;
+    }
 }
