@@ -6,10 +6,7 @@ import io.github.maliciousfiles.bloodOnTheClocktower.commands.StartGameCommand;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.Role;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.RoleInfo;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.ScriptInfo;
-import io.github.maliciousfiles.bloodOnTheClocktower.play.GrabBag;
-import io.github.maliciousfiles.bloodOnTheClocktower.play.PacketManager;
-import io.github.maliciousfiles.bloodOnTheClocktower.play.ResourcePackHandler;
-import io.github.maliciousfiles.bloodOnTheClocktower.play.ScriptDisplay;
+import io.github.maliciousfiles.bloodOnTheClocktower.play.*;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.BundleContents;
 import net.kyori.adventure.text.Component;
@@ -24,6 +21,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 
 public final class BloodOnTheClocktower extends JavaPlugin {
     public static BloodOnTheClocktower instance;
@@ -35,6 +33,15 @@ public final class BloodOnTheClocktower extends JavaPlugin {
 
     public static void runSync(Runnable runnable) {
         Bukkit.getScheduler().runTask(instance, runnable);
+    }
+    public static <D> CompletableFuture<D> runSync(Supplier<D> runnable) {
+        CompletableFuture<D> future = new CompletableFuture<>();
+
+        Bukkit.getScheduler().runTask(instance, () -> {
+            future.complete(runnable.get());
+        });
+
+        return future;
     }
 
     @Override
@@ -54,5 +61,6 @@ public final class BloodOnTheClocktower extends JavaPlugin {
     @Override
     public void onDisable() {
         PacketManager.unload();
+        SeatList.destruct();
     }
 }

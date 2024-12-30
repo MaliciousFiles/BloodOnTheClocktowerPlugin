@@ -4,6 +4,7 @@ import io.github.maliciousfiles.bloodOnTheClocktower.lib.*;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.Option;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
@@ -19,6 +20,14 @@ public class GameInit {
         Storyteller storyteller = new Storyteller(storytellerPlayer);
         List<BOTCPlayer> botcPlayers = players.stream().map(BOTCPlayer::new).toList();
 
+        SeatList seatList = SeatList.initSeats(seats);
+
+        Map<Player, CompletableFuture<Void>> seatInstructions = botcPlayers.stream().collect(Collectors.toMap(PlayerWrapper::getPlayer,
+                p -> p.giveInstruction(Component.text("Pick a seat for the game"))));
+        CompletableFuture<Void> seatFuture = seatList.selectSeats(players, player -> {
+            seatInstructions.get(player).complete(null);
+        });
+
         CompletableFuture<ScriptInfo> scriptFuture = new CompletableFuture<>();
         CompletableFuture<List<RoleInfo>> roleFuture = new CompletableFuture<>();
         ScriptDisplay.open(storytellerPlayer, players.size(), scriptFuture, roleFuture);
@@ -26,7 +35,11 @@ public class GameInit {
         ScriptInfo script = scriptFuture.get();
         List<RoleInfo> roles = roleFuture.get();
 
-        Map<Player, CompletableFuture<Void>> playerInstructions = botcPlayers.stream().collect(Collectors.toMap(PlayerWrapper::getPlayer,
+        CompletableFuture<Void> waitInstruction = storyteller.giveInstruction(Component.text("Wait for the players to pick their seats"));
+        seatFuture.get();
+        waitInstruction.complete(null);
+
+        Map<Player, CompletableFuture<Void>> roleBagInstructions = botcPlayers.stream().collect(Collectors.toMap(PlayerWrapper::getPlayer,
                 p -> p.giveInstruction(Component.text("Wait for the the Role Grab Bag, then right click in your inventory to take your role"))));
 
         CompletableFuture<Map<Player, RoleInfo>> selectionsFuture = new CompletableFuture<>();
@@ -38,7 +51,7 @@ public class GameInit {
                         .map(r->new Option<>(r, r.getItem())).toList(),
                 players,
                 pair -> {
-                    playerInstructions.get(pair.getFirst()).complete(null);
+                    roleBagInstructions.get(pair.getFirst()).complete(null);
                     botcPlayers.get(players.indexOf(pair.getFirst())).setRole(pair.getSecond());
 
                     pair.getFirst().sendMessage(Component.text("You are the ").append(ChatComponents.roleInfo(pair.getSecond())));
@@ -53,7 +66,7 @@ public class GameInit {
         storytellerInstruction.complete(null);
 
         Game game = new Game(
-                seats,
+                seatList,
                 script,
                 storyteller,
                 botcPlayers);

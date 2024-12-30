@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+// TODO: somehow warn the user that the seat order matters (and should be done in a circle)
 public class SeatsCommand extends BOTCCommand {
     // create-table: create a table with the given name
     // delete-table: delete the table with the given name
@@ -43,24 +44,24 @@ public class SeatsCommand extends BOTCCommand {
                 return;
             }
             if (config.contains(args[1])) {
-                error(sender, "table '" + args[1] + "' already exists");
+                error(sender, "Table '" + args[1] + "' already exists");
                 return;
             }
 
             config.set(args[1], List.of());
-            success(sender, "table '" + args[1] + "' created");
+            success(sender, "Table '" + args[1] + "' created");
         } else if (args[0].equalsIgnoreCase("delete-table")) {
             if (args.length < 2) {
                 error(sender, "Must specify a table to delete");
                 return;
             }
             if (!config.contains(args[1])) {
-                error(sender, "table '" + args[1] + "' does not exist");
+                error(sender, "Table '" + args[1] + "' does not exist");
                 return;
             }
 
             config.set(args[1], null);
-            success(sender, "table '" + args[1] + "' deleted");
+            success(sender, "Table '" + args[1] + "' deleted");
         } else if (args[0].equalsIgnoreCase("get-tables")) {
             if (config.getKeys(false).isEmpty()) {
                 error(sender, "No tables");
@@ -74,7 +75,7 @@ public class SeatsCommand extends BOTCCommand {
                 return;
             }
             if (!config.contains(args[1])) {
-                error(sender, "table '" + args[1] + "' does not exist");
+                error(sender, "Table '" + args[1] + "' does not exist");
                 return;
             }
             if (!args[2].matches("-?\\d+,-?\\d+,-?\\d+")) {
@@ -99,7 +100,7 @@ public class SeatsCommand extends BOTCCommand {
                 return;
             }
             if (!config.contains(args[1])) {
-                error(sender, "table '" + args[1] + "' does not exist");
+                error(sender, "Table '" + args[1] + "' does not exist");
                 return;
             }
 
@@ -120,7 +121,7 @@ public class SeatsCommand extends BOTCCommand {
                 return;
             }
             if (!config.contains(args[1])) {
-                error(sender, "table '" + args[1] + "' does not exist");
+                error(sender, "Table '" + args[1] + "' does not exist");
                 return;
             }
 
