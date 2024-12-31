@@ -172,7 +172,7 @@ public class Grimoire implements Listener {
                 Component.text("Right-click to open the Storyteller's Grimoire", NamedTextColor.GRAY)
                         .decoration(TextDecoration.ITALIC, false)
         ));
-        meta.setCustomModelData(-1);
+        meta.setCustomModelData(255);
     });
     public static ItemStack createGrimoire(Game game) {
         ItemStack item = GRIMOIRE.clone();
