@@ -21,13 +21,13 @@ public class Washerwoman extends Role {
         Storyteller st = game.getStoryteller();
         st.giveInstruction(Component.text("Assign the Washerwoman's Townsfolk and Wrong reminder tokens"));
 
-        CompletableFuture<List<BOTCPlayer>> townsfolk = new CompletableFuture<>();
-//        new PlayerChoiceHook(game.getStoryteller(), game, "Assign the Washerwoman's Townsfolk reminder token", 1, null, townsfolk);
-        newReminderToken(new ReminderToken("Townsfolk", me, townsfolk.get().getFirst(), ReminderToken.Effect.NONE));
+        CompletableFuture<BOTCPlayer> townsfolk = new CompletableFuture<>();
+//        new PlayerChoiceHook(game.getStoryteller(), game, "Assign the Washerwoman's Townsfolk reminder token", null, townsfolk);
+        newReminderToken(new ReminderToken("Townsfolk", me, townsfolk.get(), ReminderToken.Effect.NONE));
 
-        CompletableFuture<List<BOTCPlayer>> wrong = new CompletableFuture<>();
-//        new PlayerChoiceHook(game.getStoryteller(), game, "Assign the Washerwoman's Wrong reminder token", 1, null, wrong);
-        newReminderToken(new ReminderToken("Wrong", me, wrong.get().getFirst(), ReminderToken.Effect.NONE));
+        CompletableFuture<BOTCPlayer> wrong = new CompletableFuture<>();
+//        new PlayerChoiceHook(game.getStoryteller(), game, "Assign the Washerwoman's Wrong reminder token", null, wrong);
+        newReminderToken(new ReminderToken("Wrong", me, wrong.get(), ReminderToken.Effect.NONE));
     }
 
     @Override

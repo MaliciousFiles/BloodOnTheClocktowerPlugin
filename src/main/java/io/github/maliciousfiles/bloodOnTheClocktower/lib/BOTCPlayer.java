@@ -59,8 +59,15 @@ public class BOTCPlayer extends PlayerWrapper {
         game.checkVictory();
     }
 
+    public void switchRole(RoleInfo newRole) {
+        role.handleRoleSwitch();
+        setRole(newRole);
+        role = roleInfo.getInstance(this, game);
+        // TODO: tell new role and do new role setup
+    }
+
     public enum DeathCause { STORY, EXECUTION, PLAYER }
-    public void handleDeathAttempt(DeathCause cause, BOTCPlayer killer) {
+    public void handleDeathAttempt(DeathCause cause, BOTCPlayer killer) throws ExecutionException, InterruptedException {
         role.handleDeathAttempt(cause, killer);
     }
 

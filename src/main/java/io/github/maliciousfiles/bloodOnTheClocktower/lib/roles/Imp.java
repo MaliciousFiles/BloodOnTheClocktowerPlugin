@@ -40,9 +40,12 @@ public class Imp extends Role {
     }
 
     @Override
-    public void handleDeathAttempt(BOTCPlayer.DeathCause cause, BOTCPlayer killer) {
+    public void handleDeathAttempt(BOTCPlayer.DeathCause cause, BOTCPlayer killer) throws ExecutionException, InterruptedException {
         if (cause == BOTCPlayer.DeathCause.PLAYER && killer == me) {
             // TODO: jump to a minion
+            CompletableFuture<BOTCPlayer> minion = new CompletableFuture<>();
+//            new PlayerChoiceHook(game.getStoryteller(), game, "Pick a minion for the Imp to jump to", 1, null, minion);
+            minion.get().switchRole(info);
         }
         super.handleDeathAttempt(cause, killer);
     }

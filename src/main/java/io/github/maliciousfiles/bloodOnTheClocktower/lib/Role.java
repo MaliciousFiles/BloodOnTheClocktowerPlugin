@@ -50,7 +50,7 @@ public abstract class Role {
     public void handleDawn() {}
     public void handleNight() throws InterruptedException, ExecutionException {}
 
-    public void handleDeathAttempt(BOTCPlayer.DeathCause cause, @Nullable BOTCPlayer killer) {
+    public void handleDeathAttempt(BOTCPlayer.DeathCause cause, @Nullable BOTCPlayer killer) throws ExecutionException, InterruptedException {
         me.die();
         removeAllReminderTokens();
     }
