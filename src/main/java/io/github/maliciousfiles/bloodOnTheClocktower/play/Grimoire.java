@@ -192,6 +192,11 @@ public class Grimoire implements Listener {
                 if (gameId == null) return;
 
                 Game game = Game.getGame(UUID.fromString(gameId));
+                if (game == null) { // old grimoire
+                    evt.getItem().setAmount(0);
+                    return;
+                }
+
                 PlayerWrapper player = game.getBOTCPlayer(evt.getPlayer());
                 Inventory inventory = Bukkit.createInventory(null, 54, Component.text("Storyteller's Grimoire"));
 

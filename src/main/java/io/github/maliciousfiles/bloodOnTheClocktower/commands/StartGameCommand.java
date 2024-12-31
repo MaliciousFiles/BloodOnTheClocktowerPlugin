@@ -29,6 +29,7 @@ public class StartGameCommand extends BOTCCommand {
             return;
         }
 
+        // TODO: uncomment checks
 //        if (Arrays.stream(args).anyMatch(a->Arrays.stream(args).skip(1).filter(v->v.equals(a)).count()>1)) {
 //            error(sender, "Duplicate players provided");
 //            return;
