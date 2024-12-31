@@ -36,7 +36,7 @@ public class Game {
         this.storyteller = storyteller;
         this.players = players;
         this.rolesInPlay = this.players.stream().map(BOTCPlayer::getRole).toList();
-        this.turn = 0;
+        this.turn = 1;
 
         players.forEach(p -> mcPlayerToBOTC.put(p.getPlayer().getUniqueId(), p));
     }
@@ -66,11 +66,11 @@ public class Game {
     }
 
     private void runNight() throws ExecutionException, InterruptedException {
-        boolean isFirstNight = turn == 0;
         players.sort((a, b) -> Float.compare(a.getRole().info.nightOrder(), b.getRole().info.nightOrder()));
 
-//        players.forEach(BOTCPlayer::onDusk);
+        players.forEach(BOTCPlayer::handleDusk);
 
+        boolean isFirstNight = turn == 1;
         boolean didMinionInfo = false;
         boolean didDemonInfo = false;
         for (BOTCPlayer player : players) {
@@ -85,10 +85,11 @@ public class Game {
                 }
             }
 
-            player.getRole().handleNight();
+            player.handleNight();
+            // TODO: check for game end
         }
 
-//        players.forEach(BOTCPlayer::onDawn);
+        players.forEach(BOTCPlayer::handleDawn);
     }
 
     private void giveMinionInfo() {
@@ -96,6 +97,10 @@ public class Game {
     }
 
     private void giveDemonInfo() {
+        // TODO
+    }
+
+    public void checkVictory() {
         // TODO
     }
 

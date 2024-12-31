@@ -35,9 +35,9 @@ public class BOTCPlayer extends PlayerWrapper {
         // TODO
     }
 
-    public void handleDusk() { role.handleDusk(); }
-    public void handleDawn() { role.handleDawn(); }
-    public void handleNight() throws ExecutionException, InterruptedException { role.handleNight(); }
+    public void handleDusk() { if (role.hasAbility()) { role.handleDusk(); }}
+    public void handleDawn() { if (role.hasAbility()) { role.handleDawn(); }}
+    public void handleNight() throws ExecutionException, InterruptedException { if (role.hasAbility()) { role.handleNight(); }}
 
     public boolean isImpaired() {
         boolean isImpaired = false;
@@ -46,10 +46,8 @@ public class BOTCPlayer extends PlayerWrapper {
                 if (token.source == this || token.isFunctioning()) {
                     isImpaired = true;
                 }
-            } else if (token.effect == ReminderToken.Effect.SOBER_AND_HEALTHY) {
-                if (token.isFunctioning()) {
-                    return false;
-                }
+            } else if (token.getEffect() == ReminderToken.Effect.SOBER_AND_HEALTHY) {
+                return false;
             }
         }
         return isImpaired;
@@ -58,6 +56,7 @@ public class BOTCPlayer extends PlayerWrapper {
     public void die() {
         // TODO
         alive = false;
+        game.checkVictory();
     }
 
     public enum DeathCause { STORY, EXECUTION, PLAYER }

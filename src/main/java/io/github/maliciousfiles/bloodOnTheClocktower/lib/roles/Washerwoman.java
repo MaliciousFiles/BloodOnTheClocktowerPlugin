@@ -32,7 +32,7 @@ public class Washerwoman extends Role {
 
     @Override
     public void handleNight() throws ExecutionException, InterruptedException {
-        if (hasInfo || !me.isAlive()) { return; }
+        if (hasInfo) { return; }
         hasInfo = true;
 
         me.wake();

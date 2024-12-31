@@ -38,6 +38,10 @@ public abstract class Role {
         myReminderTokens.clear();
     }
 
+    public boolean hasAbility() {
+        return me.isAlive() || me.reminderTokensOnMe.stream().anyMatch(tok -> tok.getEffect() == ReminderToken.Effect.HAS_ABILITY);
+    }
+
     public void setup() throws ExecutionException, InterruptedException {}
     public void handleRoleSwitch() {
         removeAllReminderTokens();

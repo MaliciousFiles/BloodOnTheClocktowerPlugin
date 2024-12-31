@@ -5,7 +5,7 @@ import org.bukkit.inventory.ItemStack;
 import javax.annotation.Nullable;
 
 public class ReminderToken {
-    public enum Effect { NONE, DRUNK, POISONED, SOBER_AND_HEALTHY }
+    public enum Effect { NONE, DRUNK, POISONED, HAS_ABILITY, SOBER_AND_HEALTHY }
 
     public final String name;
     public final BOTCPlayer source;
@@ -25,5 +25,9 @@ public class ReminderToken {
 
     public boolean isFunctioning() {
         return !source.isImpaired();
+    }
+
+    public Effect getEffect() {
+        return isFunctioning() ? effect : Effect.NONE;
     }
 }
