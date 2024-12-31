@@ -8,7 +8,8 @@ public class Storyteller extends PlayerWrapper {
         super(mcPlayer);
     }
 
-    public void assignReminderToken(String role, String token) {
+    public BOTCPlayer pickPlayer(String prompt) {
         // TODO
+        return null;
     }
 }

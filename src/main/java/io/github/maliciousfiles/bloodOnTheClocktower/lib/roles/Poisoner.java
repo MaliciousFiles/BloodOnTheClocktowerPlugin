@@ -19,13 +19,22 @@ public class Poisoner extends Role {
     }
 
     @Override
+    public void handleDusk() {
+        moveReminderToken(poisonedReminder, null);
+    }
+
+    @Override
     public void handleNight() throws InterruptedException, ExecutionException {
+        if (!me.isAlive()) { return; }
+
         me.giveInstruction(Component.text("Choose a player to poison"));
 
         CompletableFuture<List<BOTCPlayer>> future = new CompletableFuture<>();
         new SelectPlayerHook(me, game, 1, _->true, future);
 
         BOTCPlayer poisoned = future.get().getFirst();
-        moveReminderToken(poisonedReminder, poisoned);
+        if (!me.isImpaired()) {
+            moveReminderToken(poisonedReminder, poisoned);
+        }
     }
 }

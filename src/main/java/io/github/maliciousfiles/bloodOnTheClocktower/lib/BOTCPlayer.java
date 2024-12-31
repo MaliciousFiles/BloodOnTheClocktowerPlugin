@@ -5,6 +5,7 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class BOTCPlayer extends PlayerWrapper {
     private RoleInfo roleInfo;
@@ -24,9 +25,7 @@ public class BOTCPlayer extends PlayerWrapper {
         this.role = roleInfo.getInstance(this, game);
         this.game = game;
     }
-    public Role getRole() {
-        return role;
-    }
+    public Role getRole() { return role; }
 
     public void wake() {
         // TODO: Storyteller#prompt for player to wake up, with info on who they are, and make wake
@@ -36,28 +35,35 @@ public class BOTCPlayer extends PlayerWrapper {
         // TODO
     }
 
-//    public void onDusk() { // happens at start of night
-//        statusEffects.removeIf(StatusEffect::tickDusk);
-//    }
+    public void handleDusk() { role.handleDusk(); }
+    public void handleDawn() { role.handleDawn(); }
+    public void handleNight() throws ExecutionException, InterruptedException { role.handleNight(); }
 
-//    public void onDawn() {
-//        statusEffects.removeIf(StatusEffect::tickDawn);
-//    }
-
-//    public void addStatusEffect(StatusEffect effect) {
-//        statusEffects.add(effect);
-//    }
-
-//    public boolean isImpaired() {
-//        return statusEffects.stream().anyMatch(e -> e.type == StatusEffect.EffectType.DRUNK ||
-//                e.type == StatusEffect.EffectType.POISONED);
-//    }
+    public boolean isImpaired() {
+        boolean isImpaired = false;
+        for (ReminderToken token : reminderTokensOnMe) {
+            if (token.effect == ReminderToken.Effect.DRUNK || token.effect == ReminderToken.Effect.POISONED) {
+                if (token.source == this || token.isFunctioning()) {
+                    isImpaired = true;
+                }
+            } else if (token.effect == ReminderToken.Effect.SOBER_AND_HEALTHY) {
+                if (token.isFunctioning()) {
+                    return false;
+                }
+            }
+        }
+        return isImpaired;
+    }
 
     public void die() {
         // TODO
+        alive = false;
     }
 
-//    public boolean hasAbility() {
-//        return alive && !isImpaired();
-//    }
+    public enum DeathCause { STORY, EXECUTION, PLAYER }
+    public void handleDeathAttempt(DeathCause cause, BOTCPlayer killer) {
+        role.handleDeathAttempt(cause, killer);
+    }
+
+    public boolean isAlive() { return alive; }
 }

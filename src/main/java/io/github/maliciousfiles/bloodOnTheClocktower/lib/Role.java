@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public abstract class Role {
+
     public enum Type { TOWNSFOLK, OUTSIDER, MINION, DEMON, TRAVELLER, FABLED }
 
     public final RoleInfo info;
@@ -30,12 +31,23 @@ public abstract class Role {
         token.target = newTarget;
         if (newTarget != null) newTarget.reminderTokensOnMe.add(token);
     }
+    protected void removeAllReminderTokens() {
+        for (ReminderToken token : myReminderTokens) {
+            moveReminderToken(token, null);
+        }
+        myReminderTokens.clear();
+    }
 
-    public void setup() {}
+    public void setup() throws ExecutionException, InterruptedException {}
+    public void handleRoleSwitch() {
+        removeAllReminderTokens();
+    }
+    public void handleDusk() {}
+    public void handleDawn() {}
     public void handleNight() throws InterruptedException, ExecutionException {}
 
-    public enum DeathCause { STORY, EXECUTION, PLAYER }
-    public void handleDeathAttempt(DeathCause cause, @Nullable BOTCPlayer killer) {
+    public void handleDeathAttempt(BOTCPlayer.DeathCause cause, @Nullable BOTCPlayer killer) {
         me.die();
+        removeAllReminderTokens();
     }
 }
