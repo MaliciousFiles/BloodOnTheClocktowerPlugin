@@ -26,7 +26,7 @@ public class SeatsCommand extends BOTCCommand {
         return config.getKeys(false);
     }
     public static List<Location> getSeats(World world, String table) {
-        return config.getStringList(table).stream().map(s -> new Location(world, Integer.parseInt(s.split(",")[0]), Integer.parseInt(s.split(",")[1]), Integer.parseInt(s.split(",")[2]))).toList();
+        return config.getStringList(table).stream().limit(15).map(s -> new Location(world, Integer.parseInt(s.split(",")[0]), Integer.parseInt(s.split(",")[1]), Integer.parseInt(s.split(",")[2]))).toList();
     }
 
     private static final List<String> subCommands = List.of("create-table", "delete-table", "get-tables", "add", "remove", "list");
@@ -76,6 +76,10 @@ public class SeatsCommand extends BOTCCommand {
             }
             if (!config.contains(args[1])) {
                 error(sender, "Table '" + args[1] + "' does not exist");
+                return;
+            }
+            if (config.getStringList(args[1]).size() == 15) {
+                error(sender, "Table '" + args[1] + "' is full (max 15 seats)");
                 return;
             }
             if (!args[2].matches("-?\\d+,-?\\d+,-?\\d+")) {

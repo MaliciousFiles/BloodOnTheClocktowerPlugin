@@ -29,25 +29,24 @@ public class StartGameCommand extends BOTCCommand {
             return;
         }
 
-        // TODO: for debugging
-//        if (Arrays.stream(args).anyMatch(a->Arrays.stream(args).skip(1).filter(v->v.equals(a)).count()>1)) {
-//            error(sender, "Duplicate players provided");
-//            return;
-//        }
+        if (Arrays.stream(args).anyMatch(a->Arrays.stream(args).skip(1).filter(v->v.equals(a)).count()>1)) {
+            error(sender, "Duplicate players provided");
+            return;
+        }
 
         List<Player> players = Arrays.stream(args).skip(1).map(Bukkit::getPlayer).toList();
         if (players.contains(null)) {
             error(sender, "Invalid player provided");
             return;
         }
-//        if (players.size() < 5) {
-//            error(sender, "Not enough players");
-//            return;
-//        }
+        if (players.size() < 5) {
+            error(sender, "Not enough players");
+            return;
+        }
 
         List<Location> seats = SeatsCommand.getSeats(players.getFirst().getWorld(), table);
-        if (seats.size() < players.size()) {
-            error(sender, "Not enough seats");
+        if (seats.size() != 15) {
+            error(sender, "Table must have 15 seats to use");
             return;
         }
 

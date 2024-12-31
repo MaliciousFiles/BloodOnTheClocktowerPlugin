@@ -37,7 +37,8 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Consumer;
+
+import static io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower.createItem;
 
 public class ScriptDisplay implements Listener {
     private static final NamespacedKey BOTC_BOOK = new NamespacedKey(BloodOnTheClocktower.instance, "botc_book");
@@ -47,35 +48,27 @@ public class ScriptDisplay implements Listener {
         return new ArrayList<>(config.getKeys(false).stream().sorted().toList());
     }
 
-    private static ItemStack create(Material material, Consumer<ItemMeta> metaConsumer) {
-        ItemStack item = ItemStack.of(material);
-        ItemMeta meta = item.getItemMeta();
-        metaConsumer.accept(meta);
-        item.setItemMeta(meta);
-        return item;
-    }
-
-    private static final ItemStack FILLER = create(Material.LIGHT_GRAY_STAINED_GLASS_PANE, meta ->
+    private static final ItemStack FILLER = createItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, meta ->
             meta.displayName(Component.text(" ")));
 
-    private static final ItemStack TOWNSFOLK_FILLER = create(Material.LIGHT_BLUE_STAINED_GLASS_PANE, meta ->
+    private static final ItemStack TOWNSFOLK_FILLER = createItem(Material.LIGHT_BLUE_STAINED_GLASS_PANE, meta ->
             meta.displayName(Component.text("Townsfolk", RoleInfo.ROLE_COLORS.get(Role.Type.TOWNSFOLK))
                     .decoration(TextDecoration.ITALIC, false)));
-    private static final ItemStack OUTSIDER_FILLER = create(Material.BLUE_STAINED_GLASS_PANE, meta ->
+    private static final ItemStack OUTSIDER_FILLER = createItem(Material.BLUE_STAINED_GLASS_PANE, meta ->
             meta.displayName(Component.text("Outsider", RoleInfo.ROLE_COLORS.get(Role.Type.OUTSIDER))
                     .decoration(TextDecoration.ITALIC, false)));
-    private static final ItemStack MINION_FILLER = create(Material.PINK_STAINED_GLASS_PANE, meta ->
+    private static final ItemStack MINION_FILLER = createItem(Material.PINK_STAINED_GLASS_PANE, meta ->
             meta.displayName(Component.text("Minion", RoleInfo.ROLE_COLORS.get(Role.Type.MINION))
                     .decoration(TextDecoration.ITALIC, false)));
-    private static final ItemStack DEMON_FILLER = create(Material.RED_STAINED_GLASS_PANE, meta ->
+    private static final ItemStack DEMON_FILLER = createItem(Material.RED_STAINED_GLASS_PANE, meta ->
             meta.displayName(Component.text("Demon", RoleInfo.ROLE_COLORS.get(Role.Type.DEMON))
                     .decoration(TextDecoration.ITALIC, false)));
-    private static final ItemStack TRAVELLER_FILLER = create(Material.PURPLE_STAINED_GLASS_PANE, meta ->
+    private static final ItemStack TRAVELLER_FILLER = createItem(Material.PURPLE_STAINED_GLASS_PANE, meta ->
             meta.displayName(Component.text("Trav", RoleInfo.ROLE_COLORS.get(Role.Type.TOWNSFOLK))
                     .append(Component.text("eller", RoleInfo.ROLE_COLORS.get(Role.Type.MINION)))
                     .decoration(TextDecoration.ITALIC, false)));
 
-    private static final ItemStack EMPTY = create(Material.GRAY_STAINED_GLASS_PANE, meta -> {
+    private static final ItemStack EMPTY = createItem(Material.GRAY_STAINED_GLASS_PANE, meta -> {
         meta.displayName(Component.text("Empty")
                 .decoration(TextDecoration.ITALIC, false)
                 .color(NamedTextColor.GRAY));
@@ -85,14 +78,14 @@ public class ScriptDisplay implements Listener {
                         .color(NamedTextColor.DARK_GRAY)));
     });
 
-    private static final ItemStack BACK = create(Material.ARROW, meta ->
+    private static final ItemStack BACK = createItem(Material.ARROW, meta ->
             meta.displayName(Component.text("Back")
                     .decoration(TextDecoration.ITALIC, false)));
-    private static final ItemStack FORWARD = create(Material.ARROW, meta ->
+    private static final ItemStack FORWARD = createItem(Material.ARROW, meta ->
             meta.displayName(Component.text("Forward")
                     .decoration(TextDecoration.ITALIC, false)));
 
-    private static final ItemStack DELETE = create(Material.LAVA_BUCKET, meta -> {
+    private static final ItemStack DELETE = createItem(Material.LAVA_BUCKET, meta -> {
         meta.displayName(Component.text("Delete Script")
                 .color(TextColor.color(214, 77, 84))
                 .decoration(TextDecoration.ITALIC, false));
@@ -101,7 +94,7 @@ public class ScriptDisplay implements Listener {
                         .decoration(TextDecoration.ITALIC, false)
                         .color(NamedTextColor.GRAY)));
     });
-    private static final ItemStack VIEW = create(Material.SPYGLASS, meta -> {
+    private static final ItemStack VIEW = createItem(Material.SPYGLASS, meta -> {
         meta.displayName(Component.text("View Script")
                 .color(TextColor.color(214, 190, 124))
                 .decoration(TextDecoration.ITALIC, false));
@@ -110,7 +103,7 @@ public class ScriptDisplay implements Listener {
                         .decoration(TextDecoration.ITALIC, false)
                         .color(NamedTextColor.GRAY)));
     });
-    private static final ItemStack EDIT = create(Material.WRITABLE_BOOK, meta -> {
+    private static final ItemStack EDIT = createItem(Material.WRITABLE_BOOK, meta -> {
         meta.displayName(Component.text("Edit Script")
                 .color(TextColor.color(117, 159, 214))
                 .decoration(TextDecoration.ITALIC, false));
@@ -120,7 +113,7 @@ public class ScriptDisplay implements Listener {
                         .color(NamedTextColor.GRAY)));
     });
 
-    private static final ItemStack NEW = create(Material.FEATHER, meta -> {
+    private static final ItemStack NEW = createItem(Material.FEATHER, meta -> {
         meta.displayName(Component.text("New Script")
                 .color(TextColor.color(96, 214, 197))
                 .decoration(TextDecoration.ITALIC, false));
@@ -129,7 +122,7 @@ public class ScriptDisplay implements Listener {
                         .decoration(TextDecoration.ITALIC, false)
                         .color(NamedTextColor.GRAY)));
     });
-    private static final ItemStack CONTINUE_DISABLED = create(Material.GRAY_CONCRETE, meta -> {
+    private static final ItemStack CONTINUE_DISABLED = createItem(Material.GRAY_CONCRETE, meta -> {
         meta.displayName(Component.text("Continue")
                 .color(NamedTextColor.GRAY)
                 .decoration(TextDecoration.ITALIC, false));
@@ -138,12 +131,12 @@ public class ScriptDisplay implements Listener {
                         .decoration(TextDecoration.ITALIC, false)
                         .color(NamedTextColor.DARK_GRAY)));
     });
-    private static final ItemStack CONTINUE_ENABLED = create(Material.LIME_CONCRETE, meta -> {
+    private static final ItemStack CONTINUE_ENABLED = createItem(Material.LIME_CONCRETE, meta -> {
         meta.displayName(Component.text("Continue")
                 .color(NamedTextColor.GREEN)
                 .decoration(TextDecoration.ITALIC, false));
     });
-    private static final ItemStack RETURN = create(Material.BARRIER, meta -> {
+    private static final ItemStack RETURN = createItem(Material.BARRIER, meta -> {
         meta.displayName(Component.text("Return")
                 .color(NamedTextColor.RED)
                 .decoration(TextDecoration.ITALIC, false));
@@ -224,7 +217,7 @@ public class ScriptDisplay implements Listener {
             }
 
             String script = scripts.get(index);
-            contents[itemIdx] = create(Material.BUNDLE, meta ->{
+            contents[itemIdx] = createItem(Material.BUNDLE, meta ->{
                 meta.displayName(Component.text(script)
                         .decoration(TextDecoration.ITALIC, false));
                 if (selected == index) meta.setEnchantmentGlintOverride(true);

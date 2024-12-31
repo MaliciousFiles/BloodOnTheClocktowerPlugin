@@ -67,6 +67,10 @@ public class SeatList {
         return future;
     }
 
+    public List<Player> getSeatOrder() {
+        return seats.stream().map(s->s.owner).toList();
+    }
+
     public void setLocked(boolean canStand) {
         for (Seat seat : seats) seat.canStand = canStand;
     }

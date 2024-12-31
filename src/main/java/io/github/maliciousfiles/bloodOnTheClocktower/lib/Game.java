@@ -49,6 +49,10 @@ public class Game {
         return mcPlayerToBOTC.get(mcPlayer.getUniqueId());
     }
 
+    public SeatList getSeats() {
+        return seats;
+    }
+
     public int getTurn() {
         return turn;
     }

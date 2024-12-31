@@ -3,25 +3,16 @@ package io.github.maliciousfiles.bloodOnTheClocktower;
 import io.github.maliciousfiles.bloodOnTheClocktower.commands.BOTCCommand;
 import io.github.maliciousfiles.bloodOnTheClocktower.commands.SeatsCommand;
 import io.github.maliciousfiles.bloodOnTheClocktower.commands.StartGameCommand;
-import io.github.maliciousfiles.bloodOnTheClocktower.lib.Role;
-import io.github.maliciousfiles.bloodOnTheClocktower.lib.RoleInfo;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.ScriptInfo;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.*;
-import io.papermc.paper.datacomponent.DataComponentTypes;
-import io.papermc.paper.datacomponent.item.BundleContents;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Supplier;
+import java.util.function.Consumer;
 
 public final class BloodOnTheClocktower extends JavaPlugin {
     public static BloodOnTheClocktower instance;
@@ -29,6 +20,14 @@ public final class BloodOnTheClocktower extends JavaPlugin {
     private void registerCommand(String command, BOTCCommand handler) {
         getCommand(command).setExecutor(handler);
         getCommand(command).setTabCompleter(handler);
+    }
+
+    public static ItemStack createItem(Material material, Consumer<ItemMeta> metaConsumer) {
+        ItemStack item = ItemStack.of(material);
+        ItemMeta meta = item.getItemMeta();
+        metaConsumer.accept(meta);
+        item.setItemMeta(meta);
+        return item;
     }
 
     @Override
@@ -42,6 +41,7 @@ public final class BloodOnTheClocktower extends JavaPlugin {
 
         PacketManager.register();
         GrabBag.register();
+        Grimoire.register();
         Bukkit.getPluginManager().registerEvents(new ResourcePackHandler(), this);
     }
 

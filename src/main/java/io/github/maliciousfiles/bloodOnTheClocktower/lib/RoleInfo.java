@@ -233,36 +233,45 @@ public enum RoleInfo {
             Role.Type.FABLED, TextColor.color(255, 205, 0)
     );
     public static final NamespacedKey ROLE_ID = new NamespacedKey(BloodOnTheClocktower.instance, "botc_role");
+
     public ItemStack getItem() {
+        return getItem(null, true);
+    }
+    public ItemStack getItem(String nameOverride, boolean showDescription) {
         ItemStack item = ItemStack.of(Material.PAPER);
+
+        String name = nameOverride == null ? title : nameOverride;
 
         ItemMeta itemMeta = item.getItemMeta();
         if (ROLE_COLORS.containsKey(type)) {
-            itemMeta.displayName(Component.text(title, ROLE_COLORS.get(type))
+            itemMeta.displayName(Component.text(name, ROLE_COLORS.get(type))
                     .decoration(TextDecoration.ITALIC, false));
         } else {
-            itemMeta.displayName(Component.text(title.substring(0, title.length()/2), ROLE_COLORS.get(Role.Type.TOWNSFOLK))
-                    .append(Component.text(title.substring(title.length()/2), ROLE_COLORS.get(Role.Type.MINION)))
+            itemMeta.displayName(Component.text(name.substring(0, name.length()/2), ROLE_COLORS.get(Role.Type.TOWNSFOLK))
+                    .append(Component.text(name.substring(name.length()/2), ROLE_COLORS.get(Role.Type.MINION)))
                     .decoration(TextDecoration.ITALIC, false));
         }
 
-        List<Component> lore = new ArrayList<>();
-        int i = 0;
-        while (i < description.length()) {
-            int endIdx = i+50;
-            if (endIdx < description.length()) {
-                while (endIdx > i && description.charAt(endIdx-1) != ' ') endIdx--;
-            } else {
-                endIdx = description.length();
+        if (showDescription) {
+            List<Component> lore = new ArrayList<>();
+            int i = 0;
+            while (i < description.length()) {
+                int endIdx = i+50;
+                if (endIdx < description.length()) {
+                    while (endIdx > i && description.charAt(endIdx-1) != ' ') endIdx--;
+                } else {
+                    endIdx = description.length();
+                }
+
+                lore.add(Component.text(description.substring(i, endIdx))
+                        .decoration(TextDecoration.ITALIC, false)
+                        .color(NamedTextColor.GRAY));
+                i = endIdx;
             }
 
-            lore.add(Component.text(description.substring(i, endIdx))
-                    .decoration(TextDecoration.ITALIC, false)
-                    .color(NamedTextColor.GRAY));
-            i = endIdx;
+            itemMeta.lore(lore);
         }
 
-        itemMeta.lore(lore);
         itemMeta.setCustomModelData(cmdID);
         itemMeta.getPersistentDataContainer().set(ROLE_ID, PersistentDataType.STRING, id());
         item.setItemMeta(itemMeta);
