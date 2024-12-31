@@ -5,12 +5,6 @@
   },
   "overrides": [
     {
-      "predicate": {
-        "custom_model_data": 255
-      },
-      "model": "botc:item/grimoire"
-    },
-    {
         "predicate": {
             "custom_model_data": 1
         },
@@ -1005,6 +999,12 @@
             "custom_model_data": 166
         },
         "model": "botc:item/stormcatcher"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 255
+      },
+      "model": "botc:item/grimoire"
     }
   ]
 }
