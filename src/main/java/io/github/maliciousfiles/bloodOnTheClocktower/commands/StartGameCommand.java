@@ -7,7 +7,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -51,10 +53,9 @@ public class StartGameCommand extends BOTCCommand {
 
         Bukkit.getScheduler().runTaskAsynchronously(BloodOnTheClocktower.instance, () -> {
             try {
+                gameTasks.add(Thread.currentThread());
                 GameInit.initGame(seats, players.getFirst(), players.subList(1, players.size()));
-            } catch (ExecutionException | InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            } catch (ExecutionException | InterruptedException _) {}
         });
     }
 
@@ -65,5 +66,11 @@ public class StartGameCommand extends BOTCCommand {
         }
 
         return Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(n->Arrays.stream(args).noneMatch(a->a.equalsIgnoreCase(n))).toList();
+    }
+
+    private static final List<Thread> gameTasks = new ArrayList<>();
+    public static void destruct() {
+        gameTasks.forEach(Thread::interrupt);
+        gameTasks.clear();
     }
 }

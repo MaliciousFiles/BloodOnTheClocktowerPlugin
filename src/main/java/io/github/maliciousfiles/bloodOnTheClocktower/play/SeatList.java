@@ -87,11 +87,11 @@ public class SeatList {
 
         // TODO: handle stairs
         public Seat(Location location) throws ExecutionException, InterruptedException {
-            interaction = BloodOnTheClocktower.runSync(() -> (Interaction) location.getWorld().spawnEntity(location.add(0.5f, 0, 0.5f), EntityType.INTERACTION)).get();
+            interaction = Bukkit.getScheduler().callSyncMethod(BloodOnTheClocktower.instance, () -> (Interaction) location.getWorld().spawnEntity(location.add(0.5f, 0, 0.5f), EntityType.INTERACTION)).get();
             interaction.setInteractionWidth(1.05f);
             interaction.setInteractionHeight((float) location.getBlock().getBoundingBox().getHeight()+0.05f);
 
-            textDisplay = BloodOnTheClocktower.runSync(() -> (TextDisplay) location.getWorld().spawnEntity(location.add(0, interaction.getInteractionHeight()+0.5, 0), EntityType.TEXT_DISPLAY)).get();
+            textDisplay = Bukkit.getScheduler().callSyncMethod(BloodOnTheClocktower.instance, () -> (TextDisplay) location.getWorld().spawnEntity(location.add(0, interaction.getInteractionHeight()+0.5, 0), EntityType.TEXT_DISPLAY)).get();
             textDisplay.setSeeThrough(true);
             textDisplay.setBillboard(Display.Billboard.CENTER);
 

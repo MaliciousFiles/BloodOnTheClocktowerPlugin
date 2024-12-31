@@ -49,7 +49,9 @@ public class PacketManager implements Listener {
             }
         });
 
-        unloadTasks.add(() -> pipeline.remove("botc_packet_listener"));
+        unloadTasks.add(() -> {
+            if (pipeline.channel().isActive()) pipeline.remove("botc_packet_listener");
+        });
     }
 
     public static void register() {

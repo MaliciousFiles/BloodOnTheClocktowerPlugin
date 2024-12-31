@@ -36,6 +36,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 public class ScriptDisplay implements Listener {
@@ -569,13 +570,13 @@ public class ScriptDisplay implements Listener {
         finishScript(String.join("", evt.getNewBookMeta().getPages()));
     }
 
-    public static void open(Player player, int numPlayers, CompletableFuture<ScriptInfo> script, CompletableFuture<List<RoleInfo>> roles) {
+    public static void open(Player player, int numPlayers, CompletableFuture<ScriptInfo> script, CompletableFuture<List<RoleInfo>> roles) throws ExecutionException, InterruptedException {
         Inventory inventory = Bukkit.createInventory(null, 45, Component.text("Script Display"));
 
         ScriptDisplay sd = new ScriptDisplay(player, inventory, numPlayers, script, roles);
         Bukkit.getPluginManager().registerEvents(sd, BloodOnTheClocktower.instance);
         sd.renderPage();
 
-        BloodOnTheClocktower.runSync(() -> player.openInventory(inventory));
+        Bukkit.getScheduler().callSyncMethod(BloodOnTheClocktower.instance, () -> player.openInventory(inventory)).get();
     }
 }

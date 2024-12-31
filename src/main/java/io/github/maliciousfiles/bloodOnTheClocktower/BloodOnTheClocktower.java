@@ -31,19 +31,6 @@ public final class BloodOnTheClocktower extends JavaPlugin {
         getCommand(command).setTabCompleter(handler);
     }
 
-    public static void runSync(Runnable runnable) {
-        Bukkit.getScheduler().runTask(instance, runnable);
-    }
-    public static <D> CompletableFuture<D> runSync(Supplier<D> runnable) {
-        CompletableFuture<D> future = new CompletableFuture<>();
-
-        Bukkit.getScheduler().runTask(instance, () -> {
-            future.complete(runnable.get());
-        });
-
-        return future;
-    }
-
     @Override
     public void onEnable() {
         instance = this;
@@ -60,7 +47,9 @@ public final class BloodOnTheClocktower extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        StartGameCommand.destruct();
         PacketManager.unload();
         SeatList.destruct();
+        PlayerWrapper.destruct();
     }
 }
