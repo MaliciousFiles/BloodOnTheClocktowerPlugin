@@ -70,5 +70,6 @@ public class GameInit {
                 script,
                 storyteller,
                 botcPlayers);
+        storytellerPlayer.getInventory().addItem(Grimoire.createGrimoire(game));
     }
 }

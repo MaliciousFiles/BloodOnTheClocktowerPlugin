@@ -400,7 +400,10 @@ public class ScriptDisplay implements Listener {
             } else if (CONTINUE_ENABLED.equals(evt.getCurrentItem())) {
                 selectRoles();
             } else if (selectingRoles && Material.PAPER == Optional.ofNullable(evt.getCurrentItem()).map(ItemStack::getType).orElse(null)) {
-                RoleInfo role = RoleInfo.valueOf(evt.getCurrentItem().getItemMeta().getPersistentDataContainer().get(RoleInfo.ROLE_ID, PersistentDataType.STRING).toUpperCase());
+                String roleId = evt.getCurrentItem().getItemMeta().getPersistentDataContainer().get(RoleInfo.ROLE_ID, PersistentDataType.STRING);
+                if (roleId == null) return;
+
+                RoleInfo role = RoleInfo.valueOf(roleId.toUpperCase());
                 if (selectedRoles.contains(role)) {
                     selectedRoles.remove(role);
                 } else {

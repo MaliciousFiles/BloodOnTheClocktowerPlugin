@@ -26,6 +26,8 @@ public class Game {
     private int turn;
 
     public Game(SeatList seats, ScriptInfo script, Storyteller storyteller, List<BOTCPlayer> players) {
+        players.forEach(p->p.setGame(this));
+
         this.uuid = UUID.randomUUID();
         games.put(uuid, this);
 

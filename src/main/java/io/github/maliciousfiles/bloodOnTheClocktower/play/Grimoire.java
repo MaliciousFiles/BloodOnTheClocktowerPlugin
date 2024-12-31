@@ -30,7 +30,7 @@ import static io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower
 public class Grimoire implements Listener {
     private static final ItemStack FILLER = createItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, meta ->
             meta.displayName(Component.text(" ")));
-    private static final ItemStack EMPTY = createItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, meta -> {
+    private static final ItemStack EMPTY = createItem(Material.GRAY_STAINED_GLASS_PANE, meta -> {
         meta.displayName(Component.text("Empty", NamedTextColor.GRAY)
                 .decoration(TextDecoration.ITALIC, false));
         meta.lore(List.of(Component.text("No one sits here", NamedTextColor.DARK_GRAY)
@@ -78,7 +78,7 @@ public class Grimoire implements Listener {
             return createItem(Material.BUNDLE, meta -> {
                 meta.displayName(Component.text((owner.getName()+"'s Reminder Tokens").replace("s's", "s'"))
                         .decoration(TextDecoration.ITALIC, false));
-                meta.lore(List.of(Component.text("Click to deselect this player", NamedTextColor.GRAY)
+                meta.lore(List.of(Component.text("Click to deselect", NamedTextColor.GRAY)
                         .decoration(TextDecoration.ITALIC, false)));
                 meta.getPersistentDataContainer().set(IDX, PersistentDataType.INTEGER, i);
                 //noinspection UnstableApiUsage
@@ -104,7 +104,7 @@ public class Grimoire implements Listener {
         return createItem(Material.PLAYER_HEAD, meta -> {
             meta.displayName(Component.text(owner.getName())
                     .decoration(TextDecoration.ITALIC, false));
-            meta.lore(List.of(Component.text("Click to select this player", NamedTextColor.GRAY)
+            meta.lore(List.of(Component.text("Click to view reminder tokens", NamedTextColor.GRAY)
                     .decoration(TextDecoration.ITALIC, false)));
             meta.getPersistentDataContainer().set(IDX, PersistentDataType.INTEGER, i);
             ((SkullMeta) meta).setOwningPlayer(owner.getPlayer());
@@ -133,8 +133,8 @@ public class Grimoire implements Listener {
         contents[35] = createHead(6);
 
         for (int i = 0; i < 5; i++) {
-            contents[i+38] = createRole(i+7);
-            contents[i+47] = createRole(i+7);
+            contents[i+38] = createRole(11-i);
+            contents[i+47] = createHead(11-i);
         }
 
         contents[28] = createRole(12);
@@ -161,16 +161,18 @@ public class Grimoire implements Listener {
 
         if (selected == idx) selected = -1;
         else selected = idx;
+        render();
     }
 
     private static final NamespacedKey GAME_ID = new NamespacedKey(BloodOnTheClocktower.instance, "botc_game_id");
-    private static final ItemStack GRIMOIRE = ((CraftItemType<ItemMeta>) Material.BOOK.asItemType()).createItemStack(meta -> {
+    private static final ItemStack GRIMOIRE = ((CraftItemType<ItemMeta>) Material.PAPER.asItemType()).createItemStack(meta -> {
         meta.displayName(Component.text("Grimoire")
                 .decoration(TextDecoration.ITALIC, false));
         meta.lore(List.of(
                 Component.text("Right-click to open the Storyteller's Grimoire", NamedTextColor.GRAY)
                         .decoration(TextDecoration.ITALIC, false)
         ));
+        meta.setCustomModelData(-1);
     });
     public static ItemStack createGrimoire(Game game) {
         ItemStack item = GRIMOIRE.clone();
@@ -185,9 +187,11 @@ public class Grimoire implements Listener {
         Bukkit.getPluginManager().registerEvents(new Listener() {
             @EventHandler
             public void onRightClick(PlayerInteractEvent evt) {
-                if (!evt.getAction().isRightClick() || !GRIMOIRE.equals(evt.getItem())) return;
+                if (!evt.getAction().isRightClick() || evt.getItem() == null || evt.getItem().getItemMeta() == null) return;
+                String gameId = evt.getItem().getItemMeta().getPersistentDataContainer().get(GAME_ID, PersistentDataType.STRING);
+                if (gameId == null) return;
 
-                Game game = Game.getGame(UUID.fromString(evt.getItem().getItemMeta().getPersistentDataContainer().get(GAME_ID, PersistentDataType.STRING)));
+                Game game = Game.getGame(UUID.fromString(gameId));
                 PlayerWrapper player = game.getBOTCPlayer(evt.getPlayer());
                 Inventory inventory = Bukkit.createInventory(null, 54, Component.text("Storyteller's Grimoire"));
 
