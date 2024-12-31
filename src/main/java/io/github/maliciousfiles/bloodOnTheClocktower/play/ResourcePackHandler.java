@@ -10,7 +10,7 @@ import java.util.UUID;
 public class ResourcePackHandler implements Listener {
 
     private static final UUID uuid = UUID.fromString("25abeb60-a254-43ab-bb92-d5ec2268ecae"); // randomly generated
-    private static final byte[] hash = HexFormat.of().parseHex("8719bbb94e8a847efa93e24df44a67b8ee505c6f"); // SHA1 sum of zip file
+    private static final byte[] hash = HexFormat.of().parseHex("b191d28dd2e66187b371d7df71e10f160d2f9922"); // SHA1 sum of zip file
     @EventHandler
     public void onJoin(PlayerJoinEvent evt) {
         evt.getPlayer().addResourcePack(uuid,
