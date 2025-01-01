@@ -135,11 +135,9 @@ public class Game {
             NightAction action = nightActions.poll();
 
             if (action.shouldRun()) {
+                new StorytellerPauseHook(storyteller, "Continue to " + action.name()).get();
                 action.run();
             }
-
-            new StorytellerPauseHook(storyteller, "Continue to " + action.name()).get();
-            action.run();
             // TODO: check for game end
         }
 
