@@ -1,6 +1,7 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.lib;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.play.SeatList;
+import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.StorytellerPauseHook;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
@@ -68,14 +69,16 @@ public class Game {
         return script;
     }
 
-    public void startGame() {
-
+    public void startGame() throws ExecutionException, InterruptedException {
+        runNight();
     }
 
     private void runNight() throws ExecutionException, InterruptedException {
         players.sort((a, b) -> Float.compare(a.getRole().info.nightOrder(), b.getRole().info.nightOrder()));
 
-        players.forEach(BOTCPlayer::handleDusk);
+        for (BOTCPlayer player : players) {
+            if (player.getRole().hasAbility()) player.getRole().handleDusk();
+        }
 
         boolean doEvilInfo = turn == 1 && players.size() > 5;
         boolean didMinionInfo = false;
@@ -92,11 +95,20 @@ public class Game {
                 }
             }
 
-            player.handleNight();
+            if (player.getRole().doesSomething(this)) {
+                new StorytellerPauseHook(storyteller, "Continue to "+player.getRole().info.name()).get();
+                player.getRole().handleNight();
+            }
             // TODO: check for game end
         }
 
-        players.forEach(BOTCPlayer::handleDawn);
+        new StorytellerPauseHook(storyteller, "Continue to Dawn").get();
+        for (BOTCPlayer player : players) {
+            if (player.getRole().hasAbility()) player.getRole().handleDawn();
+        }
+
+        new StorytellerPauseHook(storyteller, "Continue to Night").get();
+        runNight();
     }
 
     private void giveMinionInfo() {

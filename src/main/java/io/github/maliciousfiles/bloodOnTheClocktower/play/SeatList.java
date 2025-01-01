@@ -2,6 +2,7 @@ package io.github.maliciousfiles.bloodOnTheClocktower.play;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
 import net.kyori.adventure.text.Component;
+import net.minecraft.server.MinecraftServer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.*;
@@ -27,7 +28,9 @@ public class SeatList {
         this.seats = seats;
     }
 
-    public static SeatList initSeats(List<Location> locs) throws ExecutionException, InterruptedException {
+    public static SeatList initSeats(List<Location> locs) {
+        assert Thread.currentThread() == MinecraftServer.getServer().getRunningThread(); // must be called sync
+
         List<Seat> seats = new ArrayList<>();
         for (Location location : locs) {
             Seat seat = new Seat(location);
@@ -90,12 +93,12 @@ public class SeatList {
         @Nullable private Consumer<Player> onSit;
 
         // TODO: handle stairs
-        public Seat(Location location) throws ExecutionException, InterruptedException {
-            interaction = Bukkit.getScheduler().callSyncMethod(BloodOnTheClocktower.instance, () -> (Interaction) location.getWorld().spawnEntity(location.add(0.5f, 0, 0.5f), EntityType.INTERACTION)).get();
+        public Seat(Location location) {
+            interaction = (Interaction) location.getWorld().spawnEntity(location.add(0.5f, 0, 0.5f), EntityType.INTERACTION);
             interaction.setInteractionWidth(1.05f);
             interaction.setInteractionHeight((float) location.getBlock().getBoundingBox().getHeight()+0.05f);
 
-            textDisplay = Bukkit.getScheduler().callSyncMethod(BloodOnTheClocktower.instance, () -> (TextDisplay) location.getWorld().spawnEntity(location.add(0, interaction.getInteractionHeight()+0.5, 0), EntityType.TEXT_DISPLAY)).get();
+            textDisplay = (TextDisplay) location.getWorld().spawnEntity(location.add(0, interaction.getInteractionHeight()+0.5, 0), EntityType.TEXT_DISPLAY);
             textDisplay.setSeeThrough(true);
             textDisplay.setBillboard(Display.Billboard.CENTER);
 

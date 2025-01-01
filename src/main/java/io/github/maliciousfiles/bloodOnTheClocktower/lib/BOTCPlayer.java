@@ -35,10 +35,6 @@ public class BOTCPlayer extends PlayerWrapper {
         // TODO
     }
 
-    public void handleDusk() { if (role.hasAbility()) { role.handleDusk(); }}
-    public void handleDawn() { if (role.hasAbility()) { role.handleDawn(); }}
-    public void handleNight() throws ExecutionException, InterruptedException { if (role.hasAbility()) { role.handleNight(); }}
-
     public boolean isImpaired() {
         boolean isImpaired = false;
         for (ReminderToken token : reminderTokensOnMe) {

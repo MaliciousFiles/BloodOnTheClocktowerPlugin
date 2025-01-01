@@ -15,6 +15,11 @@ public class Imp extends Role {
     public Imp(BOTCPlayer me, Game game, RoleInfo info) { super(me, game, info); }
 
     @Override
+    protected boolean hasNightAction(Game game) {
+        return game.getTurn() != 1;
+    }
+
+    @Override
     public void setup() {
         newReminderToken(deadReminder = new ReminderToken("Dead", me, null, ReminderToken.Effect.NONE));
     }
@@ -26,8 +31,6 @@ public class Imp extends Role {
 
     @Override
     public void handleNight() throws InterruptedException, ExecutionException {
-        if (game.getTurn() == 1) { return; }
-
         me.giveInstruction("Choose a player to kill");
 
         BOTCPlayer dead = new SelectPlayerHook(me, game, 1, _->true)

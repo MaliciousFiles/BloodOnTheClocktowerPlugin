@@ -227,6 +227,7 @@ public class Grimoire implements Listener {
                     return;
                 }
 
+                evt.getPlayer().swingHand(evt.getHand());
                 openInventory(game, evt.getPlayer(), Access.STORYTELLER, Component.text("Storyteller's Grimoire"));
             }
         }, BloodOnTheClocktower.instance);

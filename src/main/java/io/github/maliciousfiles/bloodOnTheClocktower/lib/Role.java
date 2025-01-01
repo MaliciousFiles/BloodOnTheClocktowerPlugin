@@ -41,6 +41,10 @@ public abstract class Role {
     public boolean hasAbility() {
         return me.isAlive() || me.reminderTokensOnMe.stream().anyMatch(tok -> tok.getEffect() == ReminderToken.Effect.HAS_ABILITY);
     }
+    public final boolean doesSomething(Game game) {
+        return hasAbility() && hasNightAction(game);
+    }
+    protected abstract boolean hasNightAction(Game game);
 
     public void setup() throws ExecutionException, InterruptedException {}
     public void handleRoleSwitch() {

@@ -1,5 +1,6 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.play;
 
+import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.*;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.StorytellerPauseHook;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.Option;
@@ -23,7 +24,7 @@ public class GameInit {
         Storyteller storyteller = new Storyteller(storytellerPlayer);
         List<BOTCPlayer> botcPlayers = players.stream().map(BOTCPlayer::new).toList();
 
-        SeatList seatList = SeatList.initSeats(seats);
+        SeatList seatList = Bukkit.getScheduler().callSyncMethod(BloodOnTheClocktower.instance, () -> SeatList.initSeats(seats)).get();
 
         Map<Player, CompletableFuture<Void>> seatInstructions = botcPlayers.stream().collect(Collectors.toMap(PlayerWrapper::getPlayer,
                 p -> p.giveInstruction("Pick a seat for the game")));
@@ -75,7 +76,6 @@ public class GameInit {
                 storyteller,
                 botcPlayers);
         storytellerPlayer.getInventory().addItem(Grimoire.createGrimoire(game));
-
 
         new StorytellerPauseHook(storyteller, "Press continue to begin the game").get();
 
