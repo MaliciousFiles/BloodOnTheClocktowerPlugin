@@ -25,7 +25,7 @@ public class Poisoner extends Role {
 
     @Override
     public void handleNight() throws InterruptedException, ExecutionException {
-        me.giveInstruction(Component.text("Choose a player to poison"));
+        me.giveInstruction("Choose a player to poison");
 
         CompletableFuture<List<BOTCPlayer>> future = new CompletableFuture<>();
         new SelectPlayerHook(me, game, 1, _->true, future);

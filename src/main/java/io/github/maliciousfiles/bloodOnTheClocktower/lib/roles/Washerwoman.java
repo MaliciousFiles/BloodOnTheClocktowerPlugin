@@ -19,7 +19,7 @@ public class Washerwoman extends Role {
     @Override
     public void setup() throws ExecutionException, InterruptedException {
         Storyteller st = game.getStoryteller();
-        st.giveInstruction(Component.text("Assign the Washerwoman's Townsfolk and Wrong reminder tokens"));
+        st.giveInstruction("Assign the Washerwoman's Townsfolk and Wrong reminder tokens");
 
         CompletableFuture<BOTCPlayer> townsfolk = new CompletableFuture<>();
 //        new PlayerChoiceHook(game.getStoryteller(), game, "Assign the Washerwoman's Townsfolk reminder token", null, townsfolk);
@@ -37,7 +37,7 @@ public class Washerwoman extends Role {
 
         me.wake();
 
-        game.getStoryteller().giveInstruction(Component.text("Select two players for the Washerwoman"));
+        game.getStoryteller().giveInstruction("Select two players for the Washerwoman");
 
         CompletableFuture<List<BOTCPlayer>> selectPlayer = new CompletableFuture<>();
         new SelectPlayerHook(game.getStoryteller(), game, 2, p->!p.equals(me), selectPlayer);

@@ -9,6 +9,7 @@ import io.github.maliciousfiles.bloodOnTheClocktower.lib.Role;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.RoleInfo;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.ScriptInfo;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.BOTCConfiguration;
+import io.github.maliciousfiles.bloodOnTheClocktower.util.CustomPayloadEvent;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.WritableBookContent;
 import net.kyori.adventure.text.Component;
@@ -164,6 +165,8 @@ public class ScriptDisplay implements Listener {
     private boolean selectingRoles;
     private List<RoleInfo> selectedRoles = new ArrayList<>();
 
+    private ScriptInfo viewingScript;
+
     private ScriptDisplay(Player player, Inventory inventory, int numPlayers, CompletableFuture<ScriptInfo> script, CompletableFuture<List<RoleInfo>> roles) {
         this.scriptFuture = script;
         this.rolesFuture = roles;
@@ -230,13 +233,13 @@ public class ScriptDisplay implements Listener {
         inventory.setContents(contents);
     }
 
-    private void renderViewScript() {
-        if (!selectingRoles) player.openInventory(inventory = Bukkit.createInventory(null, 54, Component.text("Script Display")));
+    private void renderViewScript(Component title) {
+        if (title != null) player.openInventory(inventory = Bukkit.createInventory(null, selectingRoles ? 45 : 54, title));
 
         ItemStack[] contents = inventory.getContents();
 
         Map<Role.Type, List<RoleInfo>> roles = new HashMap<>();
-        for (RoleInfo role : ((ScriptInfo) config.get(scripts.get(selected))).roles) {
+        for (RoleInfo role : (viewingScript == null ? (ScriptInfo) config.get(scripts.get(selected)) : viewingScript).roles) {
             roles.computeIfAbsent(role.type(), k -> new ArrayList<>()).add(role);
         }
 
@@ -341,11 +344,11 @@ public class ScriptDisplay implements Listener {
             infoItem.setItemMeta(infoMeta);
             contents[43] = infoItem;
         } else {
-            for (int i = 0; i < 8; i++) {
+            for (int i = 0; i < (viewingScript == null ? 8 : 9); i++) {
                 contents[i+45] = i < roles.get(Role.Type.TRAVELLER).size() ? roles.get(Role.Type.TRAVELLER).get(i).getItem() : TRAVELLER_FILLER;
             }
 
-            contents[53] = RETURN;
+            if (viewingScript == null) contents[53] = RETURN;
         }
 
         inventory.setContents(contents);
@@ -387,7 +390,7 @@ public class ScriptDisplay implements Listener {
                 editScript();
                 selected = -1;
             } else if (VIEW.equals(evt.getCurrentItem())) {
-                renderViewScript();
+                renderViewScript(Component.text("Viewing Script - "+scripts.get(selected)));
             } else if (!EMPTY.equals(evt.getCurrentItem()) && (evt.getSlot() < 9 || (evt.getSlot() >= 18 && evt.getSlot() < 27))) {
                 int idx = page * 18 + (evt.getSlot()/18)*9 + (evt.getSlot()%9);
                 selected = selected == idx ? -1 : idx;
@@ -399,31 +402,40 @@ public class ScriptDisplay implements Listener {
                 renderPage();
             } else if (CONTINUE_ENABLED.equals(evt.getCurrentItem())) {
                 selectRoles();
-            } else if (selectingRoles && Material.PAPER == Optional.ofNullable(evt.getCurrentItem()).map(ItemStack::getType).orElse(null)) {
+            } else if ((selectingRoles || viewingScript != null) && Material.PAPER == Optional.ofNullable(evt.getCurrentItem()).map(ItemStack::getType).orElse(null)) {
                 String roleId = evt.getCurrentItem().getItemMeta().getPersistentDataContainer().get(RoleInfo.ROLE_ID, PersistentDataType.STRING);
                 if (roleId == null) return;
 
                 RoleInfo role = RoleInfo.valueOf(roleId.toUpperCase());
-                if (selectedRoles.contains(role)) {
-                    selectedRoles.remove(role);
+
+                if (selectingRoles) {
+                    if (selectedRoles.contains(role)) {
+                        selectedRoles.remove(role);
+                    } else {
+                        selectedRoles.add(role);
+                    }
+
+                    renderViewScript(null);
                 } else {
-                    selectedRoles.add(role);
+                    new CustomPayloadEvent(role).callEvent();
+
+                    HandlerList.unregisterAll(this);
+                    inventory.close();
                 }
-                renderViewScript();
             }
         }
     }
 
     private void selectRoles() {
-        inventory.close();
         HandlerList.unregisterAll(this);
+        inventory.close();
 
         rolesFuture.complete(selectedRoles);
     }
 
     private void selectScript() {
         selectingRoles = true;
-        renderViewScript();
+        renderViewScript(Component.text("Select Roles in Play"));
 
         scriptFuture.complete((ScriptInfo) config.get(scripts.get(selected)));
     }
@@ -574,5 +586,16 @@ public class ScriptDisplay implements Listener {
         sd.renderPage();
 
         Bukkit.getScheduler().callSyncMethod(BloodOnTheClocktower.instance, () -> player.openInventory(inventory)).get();
+    }
+
+    public static void viewRoles(Player player, ScriptInfo script, Component title) {
+        Inventory inventory = Bukkit.createInventory(null, 54, Component.text("Script Display"));
+
+        ScriptDisplay sd = new ScriptDisplay(player, inventory, 0, null, null);
+        Bukkit.getPluginManager().registerEvents(sd, BloodOnTheClocktower.instance);
+        sd.viewingScript = script;
+        sd.renderViewScript(title);
+
+        Bukkit.getScheduler().runTask(BloodOnTheClocktower.instance, () -> player.openInventory(inventory));
     }
 }

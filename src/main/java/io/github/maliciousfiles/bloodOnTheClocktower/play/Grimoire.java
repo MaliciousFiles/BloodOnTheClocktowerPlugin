@@ -2,6 +2,7 @@ package io.github.maliciousfiles.bloodOnTheClocktower.play;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.*;
+import io.github.maliciousfiles.bloodOnTheClocktower.util.CustomPayloadEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -12,8 +13,10 @@ import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -28,6 +31,8 @@ import java.util.stream.Stream;
 import static io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower.createItem;
 
 public class Grimoire implements Listener {
+    public enum Access { STORYTELLER, PLAYER_SELECT, SPY }
+
     private static final ItemStack FILLER = createItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, meta ->
             meta.displayName(Component.text(" ")));
     private static final ItemStack EMPTY = createItem(Material.GRAY_STAINED_GLASS_PANE, meta -> {
@@ -39,11 +44,13 @@ public class Grimoire implements Listener {
 
     private static final NamespacedKey IDX = new NamespacedKey(BloodOnTheClocktower.instance, "botc_grimoire_idx");
 
+    private final Access access;
     private final PlayerWrapper player;
     private final Game game;
     private final Inventory inventory;
     private final List<BOTCPlayer> seatOrder;
-    private Grimoire(PlayerWrapper player, Game game, Inventory inventory) {
+    private Grimoire(PlayerWrapper player, Game game, Access access, Inventory inventory) {
+        this.access = access;
         this.player = player;
         this.game = game;
         this.inventory = inventory;
@@ -158,10 +165,22 @@ public class Grimoire implements Listener {
 
         int idx = Optional.ofNullable(evt.getCurrentItem()).map(i->Optional.ofNullable(i.getItemMeta()).map(m->m.getPersistentDataContainer().getOrDefault(IDX, PersistentDataType.INTEGER, -1)).orElse(-1)).orElse(-1);
         if (idx == -1) return;
+        if (access == Access.PLAYER_SELECT) {
+            new CustomPayloadEvent(seatOrder.get(idx)).callEvent();
+            return;
+        }
 
         if (selected == idx) selected = -1;
         else selected = idx;
         render();
+    }
+
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent evt) {
+        if (!inventory.equals(evt.getInventory())) return;
+        Bukkit.getScheduler().runTaskLater(BloodOnTheClocktower.instance, () -> {
+            if (!inventory.equals(evt.getPlayer().getOpenInventory().getTopInventory())) HandlerList.unregisterAll(this);
+        }, 2);
     }
 
     private static final NamespacedKey GAME_ID = new NamespacedKey(BloodOnTheClocktower.instance, "botc_game_id");
@@ -183,6 +202,17 @@ public class Grimoire implements Listener {
 
         return item;
     }
+    public static Inventory openInventory(Game game, Player player, Access access, Component title) {
+        PlayerWrapper botcPlayer = game.getBOTCPlayer(player);
+        Inventory inventory = Bukkit.createInventory(null, 54, title);
+
+        Grimoire grimoire = new Grimoire(botcPlayer, game, access, inventory);
+        grimoire.render();
+        Bukkit.getPluginManager().registerEvents(grimoire, BloodOnTheClocktower.instance);
+        player.openInventory(inventory);
+
+        return inventory;
+    }
     public static void register() {
         Bukkit.getPluginManager().registerEvents(new Listener() {
             @EventHandler
@@ -197,13 +227,7 @@ public class Grimoire implements Listener {
                     return;
                 }
 
-                PlayerWrapper player = game.getBOTCPlayer(evt.getPlayer());
-                Inventory inventory = Bukkit.createInventory(null, 54, Component.text("Storyteller's Grimoire"));
-
-                Grimoire grimoire = new Grimoire(player, game, inventory);
-                grimoire.render();
-                Bukkit.getPluginManager().registerEvents(grimoire, BloodOnTheClocktower.instance);
-                evt.getPlayer().openInventory(inventory);
+                openInventory(game, evt.getPlayer(), Access.STORYTELLER, Component.text("Storyteller's Grimoire"));
             }
         }, BloodOnTheClocktower.instance);
     }

@@ -23,7 +23,7 @@ public class GameInit {
         SeatList seatList = SeatList.initSeats(seats);
 
         Map<Player, CompletableFuture<Void>> seatInstructions = botcPlayers.stream().collect(Collectors.toMap(PlayerWrapper::getPlayer,
-                p -> p.giveInstruction(Component.text("Pick a seat for the game"))));
+                p -> p.giveInstruction("Pick a seat for the game")));
         CompletableFuture<Void> seatFuture = seatList.selectSeats(players, player -> {
             seatInstructions.get(player).complete(null);
         });
@@ -35,12 +35,12 @@ public class GameInit {
         ScriptInfo script = scriptFuture.get();
         List<RoleInfo> roles = roleFuture.get();
 
-        CompletableFuture<Void> waitInstruction = storyteller.giveInstruction(Component.text("Wait for the players to pick their seats"));
+        CompletableFuture<Void> waitInstruction = storyteller.giveInstruction("Wait for the players to pick their seats");
         seatFuture.get();
         waitInstruction.complete(null);
 
         Map<Player, CompletableFuture<Void>> roleBagInstructions = botcPlayers.stream().collect(Collectors.toMap(PlayerWrapper::getPlayer,
-                p -> p.giveInstruction(Component.text("Wait for the the Role Grab Bag, then right click in your inventory to take your role"))));
+                p -> p.giveInstruction("Wait for the the Role Grab Bag, then right click in your inventory to take your role")));
 
         CompletableFuture<Map<Player, RoleInfo>> selectionsFuture = new CompletableFuture<>();
         storytellerPlayer.getInventory().addItem(GrabBag.createGrabBag(
@@ -59,9 +59,7 @@ public class GameInit {
                 },
                 selectionsFuture));
 
-        CompletableFuture<Void> storytellerInstruction = storyteller.giveInstruction(Component.text(
-                "Pass around the grab bag and allow each player to take a role"
-        ));
+        CompletableFuture<Void> storytellerInstruction = storyteller.giveInstruction("Pass around the grab bag and allow each player to take a role");
         selectionsFuture.get();
         storytellerInstruction.complete(null);
 

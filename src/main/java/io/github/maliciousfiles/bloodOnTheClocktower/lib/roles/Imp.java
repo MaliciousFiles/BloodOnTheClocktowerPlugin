@@ -27,7 +27,7 @@ public class Imp extends Role {
     public void handleNight() throws InterruptedException, ExecutionException {
         if (game.getTurn() == 1) { return; }
 
-        me.giveInstruction(Component.text("Choose a player to kill"));
+        me.giveInstruction("Choose a player to kill");
 
         CompletableFuture<List<BOTCPlayer>> future = new CompletableFuture<>();
         new SelectPlayerHook(me, game, 1, _->true, future);

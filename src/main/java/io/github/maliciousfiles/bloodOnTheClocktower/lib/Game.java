@@ -64,6 +64,9 @@ public class Game {
     public List<Role> getRoles() {
         return rolesInPlay;
     }
+    public ScriptInfo getScript() {
+        return script;
+    }
 
     private void runNight() throws ExecutionException, InterruptedException {
         players.sort((a, b) -> Float.compare(a.getRole().info.nightOrder(), b.getRole().info.nightOrder()));

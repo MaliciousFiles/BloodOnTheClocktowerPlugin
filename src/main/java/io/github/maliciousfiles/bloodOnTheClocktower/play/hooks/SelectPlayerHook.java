@@ -2,9 +2,10 @@ package io.github.maliciousfiles.bloodOnTheClocktower.play.hooks;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.BOTCPlayer;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.Game;
-import io.github.maliciousfiles.bloodOnTheClocktower.play.PlayerWrapper;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.MinecraftHook;
+import io.github.maliciousfiles.bloodOnTheClocktower.play.PlayerWrapper;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
-public class SelectPlayerHook extends MinecraftHook<PlayerInteractEntityEvent, List<BOTCPlayer>> {
+public class SelectPlayerHook extends MinecraftHook<List<BOTCPlayer>> {
 
     private final Predicate<BOTCPlayer> validate;
     private final List<BOTCPlayer> players;
@@ -22,7 +23,7 @@ public class SelectPlayerHook extends MinecraftHook<PlayerInteractEntityEvent, L
     private final UUID interacter;
 
     public SelectPlayerHook(PlayerWrapper interacter, Game game, int number, Predicate<BOTCPlayer> validate, CompletableFuture<List<BOTCPlayer>> complete) {
-        super(PlayerInteractEntityEvent.class, complete);
+        super(complete);
 
         this.number = number;
         this.validate = validate;
@@ -31,8 +32,8 @@ public class SelectPlayerHook extends MinecraftHook<PlayerInteractEntityEvent, L
         this.interacter = interacter.getPlayer().getUniqueId();
     }
 
-    @Override
-    protected void onEvent(PlayerInteractEntityEvent event) {
+    @EventHandler
+    public void onInteract(PlayerInteractEntityEvent event) {
         if (!event.getPlayer().getUniqueId().equals(interacter) ||
             !(event.getRightClicked() instanceof Player other)) return;
 
