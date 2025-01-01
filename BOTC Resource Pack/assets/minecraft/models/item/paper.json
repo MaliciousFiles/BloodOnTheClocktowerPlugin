@@ -1002,6 +1002,18 @@
     },
     {
       "predicate": {
+        "custom_model_data": 253
+      },
+      "model": "botc:item/continue_enabled"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 254
+      },
+      "model": "botc:item/continue_disabled"
+    },
+    {
+      "predicate": {
         "custom_model_data": 255
       },
       "model": "botc:item/grimoire"

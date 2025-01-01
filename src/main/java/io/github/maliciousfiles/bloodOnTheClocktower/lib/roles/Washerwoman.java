@@ -2,9 +2,8 @@ package io.github.maliciousfiles.bloodOnTheClocktower.lib.roles;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.*;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.ChatComponents;
-import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.GetChoiceHook;
+import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.RoleChoiceHook;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.SelectPlayerHook;
-import io.github.maliciousfiles.bloodOnTheClocktower.util.Option;
 import net.kyori.adventure.text.Component;
 
 import java.util.List;
@@ -39,17 +38,10 @@ public class Washerwoman extends Role {
 
         game.getStoryteller().giveInstruction("Select two players for the Washerwoman");
 
-        CompletableFuture<List<BOTCPlayer>> selectPlayer = new CompletableFuture<>();
-        new SelectPlayerHook(game.getStoryteller(), game, 2, p->!p.equals(me), selectPlayer);
+        List<BOTCPlayer> players = new SelectPlayerHook(game.getStoryteller(), game, 2, p->!p.equals(me)).get();
+        RoleInfo role = new RoleChoiceHook(game, "Pick a role to show the Washerwoman").get();
 
-        CompletableFuture<Role> getChoice = new CompletableFuture<>();
-        new GetChoiceHook<>(game.getRoles().stream().map(r->
-                new Option<>(r, r.info.getItem())).toList(), getChoice);
-
-        List<BOTCPlayer> players = selectPlayer.get();
-        Role role = getChoice.get();
-
-        me.giveInfo(Component.text("One of " + players.get(0).getName() + " and " + players.get(1).getName() + " is a " + ChatComponents.roleInfo(role.info)));
+        me.giveInfo(Component.text("One of " + players.get(0).getName() + " and " + players.get(1).getName() + " is a " + ChatComponents.roleInfo(role)));
 
         me.sleep();
     }

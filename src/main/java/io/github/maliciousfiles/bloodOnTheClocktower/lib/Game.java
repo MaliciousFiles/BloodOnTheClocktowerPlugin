@@ -68,16 +68,20 @@ public class Game {
         return script;
     }
 
+    public void startGame() {
+
+    }
+
     private void runNight() throws ExecutionException, InterruptedException {
         players.sort((a, b) -> Float.compare(a.getRole().info.nightOrder(), b.getRole().info.nightOrder()));
 
         players.forEach(BOTCPlayer::handleDusk);
 
-        boolean isFirstNight = turn == 1;
+        boolean doEvilInfo = turn == 1 && players.size() > 5;
         boolean didMinionInfo = false;
         boolean didDemonInfo = false;
         for (BOTCPlayer player : players) {
-            if (isFirstNight) {
+            if (doEvilInfo) {
                 if (!didMinionInfo && player.getRole().info.nightOrder() > MINION_INFO_ORDER) {
                     didMinionInfo = true;
                     giveMinionInfo();
@@ -106,6 +110,4 @@ public class Game {
     public void checkVictory() {
         // TODO
     }
-
-    // TODO: put game execution in a thread, at some point in the hierarchy
 }

@@ -16,10 +16,8 @@ import org.bukkit.event.EventHandler;
 import java.util.concurrent.CompletableFuture;
 
 public class RoleChoiceHook extends MinecraftHook<RoleInfo> {
-    public RoleChoiceHook(Game game, Storyteller storyteller, CompletableFuture<RoleInfo> complete) {
-        super(complete);
-
-        ScriptDisplay.viewRoles(storyteller.getPlayer(), game.getScript(), Component.text("Choose a Role", PlayerWrapper.INSTRUCTION_COLOR, TextDecoration.BOLD));
+    public RoleChoiceHook(Game game, String instruction) {
+        ScriptDisplay.viewRoles(game.getStoryteller().getPlayer(), game.getScript(), Component.text(instruction, PlayerWrapper.INSTRUCTION_COLOR, TextDecoration.BOLD));
     }
 
     @EventHandler

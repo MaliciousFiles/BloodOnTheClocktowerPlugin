@@ -27,10 +27,8 @@ public class Poisoner extends Role {
     public void handleNight() throws InterruptedException, ExecutionException {
         me.giveInstruction("Choose a player to poison");
 
-        CompletableFuture<List<BOTCPlayer>> future = new CompletableFuture<>();
-        new SelectPlayerHook(me, game, 1, _->true, future);
-
-        BOTCPlayer poisoned = future.get().getFirst();
+        BOTCPlayer poisoned = new SelectPlayerHook(me, game, 1, _->true)
+                .get().getFirst();
         if (!me.isImpaired()) {
             moveReminderToken(poisonedReminder, poisoned);
         }

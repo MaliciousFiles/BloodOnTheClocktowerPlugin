@@ -1,6 +1,7 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.play;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.*;
+import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.StorytellerPauseHook;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.Option;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -69,5 +70,10 @@ public class GameInit {
                 storyteller,
                 botcPlayers);
         storytellerPlayer.getInventory().addItem(Grimoire.createGrimoire(game));
+
+
+        new StorytellerPauseHook(storyteller, "Continue to begin the game").get();
+
+        game.startGame();
     }
 }

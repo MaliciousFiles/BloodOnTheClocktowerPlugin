@@ -21,11 +21,9 @@ import java.util.concurrent.CompletableFuture;
 public class PlayerChoiceHook extends MinecraftHook<BOTCPlayer> {
     private final Inventory grimoire;
 
-    public PlayerChoiceHook(Game game, Storyteller storyteller, CompletableFuture<BOTCPlayer> complete) {
-        super(complete);
-
-        grimoire = Grimoire.openInventory(game, storyteller.getPlayer(), Grimoire.Access.PLAYER_SELECT,
-                Component.text("Choose a Player", PlayerWrapper.INSTRUCTION_COLOR, TextDecoration.BOLD));
+    public PlayerChoiceHook(Game game, String instruction) {
+        grimoire = Grimoire.openInventory(game, game.getStoryteller().getPlayer(), Grimoire.Access.PLAYER_SELECT,
+                Component.text(instruction, PlayerWrapper.INSTRUCTION_COLOR, TextDecoration.BOLD));
     }
 
     @EventHandler

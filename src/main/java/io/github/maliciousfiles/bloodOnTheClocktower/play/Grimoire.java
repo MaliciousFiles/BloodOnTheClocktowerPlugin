@@ -185,7 +185,7 @@ public class Grimoire implements Listener {
 
     private static final NamespacedKey GAME_ID = new NamespacedKey(BloodOnTheClocktower.instance, "botc_game_id");
     private static final ItemStack GRIMOIRE = ((CraftItemType<ItemMeta>) Material.PAPER.asItemType()).createItemStack(meta -> {
-        meta.displayName(Component.text("Grimoire")
+        meta.displayName(Component.text("Grimoire", NamedTextColor.DARK_PURPLE, TextDecoration.BOLD)
                 .decoration(TextDecoration.ITALIC, false));
         meta.lore(List.of(
                 Component.text("Right-click to open the Storyteller's Grimoire", NamedTextColor.GRAY)

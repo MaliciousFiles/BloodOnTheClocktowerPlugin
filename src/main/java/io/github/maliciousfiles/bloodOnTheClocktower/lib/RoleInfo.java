@@ -1,6 +1,7 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.lib;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
+import io.github.maliciousfiles.bloodOnTheClocktower.lib.roles.Imp;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.roles.Poisoner;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -136,7 +137,7 @@ public enum RoleInfo {
     XAAN("Xaan", "On night X, all Townsfolk are poisoned until dusk. [X Outsiders]", Role.Type.MINION, -1, Poisoner.class, 115),
     ALHADIKHIA("Al-Hadikhia", "Each night*, you may choose 3 players (all players learn who): each silently chooses to live or die, but if all live, all die.", Role.Type.DEMON, 47, Poisoner.class, 116),
     FANGGU("Fang Gu", "Each night*, choose a player: they die. The 1st Outsider this kills becomes an evil Fang Gu & you die instead. [+1 Outsider]", Role.Type.DEMON, 41, Poisoner.class, 117),
-    IMP("Imp", "Each night*, choose a player: they die. If you kill yourself this way, a Minion becomes the Imp.", Role.Type.DEMON, 36, Poisoner.class, 118),
+    IMP("Imp", "Each night*, choose a player: they die. If you kill yourself this way, a Minion becomes the Imp.", Role.Type.DEMON, 36, Imp.class, 118),
     KAZALI("Kazali", "Each night*, choose a player: they die. [You choose which players are which Minions. -? to +? Outsiders]", Role.Type.DEMON, 51, Poisoner.class, 119),
     LEGION("Legion", "Each night*, a player might die. Executions fail if only evil voted. You register as a Minion too. [Most players are Legion]", Role.Type.DEMON, 35, Poisoner.class, 120),
     LEVIATHAN("Leviathan", "If more than 1 good player is executed, evil wins. All players know you are in play. After day 5, evil wins.", Role.Type.DEMON, 100, Poisoner.class, 121),

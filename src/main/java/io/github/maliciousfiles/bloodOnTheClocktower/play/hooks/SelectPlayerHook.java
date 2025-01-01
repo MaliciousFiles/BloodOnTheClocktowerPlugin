@@ -22,9 +22,7 @@ public class SelectPlayerHook extends MinecraftHook<List<BOTCPlayer>> {
     private final Game game;
     private final UUID interacter;
 
-    public SelectPlayerHook(PlayerWrapper interacter, Game game, int number, Predicate<BOTCPlayer> validate, CompletableFuture<List<BOTCPlayer>> complete) {
-        super(complete);
-
+    public SelectPlayerHook(PlayerWrapper interacter, Game game, int number, Predicate<BOTCPlayer> validate) {
         this.number = number;
         this.validate = validate;
         this.players = new ArrayList<>();

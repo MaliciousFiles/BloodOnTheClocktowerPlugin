@@ -1,6 +1,7 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.lib.roles;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.*;
+import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.PlayerChoiceHook;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.SelectPlayerHook;
 import net.kyori.adventure.text.Component;
 
@@ -29,10 +30,8 @@ public class Imp extends Role {
 
         me.giveInstruction("Choose a player to kill");
 
-        CompletableFuture<List<BOTCPlayer>> future = new CompletableFuture<>();
-        new SelectPlayerHook(me, game, 1, _->true, future);
-
-        BOTCPlayer dead = future.get().getFirst();
+        BOTCPlayer dead = new SelectPlayerHook(me, game, 1, _->true)
+                .get().getFirst();
         if (!me.isImpaired()) {
             moveReminderToken(deadReminder, dead);
             dead.handleDeathAttempt(BOTCPlayer.DeathCause.PLAYER, me);
@@ -42,10 +41,8 @@ public class Imp extends Role {
     @Override
     public void handleDeathAttempt(BOTCPlayer.DeathCause cause, BOTCPlayer killer) throws ExecutionException, InterruptedException {
         if (cause == BOTCPlayer.DeathCause.PLAYER && killer == me) {
-            // TODO: jump to a minion
-            CompletableFuture<BOTCPlayer> minion = new CompletableFuture<>();
-//            new PlayerChoiceHook(game.getStoryteller(), game, "Pick a minion for the Imp to jump to", 1, null, minion);
-            minion.get().switchRole(info);
+            new PlayerChoiceHook(game, "Pick a minion for the Imp to jump to")
+                    .get().switchRole(info);
         }
         super.handleDeathAttempt(cause, killer);
     }
