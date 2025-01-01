@@ -3,10 +3,7 @@ package io.github.maliciousfiles.bloodOnTheClocktower.lib.roles;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.*;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.PlayerChoiceHook;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.SelectPlayerHook;
-import net.kyori.adventure.text.Component;
 
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class Imp extends Role {
@@ -15,7 +12,7 @@ public class Imp extends Role {
     public Imp(BOTCPlayer me, Game game, RoleInfo info) { super(me, game, info); }
 
     @Override
-    protected boolean hasNightAction(Game game) {
+    protected boolean hasNightAction() {
         return game.getTurn() != 1;
     }
 

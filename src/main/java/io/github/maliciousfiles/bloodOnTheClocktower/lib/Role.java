@@ -41,10 +41,10 @@ public abstract class Role {
     public boolean hasAbility() {
         return me.isAlive() || me.reminderTokensOnMe.stream().anyMatch(tok -> tok.getEffect() == ReminderToken.Effect.HAS_ABILITY);
     }
-    public final boolean doesSomething(Game game) {
-        return hasAbility() && hasNightAction(game);
+    public final boolean shouldRunNight() {
+        return hasAbility() && hasNightAction();
     }
-    protected abstract boolean hasNightAction(Game game);
+    protected abstract boolean hasNightAction();
 
     public void setup() throws ExecutionException, InterruptedException {}
     public void handleRoleSwitch() {
@@ -57,5 +57,23 @@ public abstract class Role {
     public void handleDeathAttempt(BOTCPlayer.DeathCause cause, @Nullable BOTCPlayer killer) throws ExecutionException, InterruptedException {
         me.die();
         removeAllReminderTokens();
+    }
+
+    public class RoleNightAction implements  Game.NightAction {
+        @Override
+        public String name() { return info.name(); }
+
+        @Override
+        public boolean shouldRun() { return shouldRunNight(); }
+
+        @Override
+        public float order() { return info.nightOrder(); }
+
+        @Override
+        public void run() throws ExecutionException, InterruptedException { handleNight(); }
+    }
+
+    public Game.NightAction getNightAction() {
+        return new RoleNightAction();
     }
 }

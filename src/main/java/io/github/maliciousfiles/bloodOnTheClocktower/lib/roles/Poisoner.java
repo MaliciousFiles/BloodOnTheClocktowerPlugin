@@ -2,10 +2,7 @@ package io.github.maliciousfiles.bloodOnTheClocktower.lib.roles;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.*;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.SelectPlayerHook;
-import net.kyori.adventure.text.Component;
 
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class Poisoner extends Role {
@@ -14,7 +11,7 @@ public class Poisoner extends Role {
     public Poisoner(BOTCPlayer me, Game game, RoleInfo info) { super(me, game, info); }
 
     @Override
-    protected boolean hasNightAction(Game game) {
+    protected boolean hasNightAction() {
         return true;
     }
 

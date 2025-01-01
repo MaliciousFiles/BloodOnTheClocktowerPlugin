@@ -16,7 +16,7 @@ public class Washerwoman extends Role {
     public Washerwoman(BOTCPlayer me, Game game, RoleInfo info) { super(me, game, info); }
 
     @Override
-    protected boolean hasNightAction(Game game) {
+    protected boolean hasNightAction() {
         return !hasInfo;
     }
 

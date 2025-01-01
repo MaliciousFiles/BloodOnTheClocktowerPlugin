@@ -2,13 +2,9 @@ package io.github.maliciousfiles.bloodOnTheClocktower.lib;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.play.SeatList;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.StorytellerPauseHook;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 public class Game {
@@ -45,9 +41,6 @@ public class Game {
         return uuid;
     }
 
-    public static final int MINION_INFO_ORDER = 12;
-    private static final int DEMON_INFO_ORDER = 15;
-
     public BOTCPlayer getBOTCPlayer(Player mcPlayer) {
         return mcPlayerToBOTC.get(mcPlayer.getUniqueId());
     }
@@ -70,35 +63,83 @@ public class Game {
     }
 
     public void startGame() throws ExecutionException, InterruptedException {
-        runNight();
+        setup();
+        while (true) {
+            runNight();
+            // TODO: check for game end
+        }
+    }
+
+    private void setup() throws ExecutionException, InterruptedException {
+        for (BOTCPlayer player : players) {
+            new StorytellerPauseHook(storyteller, "Setup "+player.getRole().info.name()).get();
+            player.getRole().setup();
+        }
+    }
+
+    public interface NightAction {
+        String name();
+        boolean shouldRun();
+        float order();
+        void run() throws ExecutionException, InterruptedException;
+    }
+
+    private class MinionInfoNightAction implements NightAction {
+        @Override
+        public String name() { return "Minion Info"; }
+
+        @Override
+        public boolean shouldRun() { return true; }
+
+        @Override
+        public float order() { return 12; }
+
+        @Override
+        public void run() throws ExecutionException, InterruptedException {
+            // TODO
+        }
+    }
+
+    private class DemonInfoNightAction implements NightAction {
+        @Override
+        public String name() { return "Demon Info"; }
+
+        @Override
+        public boolean shouldRun() { return true; }
+
+        @Override
+        public float order() { return 15; }
+
+        @Override
+        public void run() throws ExecutionException, InterruptedException {
+            // TODO
+        }
     }
 
     private void runNight() throws ExecutionException, InterruptedException {
-        players.sort((a, b) -> Float.compare(a.getRole().info.nightOrder(), b.getRole().info.nightOrder()));
 
+        PriorityQueue<NightAction> nightActions = new PriorityQueue<>(Comparator.comparing(NightAction::order));
+
+        new StorytellerPauseHook(storyteller, "Continue to Night").get();
         for (BOTCPlayer player : players) {
             if (player.getRole().hasAbility()) player.getRole().handleDusk();
+            nightActions.add(player.getRole().getNightAction());
         }
 
-        boolean doEvilInfo = turn == 1 && players.size() > 5;
-        boolean didMinionInfo = false;
-        boolean didDemonInfo = false;
-        for (BOTCPlayer player : players) {
-            if (doEvilInfo) {
-                if (!didMinionInfo && player.getRole().info.nightOrder() > MINION_INFO_ORDER) {
-                    didMinionInfo = true;
-                    giveMinionInfo();
-                }
-                if (!didDemonInfo && player.getRole().info.nightOrder() > DEMON_INFO_ORDER) {
-                    didDemonInfo = true;
-                    giveDemonInfo();
-                }
+        if (turn == 1 && players.size() > 5) {
+            nightActions.add(new MinionInfoNightAction());
+            nightActions.add(new DemonInfoNightAction());
+        }
+
+        while (!nightActions.isEmpty()) {
+            NightAction action = nightActions.poll();
+
+            if (action.shouldRun()) {
+                action.run();
             }
 
-            if (player.getRole().doesSomething(this)) {
-                new StorytellerPauseHook(storyteller, "Continue to "+player.getRole().info.name()).get();
-                player.getRole().handleNight();
-            }
+            new StorytellerPauseHook(storyteller, "Continue to " + action.name()).get();
+            action.run();
             // TODO: check for game end
         }
 
@@ -106,17 +147,6 @@ public class Game {
         for (BOTCPlayer player : players) {
             if (player.getRole().hasAbility()) player.getRole().handleDawn();
         }
-
-        new StorytellerPauseHook(storyteller, "Continue to Night").get();
-        runNight();
-    }
-
-    private void giveMinionInfo() {
-        // TODO
-    }
-
-    private void giveDemonInfo() {
-        // TODO
     }
 
     public void checkVictory() {
