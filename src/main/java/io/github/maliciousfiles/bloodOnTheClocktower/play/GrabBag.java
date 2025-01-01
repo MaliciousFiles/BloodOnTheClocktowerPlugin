@@ -106,6 +106,13 @@ public class GrabBag<D> {
         return ret;
     }
 
+    public static void removeGrabBag(ItemStack grabBag) {
+        String id = getId(grabBag);
+        if (id == null) return;
+
+        grabBags.remove(id);
+    }
+
     private static <D> ItemStack grab(Player player, GrabBag<D> bag) {
         if (bag.remaining.isEmpty()) return ItemStack.empty();
         if (bag.playersTaken.contains(player.getUniqueId())) return ItemStack.empty();

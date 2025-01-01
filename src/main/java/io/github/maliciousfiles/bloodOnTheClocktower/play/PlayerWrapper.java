@@ -30,7 +30,7 @@ public abstract class PlayerWrapper {
         return mcPlayer.getName();
     }
 
-    public static final TextColor INSTRUCTION_COLOR = TextColor.color(0, 190, 239);
+    public static final TextColor INSTRUCTION_COLOR = TextColor.color(156, 227, 255);
     public CompletableFuture<Void> giveInstruction(String instruction) {
         CompletableFuture<Void> cancel = new CompletableFuture<>();
 

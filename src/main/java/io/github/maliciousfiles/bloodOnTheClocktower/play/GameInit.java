@@ -4,10 +4,12 @@ import io.github.maliciousfiles.bloodOnTheClocktower.lib.*;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.StorytellerPauseHook;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.Option;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.List;
@@ -44,9 +46,10 @@ public class GameInit {
                 p -> p.giveInstruction("Wait for the the Role Grab Bag, then right click in your inventory to take your role")));
 
         CompletableFuture<Map<Player, RoleInfo>> selectionsFuture = new CompletableFuture<>();
-        storytellerPlayer.getInventory().addItem(GrabBag.createGrabBag(
+        ItemStack grabBag = GrabBag.createGrabBag(
                 meta ->
-                        meta.displayName(Component.text("Role Grab Bag").decoration(TextDecoration.ITALIC, false)),
+                        meta.displayName(Component.text("Role Grab Bag", NamedTextColor.YELLOW, TextDecoration.BOLD)
+                                .decoration(TextDecoration.ITALIC, false)),
                 roles.stream()
                         .filter(r->r.type() != Role.Type.TRAVELLER && r.type() != Role.Type.FABLED)
                         .map(r->new Option<>(r, r.getItem())).toList(),
@@ -58,11 +61,13 @@ public class GameInit {
                     pair.getFirst().sendMessage(Component.text("You are the ").append(ChatComponents.roleInfo(pair.getSecond())));
                     storyteller.giveInfo(Component.text(pair.getFirst().getName()+" is the ").append(ChatComponents.roleInfo(pair.getSecond())));
                 },
-                selectionsFuture));
+                selectionsFuture);
+        storytellerPlayer.getInventory().addItem(grabBag);
 
         CompletableFuture<Void> storytellerInstruction = storyteller.giveInstruction("Pass around the grab bag and allow each player to take a role");
         selectionsFuture.get();
         storytellerInstruction.complete(null);
+        GrabBag.removeGrabBag(grabBag);
 
         Game game = new Game(
                 seatList,
@@ -72,7 +77,7 @@ public class GameInit {
         storytellerPlayer.getInventory().addItem(Grimoire.createGrimoire(game));
 
 
-        new StorytellerPauseHook(storyteller, "Continue to begin the game").get();
+        new StorytellerPauseHook(storyteller, "Press continue to begin the game").get();
 
         game.startGame();
     }

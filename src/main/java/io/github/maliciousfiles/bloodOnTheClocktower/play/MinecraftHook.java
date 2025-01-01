@@ -1,5 +1,7 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.play;
 
+import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
+import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 
@@ -11,6 +13,7 @@ public abstract class MinecraftHook<D> implements Listener {
 
     public MinecraftHook() {
         this.complete = new CompletableFuture<>();
+        Bukkit.getPluginManager().registerEvents(this, BloodOnTheClocktower.instance);
     }
 
     public D get() throws ExecutionException, InterruptedException {
