@@ -13,6 +13,8 @@ public class Game {
         return games.get(id);
     }
 
+    public enum Winner { NONE, GOOD, EVIL }
+
     private final Map<UUID, BOTCPlayer> mcPlayerToBOTC = new HashMap<>();
     private final UUID uuid;
     private final ScriptInfo script;
@@ -21,6 +23,7 @@ public class Game {
     private final Storyteller storyteller;
     private final List<BOTCPlayer> players;
     private int turn;
+    private Winner winner = Winner.NONE;
 
     public Game(SeatList seats, ScriptInfo script, Storyteller storyteller, List<BOTCPlayer> players) {
         players.forEach(p->p.setGame(this));
@@ -66,8 +69,9 @@ public class Game {
         setup();
         while (true) {
             runNight();
-            // TODO: check for game end
+            if (isGameOver()) { break; }
         }
+        // TODO: announce game end
     }
 
     private void setup() throws ExecutionException, InterruptedException {
@@ -117,6 +121,7 @@ public class Game {
     }
 
     private void runNight() throws ExecutionException, InterruptedException {
+        if (isGameOver()) { return; }
 
         PriorityQueue<NightAction> nightActions = new PriorityQueue<>(Comparator.comparing(NightAction::order));
 
@@ -132,22 +137,50 @@ public class Game {
         }
 
         while (!nightActions.isEmpty()) {
-            NightAction action = nightActions.poll();
+            if (isGameOver()) { return; }
 
+            NightAction action = nightActions.poll();
             if (action.shouldRun()) {
                 new StorytellerPauseHook(storyteller, "Continue to " + action.name()).get();
                 action.run();
             }
-            // TODO: check for game end
         }
 
+        if (isGameOver()) { return; }
         new StorytellerPauseHook(storyteller, "Continue to Dawn").get();
         for (BOTCPlayer player : players) {
             if (player.getRole().hasAbility()) player.getRole().handleDawn();
         }
     }
 
+    public boolean isGameOver() {
+        return winner != Winner.NONE;
+    }
+
     public void checkVictory() {
-        // TODO
+        if (isGameOver()) { return; }
+
+        int alive = 0;
+        boolean demonAlive = false;
+        boolean goodVictoryBlocked = false;
+        for (BOTCPlayer player : players) {
+            if (player.getRole().countsAsAlive()) {
+                alive++;
+                if (player.getRole().info.type() == Role.Type.DEMON) {
+                    demonAlive = true;
+                    break;
+                }
+            }
+            if (player.getRole().blocksGoodVictory()) {
+                goodVictoryBlocked = true;
+                break;
+            }
+        }
+
+        if (!demonAlive && !goodVictoryBlocked) {
+            winner = Winner.GOOD;
+        } else if (alive <= 2) {
+            winner = Winner.EVIL;
+        }
     }
 }

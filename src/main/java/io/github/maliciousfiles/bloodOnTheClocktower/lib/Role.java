@@ -76,4 +76,10 @@ public abstract class Role {
     public Game.NightAction getNightAction() {
         return new RoleNightAction();
     }
+
+    public boolean countsAsAlive() {
+        return me.isAlive() && info.type() != Type.TRAVELLER;
+    }
+
+    public boolean blocksGoodVictory() { return false; }
 }
