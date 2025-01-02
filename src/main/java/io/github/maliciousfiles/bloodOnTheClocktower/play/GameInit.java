@@ -55,7 +55,10 @@ public class GameInit {
                 players,
                 pair -> {
                     roleBagInstructions.get(pair.getFirst()).complete(null);
-                    botcPlayers.get(players.indexOf(pair.getFirst())).setRole(pair.getSecond());
+
+                    BOTCPlayer player = botcPlayers.get(players.indexOf(pair.getFirst()));
+                    player.setRole(pair.getSecond());
+                    player.setAlignment(pair.getSecond().alignment());
 
                     pair.getFirst().sendMessage(Component.text("You are the ").append(ChatComponents.roleInfo(pair.getSecond())));
                     storyteller.giveInfo(Component.text(pair.getFirst().getName()+" is the ").append(ChatComponents.roleInfo(pair.getSecond())));

@@ -16,16 +16,17 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class RoleChoiceHook extends MinecraftHook<RoleInfo> {
-    public RoleChoiceHook(Game game, String instruction) {
+public class RoleChoiceHook extends MinecraftHook<List<RoleInfo>> {
+    public RoleChoiceHook(PlayerWrapper player, Game game, String instruction, int number) {
         Bukkit.getScheduler().runTask(BloodOnTheClocktower.instance,
-                () -> ScriptDisplay.viewRoles(game.getStoryteller().getPlayer(), game.getScript(), Component.text(instruction, NamedTextColor.DARK_RED)));
+                () -> ScriptDisplay.viewRoles(player.getPlayer(), game.getScript(), Component.text(instruction, PlayerWrapper.INSTRUCTION_COLOR, TextDecoration.BOLD)));
     }
 
     @EventHandler
     protected void onEvent(CustomPayloadEvent evt) {
-        if (evt.source() == ScriptDisplay.class && evt.data() instanceof RoleInfo role) complete(role);
+        if (evt.source() == ScriptDisplay.class && evt.data() instanceof List roles) complete(roles);
     }
 }

@@ -188,7 +188,7 @@ public enum RoleInfo {
 
     private final String title, description;
     private final Role.Type type;
-    private final float nightOrder;
+    private final float nightOrder; // https://docs.google.com/spreadsheets/d/1eJkBC6rF-VU6J0h0KJvyiXjs2HLl6Yjzw9jfVYHOW34/edit?gid=0#gid=0
     private final Class<? extends Role> handler;
 
     RoleInfo(String title, String description, Role.Type type, float nightOrder, Class<? extends Role> handler) {
@@ -211,6 +211,7 @@ public enum RoleInfo {
     public Role.Type type() {
         return type;
     }
+    public BOTCPlayer.Alignment alignment() { return (type == Role.Type.MINION || type == Role.Type.DEMON) ? BOTCPlayer.Alignment.EVIL : BOTCPlayer.Alignment.GOOD; }
     public float nightOrder() {
         return nightOrder;
     }

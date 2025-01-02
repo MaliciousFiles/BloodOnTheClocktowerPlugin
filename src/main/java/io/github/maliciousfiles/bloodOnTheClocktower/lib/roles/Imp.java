@@ -12,6 +12,9 @@ public class Imp extends Role {
     public Imp(BOTCPlayer me, Game game, RoleInfo info) { super(me, game, info); }
 
     @Override
+    public boolean hasSetup() { return false; }
+
+    @Override
     protected boolean hasNightAction() {
         return game.getTurn() != 1;
     }
@@ -34,7 +37,7 @@ public class Imp extends Role {
                 .get().getFirst();
         if (!me.isImpaired()) {
             moveReminderToken(deadReminder, dead);
-            dead.handleDeathAttempt(BOTCPlayer.DeathCause.PLAYER, me);
+            dead.getRole().handleDeathAttempt(BOTCPlayer.DeathCause.PLAYER, me);
         }
     }
 
@@ -42,7 +45,7 @@ public class Imp extends Role {
     public void handleDeathAttempt(BOTCPlayer.DeathCause cause, BOTCPlayer killer) throws ExecutionException, InterruptedException {
         if (cause == BOTCPlayer.DeathCause.PLAYER && killer == me) {
             new PlayerChoiceHook(game, "Pick a minion for the Imp to jump to")
-                    .get().switchRole(info);
+                    .get().changeRoleAndAlignment(info, null);
         }
         super.handleDeathAttempt(cause, killer);
     }

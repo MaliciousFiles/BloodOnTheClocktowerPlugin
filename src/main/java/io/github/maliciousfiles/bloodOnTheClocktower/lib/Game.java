@@ -1,7 +1,10 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.lib;
 
+import io.github.maliciousfiles.bloodOnTheClocktower.play.ChatComponents;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.SeatList;
+import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.RoleChoiceHook;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.StorytellerPauseHook;
+import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 
 import java.util.*;
@@ -77,8 +80,10 @@ public class Game {
 
     private void setup() throws ExecutionException, InterruptedException {
         for (BOTCPlayer player : players) {
-            new StorytellerPauseHook(storyteller, "Setup "+player.getRole().info.title()).get();
-            player.getRole().setup();
+            if (player.getRole().hasSetup()) {
+                new StorytellerPauseHook(storyteller, "Continue to setup for " + player.getRole().info.title()).get();
+                player.getRole().setup();
+            }
         }
     }
 
@@ -101,7 +106,23 @@ public class Game {
 
         @Override
         public void run() throws ExecutionException, InterruptedException {
-            // TODO
+            List<BOTCPlayer> demons = players.stream()
+                    .filter(p->p.getRole().info.type() == Role.Type.DEMON)
+                    .toList();
+            List<BOTCPlayer> minions = players.stream()
+                    .filter(p->p.getRole().info.type() == Role.Type.MINION)
+                    .toList();
+            minions.forEach(BOTCPlayer::wake);
+            for (BOTCPlayer minion : minions) {
+                if (demons.size() == 0) {
+                    minion.giveInfo(Component.text("There is no demon"));
+                } else if (demons.size() == 1) {
+                    minion.giveInfo(Component.text("The demon is " + demons.getFirst().getName()));
+                } else {
+                    minion.giveInfo(Component.text("The demons are " + String.join(", ", demons.stream().map(BOTCPlayer::getName).toList())));
+                }
+            }
+            minions.forEach(BOTCPlayer::sleep);
         }
     }
 
@@ -117,7 +138,29 @@ public class Game {
 
         @Override
         public void run() throws ExecutionException, InterruptedException {
-            // TODO
+            List<BOTCPlayer> demons = players.stream()
+                    .filter(p->p.getRole().info.type() == Role.Type.DEMON)
+                    .toList();
+            List<BOTCPlayer> minions = players.stream()
+                    .filter(p->p.getRole().info.type() == Role.Type.MINION)
+                    .toList();
+            demons.forEach(BOTCPlayer::wake);
+            for (BOTCPlayer demon : demons) {
+                if (minions.size() == 0) {
+                    demon.giveInfo(Component.text("You have no minions"));
+                } else if (minions.size() == 1) {
+                    demon.giveInfo(Component.text("Your minion is " + minions.getFirst().getName()));
+                } else {
+                    demon.giveInfo(Component.text("Your minions are " + String.join(", ", minions.stream().map(BOTCPlayer::getName).toList())));
+                }
+            }
+
+            List<RoleInfo> bluffs = new RoleChoiceHook(storyteller, Game.this, "Select bluffs for the demon", 3).get();
+            Component bluffInfo = Component.text("Your bluffs are ");
+            bluffs.forEach(bluff -> bluffInfo.append(ChatComponents.roleInfo(bluff)));
+            demons.forEach(d->d.giveInfo(bluffInfo));
+
+            demons.forEach(BOTCPlayer::sleep);
         }
     }
 
@@ -127,6 +170,7 @@ public class Game {
         PriorityQueue<NightAction> nightActions = new PriorityQueue<>(Comparator.comparing(NightAction::order));
 
         new StorytellerPauseHook(storyteller, "Continue to Night").get();
+        players.forEach(BOTCPlayer::sleep);
         for (BOTCPlayer player : players) {
             if (player.getRole().hasAbility()) player.getRole().handleDusk();
             nightActions.add(player.getRole().getNightAction());
@@ -152,6 +196,7 @@ public class Game {
         for (BOTCPlayer player : players) {
             if (player.getRole().hasAbility()) player.getRole().handleDawn();
         }
+        players.forEach(BOTCPlayer::wake);
     }
 
     public boolean isGameOver() {

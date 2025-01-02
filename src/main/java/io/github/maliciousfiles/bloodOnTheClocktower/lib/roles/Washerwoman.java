@@ -18,6 +18,9 @@ public class Washerwoman extends Role {
     public Washerwoman(BOTCPlayer me, Game game, RoleInfo info) { super(me, game, info); }
 
     @Override
+    public boolean hasSetup() { return true; }
+
+    @Override
     protected boolean hasNightAction() {
         return !hasInfo;
     }
@@ -43,7 +46,7 @@ public class Washerwoman extends Role {
         game.getStoryteller().giveInstruction("Select two players for the Washerwoman");
 
         List<BOTCPlayer> players = new SelectPlayerHook(game.getStoryteller(), game, 2, p->!p.equals(me)).get();
-        RoleInfo role = new RoleChoiceHook(game, "Pick a role to show the Washerwoman").get();
+        RoleInfo role = new RoleChoiceHook(game.getStoryteller(), game, "Pick a role to show the Washerwoman", 1).get().getFirst();
 
         me.giveInfo(Component.text("One of " + players.get(0).getName() + " and " + players.get(1).getName() + " is a " + ChatComponents.roleInfo(role)));
 
