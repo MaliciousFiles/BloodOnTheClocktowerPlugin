@@ -43,6 +43,7 @@ public final class BloodOnTheClocktower extends JavaPlugin {
         PacketManager.register();
         GrabBag.register();
         Grimoire.register();
+        MiscGameHandler.register();
         Bukkit.getPluginManager().registerEvents(new ResourcePackHandler(), this);
     }
 

@@ -1,9 +1,7 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.play;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.*;
 import net.minecraft.network.PacketListener;
 import net.minecraft.network.protocol.Packet;
 import org.bukkit.Bukkit;
@@ -20,9 +18,8 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-// TODO: maybe remove
 public class PacketManager implements Listener {
-    private static final Map<Class<? extends Packet<?>>, List<BiConsumer<Player, ?>>> listeners = new HashMap<>();
+    private static final Map<Class<? extends Packet<?>>, List<BiConsumer<Player, ? extends Packet<?>>>> listeners = new HashMap<>();
 
     public static <T extends Packet<?>> void registerListener(Class<T> packetClass, BiConsumer<Player, T> listener) {
         listeners.computeIfAbsent(packetClass, k -> new ArrayList<>()).add(listener);
@@ -40,12 +37,24 @@ public class PacketManager implements Listener {
         if (pipeline.names().contains("botc_packet_listener")) {
             pipeline.remove("botc_packet_listener");
         }
-        pipeline.addBefore("packet_handler", "botc_packet_listener", new SimpleChannelInboundHandler<Packet<?>>() {
-            @Override
-            protected void channelRead0(ChannelHandlerContext ctx, Packet<?> packet) {
-                ctx.fireChannelRead(packet);
+        pipeline.addBefore("packet_handler", "botc_packet_listener", new ChannelDuplexHandler() {
+            private void handleMessage(Object msg) {
+                if (!(msg instanceof Packet<?> packet)) return;
+
                 listeners.getOrDefault(packet.getClass(), new ArrayList<>())
                         .forEach(listener -> ((BiConsumer<Player, Packet<?>>) listener).accept(player, packet));
+            }
+
+            @Override
+            public void channelRead(ChannelHandlerContext ctx, Object msg) {
+                handleMessage(msg);
+                ctx.fireChannelRead(msg);
+            }
+
+            @Override
+            public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+                handleMessage(msg);
+                super.write(ctx, msg, promise);
             }
         });
 
