@@ -22,10 +22,12 @@ public class StorytellerPauseHook extends MinecraftHook<Void> {
     private static final ItemStack CONTINUE_ENABLED = createItem(Material.PAPER,
             DataComponentPair.name(Component.text("Continue", TextColor.color(102, 255, 144), TextDecoration.BOLD)),
             DataComponentPair.lore(Component.text("Right click to continue the game", NamedTextColor.GRAY)),
+            DataComponentPair.model("continue"),
             DataComponentPair.cmd(true));
     private static final ItemStack CONTINUE_DISABLED = createItem(Material.PAPER,
             DataComponentPair.name(Component.text("Continue", NamedTextColor.GRAY, TextDecoration.BOLD)),
             DataComponentPair.lore(Component.text("Right click to continue the game", NamedTextColor.DARK_GRAY)),
+            DataComponentPair.model("continue"),
             DataComponentPair.cmd(false));
 
     private final Player player;

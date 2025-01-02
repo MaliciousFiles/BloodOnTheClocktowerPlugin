@@ -10,8 +10,6 @@ import net.minecraft.nbt.StringTag;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.craftbukkit.entity.CraftPlayer;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -20,8 +18,6 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -53,15 +49,15 @@ public class GrabBag<D> {
     }
 
 
-    private static final NamespacedKey UUID_KEY = new NamespacedKey(BloodOnTheClocktower.instance, "grab_bag_uuid");
+    private static final NamespacedKey UUID_KEY = BloodOnTheClocktower.key("grab_bag_uuid");
     private static final int PERIOD = 10;
 
     private static final Map<String, GrabBag<?>> grabBags = new HashMap<>();
 
     private static String getId(ItemStack item) {
-        if (item == null || !item.hasItemMeta()) return null;
+        if (item == null) return null;
 
-        return DataComponentPair.<StringTag>getCustomData(item, UUID_KEY).getAsString();
+        return Optional.ofNullable(DataComponentPair.<StringTag>getCustomData(item, UUID_KEY)).map(StringTag::getAsString).orElse(null);
     }
 
     @SuppressWarnings("UnstableApiUsage")

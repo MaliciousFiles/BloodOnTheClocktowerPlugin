@@ -1,23 +1,15 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.lib;
 
-import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.roles.Imp;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.roles.Poisoner;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.roles.Washerwoman;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.DataComponentPair;
-import io.papermc.paper.datacomponent.DataComponentTypes;
-import io.papermc.paper.datacomponent.item.CustomModelData;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.minecraft.core.component.DataComponentType;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
-import org.w3c.dom.Text;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;

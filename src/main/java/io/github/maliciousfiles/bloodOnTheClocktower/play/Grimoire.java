@@ -1,7 +1,9 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.play;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
-import io.github.maliciousfiles.bloodOnTheClocktower.lib.*;
+import io.github.maliciousfiles.bloodOnTheClocktower.lib.BOTCPlayer;
+import io.github.maliciousfiles.bloodOnTheClocktower.lib.Game;
+import io.github.maliciousfiles.bloodOnTheClocktower.lib.ReminderToken;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.CustomPayloadEvent;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.DataComponentPair;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.Pair;
@@ -25,10 +27,6 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BundleMeta;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
 
@@ -43,7 +41,7 @@ public class Grimoire implements Listener {
             DataComponentPair.name(Component.text("Empty", NamedTextColor.GRAY)),
             DataComponentPair.lore(Component.text("No one sits here", NamedTextColor.DARK_GRAY)));
 
-    private static final NamespacedKey IDX = new NamespacedKey(BloodOnTheClocktower.instance, "grimoire_idx");
+    private static final NamespacedKey IDX = BloodOnTheClocktower.key("grimoire_idx");
 
     private final Access access;
     private final PlayerWrapper player;
@@ -71,9 +69,7 @@ public class Grimoire implements Listener {
         if (owner == null) return EMPTY;
 
         ItemStack item = owner.getRole().info.getItem();
-        ItemMeta meta = item.getItemMeta();
-        if (selected == i) meta.setEnchantmentGlintOverride(true);
-        item.setItemMeta(meta);
+        item.setData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, selected == i);
 
         return item;
     }
@@ -177,7 +173,7 @@ public class Grimoire implements Listener {
         }, 2);
     }
 
-    private static final NamespacedKey GAME_ID = new NamespacedKey(BloodOnTheClocktower.instance, "game_id");
+    private static final NamespacedKey GAME_ID = BloodOnTheClocktower.key("game_id");
     private static final ItemStack GRIMOIRE = createItem(Material.PAPER,
             DataComponentPair.model("grimoire"),
             DataComponentPair.name(Component.text("Grimoire", NamedTextColor.DARK_PURPLE, TextDecoration.BOLD)),
@@ -201,8 +197,8 @@ public class Grimoire implements Listener {
         Bukkit.getPluginManager().registerEvents(new Listener() {
             @EventHandler
             public void onRightClick(PlayerInteractEvent evt) {
-                if (!evt.getAction().isRightClick() || evt.getItem() == null || evt.getItem().getItemMeta() == null) return;
-                String gameId = DataComponentPair.<StringTag>getCustomData(evt.getItem(), GAME_ID).getAsString();
+                if (!evt.getAction().isRightClick() || evt.getItem() == null) return;
+                String gameId = Optional.ofNullable(DataComponentPair.<StringTag>getCustomData(evt.getItem(), GAME_ID)).map(StringTag::getAsString).orElse(null);
                 if (gameId == null) return;
 
                 Game game = Game.getGame(UUID.fromString(gameId));

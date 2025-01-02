@@ -9,6 +9,7 @@ import io.papermc.paper.datacomponent.item.ItemLore;
 import io.papermc.paper.datacomponent.item.PaperItemLore;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -21,6 +22,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @SuppressWarnings("UnstableApiUsage")
 public class DataComponentPair<D> extends Pair<DataComponentType.Valued<D>, D> {
@@ -37,9 +39,12 @@ public class DataComponentPair<D> extends Pair<DataComponentType.Valued<D>, D> {
         return of(DataComponentTypes.ITEM_NAME, name);
     }
     public static DataComponentPair<ItemLore> lore(Component... loreArr) {
-        List<Component> lore = List.of(loreArr);
-        return of(DataComponentTypes.LORE,
-                new PaperItemLore(new net.minecraft.world.item.component.ItemLore(PaperAdventure.asVanilla(lore), PaperAdventure.asVanilla(lore))));
+        return of(DataComponentTypes.LORE, ItemLore.lore(Stream.of(loreArr).map(c->{
+            if (c.decoration(TextDecoration.ITALIC) == TextDecoration.State.NOT_SET) {
+                return c.decoration(TextDecoration.ITALIC, false);
+            }
+            return c;
+        }).toList()));
     }
     public static DataComponentPair<CustomModelData> cmd(Object value) {
         if (value instanceof Float f) {
@@ -55,7 +60,7 @@ public class DataComponentPair<D> extends Pair<DataComponentType.Valued<D>, D> {
         }
     }
     public static DataComponentPair<Key> model(String name) {
-        return of(DataComponentTypes.ITEM_MODEL, new NamespacedKey(BloodOnTheClocktower.instance, name));
+        return of(DataComponentTypes.ITEM_MODEL, BloodOnTheClocktower.key(name));
     }
     public static DataComponentPair<Void> custom(Pair<NamespacedKey, Tag>... tags) {
         CompoundTag tag = new CompoundTag();

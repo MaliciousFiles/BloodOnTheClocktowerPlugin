@@ -24,7 +24,7 @@ public class PlayerChoiceHook extends MinecraftHook<BOTCPlayer> {
 
     public PlayerChoiceHook(Game game, String instruction) throws ExecutionException, InterruptedException {
         grimoire = Bukkit.getScheduler().callSyncMethod(BloodOnTheClocktower.instance, () -> Grimoire.openInventory(game, game.getStoryteller().getPlayer(), Grimoire.Access.PLAYER_SELECT,
-                Component.text(instruction, PlayerWrapper.INSTRUCTION_COLOR, TextDecoration.BOLD))).get();
+                Component.text(instruction, PlayerWrapper.INSTRUCTION_COLOR))).get();
     }
 
     @EventHandler

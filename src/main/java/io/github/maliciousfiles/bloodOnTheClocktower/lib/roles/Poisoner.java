@@ -3,6 +3,7 @@ package io.github.maliciousfiles.bloodOnTheClocktower.lib.roles;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.*;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.SelectPlayerHook;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class Poisoner extends Role {
@@ -27,10 +28,11 @@ public class Poisoner extends Role {
 
     @Override
     public void handleNight() throws InterruptedException, ExecutionException {
-        me.giveInstruction("Choose a player to poison");
+        CompletableFuture<Void> instruction = me.giveInstruction("Choose a player to poison");
 
         BOTCPlayer poisoned = new SelectPlayerHook(me, game, 1, _->true)
                 .get().getFirst();
+        instruction.complete(null);
         if (!me.isImpaired()) {
             moveReminderToken(poisonedReminder, poisoned);
         }

@@ -21,7 +21,6 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.minecraft.nbt.ByteTag;
-import net.minecraft.nbt.Tag;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -36,9 +35,6 @@ import org.bukkit.event.player.PlayerEditBookEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BundleMeta;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -47,7 +43,7 @@ import java.util.concurrent.ExecutionException;
 import static io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower.createItem;
 
 public class ScriptDisplay implements Listener {
-    private static final NamespacedKey BOTC_BOOK = new NamespacedKey(BloodOnTheClocktower.instance, "book");
+    private static final NamespacedKey BOTC_BOOK = BloodOnTheClocktower.key("book");
 
     private static final BOTCConfiguration config = BOTCConfiguration.getConfig("scripts.yml");
     private static List<String> getScripts() {
@@ -84,7 +80,7 @@ public class ScriptDisplay implements Listener {
     private static final ItemStack VIEW = createItem(Material.SPYGLASS,
             DataComponentPair.name(Component.text("View Script", TextColor.color(214, 190, 124))),
             DataComponentPair.lore(Component.text("View the full script", NamedTextColor.GRAY)));
-    private static final ItemStack EDIT = createItem(Material.GRAY_CONCRETE,
+    private static final ItemStack EDIT = createItem(Material.WRITABLE_BOOK,
             DataComponentPair.name(Component.text("Edit Script", TextColor.color(117, 159, 214))),
             DataComponentPair.lore(Component.text("Edit the script JSON", NamedTextColor.GRAY)));
 
@@ -142,12 +138,9 @@ public class ScriptDisplay implements Listener {
         contents[39] = NEW;
 
         if (selected != -1) {
-            ItemMeta meta = CONTINUE_ENABLED.getItemMeta();
-            meta.lore(List.of(Component.text("Selected script: "+scripts.get(selected))
-                    .decoration(TextDecoration.ITALIC, false)
-                    .color(NamedTextColor.GRAY)));
-            CONTINUE_ENABLED.setItemMeta(meta);
-            contents[40] = CONTINUE_ENABLED;
+            contents[40] = DataComponentPair.lore(
+                    Component.text("Selected script: "+scripts.get(selected), NamedTextColor.GRAY))
+                    .apply(CONTINUE_ENABLED);
 
             int itemIdx = (selected%9)+18*(selected/9) + 8;
 
@@ -200,18 +193,14 @@ public class ScriptDisplay implements Listener {
             RoleInfo role = i < midpoint ? roles.get(Role.Type.TOWNSFOLK).get(i) : null;
             contents[i] = Optional.ofNullable(role).map(RoleInfo::getItem).orElse(TOWNSFOLK_FILLER);
             if (selectedRoles.contains(role)) {
-                ItemMeta meta = contents[i].getItemMeta();
-                meta.setEnchantmentGlintOverride(true);
-                contents[i].setItemMeta(meta);
+                contents[i].setData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
             }
         }
         for (int i = 0; i < 9; i++) {
             RoleInfo role = i+midpoint < roles.get(Role.Type.TOWNSFOLK).size() ? roles.get(Role.Type.TOWNSFOLK).get(i+midpoint) : null;
             contents[i+9] = Optional.ofNullable(role).map(RoleInfo::getItem).orElse(TOWNSFOLK_FILLER);
             if (selectedRoles.contains(role)) {
-                ItemMeta meta = contents[i+9].getItemMeta();
-                meta.setEnchantmentGlintOverride(true);
-                contents[i+9].setItemMeta(meta);
+                contents[i+9].setData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
             }
         }
 
@@ -219,9 +208,7 @@ public class ScriptDisplay implements Listener {
             RoleInfo role = i < roles.get(Role.Type.OUTSIDER).size() ? roles.get(Role.Type.OUTSIDER).get(i) : null;
             contents[i+18] = Optional.ofNullable(role).map(RoleInfo::getItem).orElse(OUTSIDER_FILLER);
             if (selectedRoles.contains(role)) {
-                ItemMeta meta = contents[i+18].getItemMeta();
-                meta.setEnchantmentGlintOverride(true);
-                contents[i+18].setItemMeta(meta);
+                contents[i+18].setData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
             }
         }
 
@@ -229,9 +216,7 @@ public class ScriptDisplay implements Listener {
             RoleInfo role = i < roles.get(Role.Type.MINION).size() ? roles.get(Role.Type.MINION).get(i) : null;
             contents[i+27] = Optional.ofNullable(role).map(RoleInfo::getItem).orElse(MINION_FILLER);
             if (selectedRoles.contains(role)) {
-                ItemMeta meta = contents[i+27].getItemMeta();
-                meta.setEnchantmentGlintOverride(true);
-                contents[i+27].setItemMeta(meta);
+                contents[i+27].setData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
             }
         }
 
@@ -239,9 +224,7 @@ public class ScriptDisplay implements Listener {
             RoleInfo role = i < roles.get(Role.Type.DEMON).size() ? roles.get(Role.Type.DEMON).get(i) : null;
             contents[i+36] = Optional.ofNullable(role).map(RoleInfo::getItem).orElse(DEMON_FILLER);
             if (selectedRoles.contains(role)) {
-                ItemMeta meta = contents[i+36].getItemMeta();
-                meta.setEnchantmentGlintOverride(true);
-                contents[i+36].setItemMeta(meta);
+                contents[i+36].setData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
             }
         }
 
@@ -252,7 +235,6 @@ public class ScriptDisplay implements Listener {
                 item = CONTINUE_DISABLED.clone();
                 error = Component.text("Must have exactly as many roles as players ("+numPlayers+")", NamedTextColor.RED);
             }
-            ItemMeta meta = item.getItemMeta();
 
             List<Component> lore = Lists.newArrayList(
                     Component.text("Townsfolk: ", NamedTextColor.GRAY)
@@ -270,31 +252,18 @@ public class ScriptDisplay implements Listener {
             );
             if (error != null) lore.addAll(List.of(Component.empty(), error));
 
-            meta.lore(lore);
-            item.setItemMeta(meta);
-
-            contents[44] = item;
-
-            ItemStack infoItem = ItemStack.of(Material.PAPER);
-            ItemMeta infoMeta = infoItem.getItemMeta();
-            infoMeta.displayName(Component.text("Recommended Roles", NamedTextColor.GRAY)
-                    .decoration(TextDecoration.ITALIC, false));
-            infoMeta.lore(List.of(
-                    Component.text("Townsfolk: ", NamedTextColor.GRAY)
-                            .append(Component.text((int) Math.ceil(numPlayers/3.0)*2-1, RoleInfo.ROLE_COLORS.get(Role.Type.TOWNSFOLK)))
-                            .decoration(TextDecoration.ITALIC, false),
-                    Component.text("Outsiders: ", NamedTextColor.GRAY)
-                            .append(Component.text(numPlayers < 7 ? numPlayers%5 : (numPlayers-1)%6, RoleInfo.ROLE_COLORS.get(Role.Type.OUTSIDER)))
-                            .decoration(TextDecoration.ITALIC, false),
-                    Component.text("Minions: ", NamedTextColor.GRAY)
-                            .append(Component.text(numPlayers < 10 ? 1 : numPlayers < 13 ? 2 : 3, RoleInfo.ROLE_COLORS.get(Role.Type.MINION)))
-                            .decoration(TextDecoration.ITALIC, false),
-                    Component.text("Demons: ", NamedTextColor.GRAY)
-                            .append(Component.text(1, RoleInfo.ROLE_COLORS.get(Role.Type.DEMON)))
-                            .decoration(TextDecoration.ITALIC, false)
-            ));
-            infoItem.setItemMeta(infoMeta);
-            contents[43] = infoItem;
+            contents[44] = DataComponentPair.lore(lore.toArray(Component[]::new)).apply(item);
+            contents[43] = createItem(Material.PAPER,
+                    DataComponentPair.name(Component.text("Recommended Roles", NamedTextColor.GRAY)),
+                    DataComponentPair.lore(
+                            Component.text("Townsfolk: ", NamedTextColor.GRAY)
+                                    .append(Component.text((int) Math.ceil(numPlayers/3.0)*2-1, RoleInfo.ROLE_COLORS.get(Role.Type.TOWNSFOLK))),
+                            Component.text("Outsiders: ", NamedTextColor.GRAY)
+                                    .append(Component.text(numPlayers < 7 ? numPlayers%5 : (numPlayers-1)%6, RoleInfo.ROLE_COLORS.get(Role.Type.OUTSIDER))),
+                            Component.text("Minions: ", NamedTextColor.GRAY)
+                                    .append(Component.text(numPlayers < 10 ? 1 : numPlayers < 13 ? 2 : 3, RoleInfo.ROLE_COLORS.get(Role.Type.MINION))),
+                            Component.text("Demons: ", NamedTextColor.GRAY)
+                                    .append(Component.text(1, RoleInfo.ROLE_COLORS.get(Role.Type.DEMON)))));
         } else {
             for (int i = 0; i < (viewingScript == null ? 8 : 9); i++) {
                 contents[i+45] = i < roles.get(Role.Type.TRAVELLER).size() ? roles.get(Role.Type.TRAVELLER).get(i).getItem() : TRAVELLER_FILLER;

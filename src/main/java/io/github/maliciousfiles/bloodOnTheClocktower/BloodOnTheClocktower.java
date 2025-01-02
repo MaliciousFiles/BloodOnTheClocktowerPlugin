@@ -8,12 +8,17 @@ import io.github.maliciousfiles.bloodOnTheClocktower.play.*;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.DataComponentPair;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class BloodOnTheClocktower extends JavaPlugin {
     public static BloodOnTheClocktower instance;
+
+    public static NamespacedKey key(String key) {
+        return new NamespacedKey("botc", key);
+    }
 
     private void registerCommand(String command, BOTCCommand handler) {
         getCommand(command).setExecutor(handler);
