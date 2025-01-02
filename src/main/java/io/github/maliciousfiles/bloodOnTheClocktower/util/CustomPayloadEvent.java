@@ -11,7 +11,7 @@ public class CustomPayloadEvent extends Event {
     private final Object data;
 
     public CustomPayloadEvent(Object data) {
-        this.source = StackWalker.getInstance().getCallerClass();
+        this.source = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).getCallerClass();
         this.data = data;
     }
 

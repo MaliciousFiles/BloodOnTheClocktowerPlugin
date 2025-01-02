@@ -2,6 +2,7 @@ package io.github.maliciousfiles.bloodOnTheClocktower.play.hooks;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.Storyteller;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.MinecraftHook;
+import io.github.maliciousfiles.bloodOnTheClocktower.util.DataComponentPair;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
@@ -18,22 +19,14 @@ import java.util.concurrent.CompletableFuture;
 import static io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower.createItem;
 
 public class StorytellerPauseHook extends MinecraftHook<Void> {
-    private static final ItemStack CONTINUE_ENABLED = createItem(Material.PAPER, meta -> {
-        meta.displayName(Component.text("Continue", TextColor.color(102, 255, 144), TextDecoration.BOLD)
-                .decoration(TextDecoration.ITALIC, false));
-        meta.lore(List.of(Component.text("Right click to continue the game", NamedTextColor.GRAY)
-                .decoration(TextDecoration.ITALIC, false)));
-
-        meta.setCustomModelData(253);
-    });
-    private static final ItemStack CONTINUE_DISABLED = createItem(Material.PAPER, meta -> {
-        meta.displayName(Component.text("Continue", NamedTextColor.GRAY, TextDecoration.BOLD)
-                .decoration(TextDecoration.ITALIC, false));
-        meta.lore(List.of(Component.text("Right click to continue the game", NamedTextColor.DARK_GRAY)
-                .decoration(TextDecoration.ITALIC, false)));
-
-        meta.setCustomModelData(254);
-    });
+    private static final ItemStack CONTINUE_ENABLED = createItem(Material.PAPER,
+            DataComponentPair.name(Component.text("Continue", TextColor.color(102, 255, 144), TextDecoration.BOLD)),
+            DataComponentPair.lore(Component.text("Right click to continue the game", NamedTextColor.GRAY)),
+            DataComponentPair.cmd(true));
+    private static final ItemStack CONTINUE_DISABLED = createItem(Material.PAPER,
+            DataComponentPair.name(Component.text("Continue", NamedTextColor.GRAY, TextDecoration.BOLD)),
+            DataComponentPair.lore(Component.text("Right click to continue the game", NamedTextColor.DARK_GRAY)),
+            DataComponentPair.cmd(false));
 
     private final Player player;
     private final CompletableFuture<Void> instruction;

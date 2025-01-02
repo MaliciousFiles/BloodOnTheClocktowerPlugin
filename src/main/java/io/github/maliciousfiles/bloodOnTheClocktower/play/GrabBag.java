@@ -1,10 +1,12 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.play;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
+import io.github.maliciousfiles.bloodOnTheClocktower.util.DataComponentPair;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.Option;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.Pair;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.BundleContents;
+import net.minecraft.nbt.StringTag;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -24,6 +26,8 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+
+import static io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower.createItem;
 
 public class GrabBag<D> {
     private final List<Option<D>> contents;
@@ -57,7 +61,7 @@ public class GrabBag<D> {
     private static String getId(ItemStack item) {
         if (item == null || !item.hasItemMeta()) return null;
 
-        return item.getItemMeta().getPersistentDataContainer().get(UUID_KEY, PersistentDataType.STRING);
+        return DataComponentPair.<StringTag>getCustomData(item, UUID_KEY).getAsString();
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -93,17 +97,13 @@ public class GrabBag<D> {
         Bukkit.getPluginManager().registerEvents(new GrabBagHandler(), BloodOnTheClocktower.instance);
     }
 
-    public static <D> ItemStack createGrabBag(Consumer<ItemMeta> setup, Collection<Option<D>> options, List<Player> recipients, Consumer<Pair<Player, D>> onGrab, CompletableFuture<Map<Player, D>> future) {
+    public static <D> ItemStack createGrabBag(Collection<Option<D>> options, List<Player> recipients, Consumer<Pair<Player, D>> onGrab, CompletableFuture<Map<Player, D>> future, DataComponentPair<?> data) {
         String uuid = UUID.randomUUID().toString();
         grabBags.put(uuid, new GrabBag<>(options, recipients, onGrab, future));
 
-        ItemStack ret = ItemStack.of(Material.BUNDLE);
-        ItemMeta meta = ret.getItemMeta();
-        setup.accept(meta);
-        meta.getPersistentDataContainer().set(UUID_KEY, PersistentDataType.STRING, uuid);
-        ret.setItemMeta(meta);
-
-        return ret;
+        return createItem(Material.BUNDLE,
+                data,
+                DataComponentPair.custom(Pair.of(UUID_KEY, StringTag.valueOf(uuid))));
     }
 
     public static void removeGrabBag(ItemStack grabBag) {

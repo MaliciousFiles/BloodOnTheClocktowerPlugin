@@ -10,13 +10,18 @@ import io.github.maliciousfiles.bloodOnTheClocktower.lib.RoleInfo;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.ScriptInfo;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.BOTCConfiguration;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.CustomPayloadEvent;
+import io.github.maliciousfiles.bloodOnTheClocktower.util.DataComponentPair;
+import io.github.maliciousfiles.bloodOnTheClocktower.util.Pair;
 import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.BundleContents;
 import io.papermc.paper.datacomponent.item.WritableBookContent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.minecraft.nbt.ByteTag;
+import net.minecraft.nbt.Tag;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -42,108 +47,59 @@ import java.util.concurrent.ExecutionException;
 import static io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower.createItem;
 
 public class ScriptDisplay implements Listener {
-    private static final NamespacedKey BOTC_BOOK = new NamespacedKey(BloodOnTheClocktower.instance, "botc_book");
+    private static final NamespacedKey BOTC_BOOK = new NamespacedKey(BloodOnTheClocktower.instance, "book");
 
     private static final BOTCConfiguration config = BOTCConfiguration.getConfig("scripts.yml");
     private static List<String> getScripts() {
         return new ArrayList<>(config.getKeys(false).stream().sorted().toList());
     }
 
-    private static final ItemStack FILLER = createItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, meta ->
-            meta.displayName(Component.text(" ")));
+    private static final ItemStack FILLER = createItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE,
+            DataComponentPair.name(Component.text(" ", NamedTextColor.GRAY)));
 
-    private static final ItemStack TOWNSFOLK_FILLER = createItem(Material.LIGHT_BLUE_STAINED_GLASS_PANE, meta ->
-            meta.displayName(Component.text("Townsfolk", RoleInfo.ROLE_COLORS.get(Role.Type.TOWNSFOLK))
-                    .decoration(TextDecoration.ITALIC, false)));
-    private static final ItemStack OUTSIDER_FILLER = createItem(Material.BLUE_STAINED_GLASS_PANE, meta ->
-            meta.displayName(Component.text("Outsider", RoleInfo.ROLE_COLORS.get(Role.Type.OUTSIDER))
-                    .decoration(TextDecoration.ITALIC, false)));
-    private static final ItemStack MINION_FILLER = createItem(Material.PINK_STAINED_GLASS_PANE, meta ->
-            meta.displayName(Component.text("Minion", RoleInfo.ROLE_COLORS.get(Role.Type.MINION))
-                    .decoration(TextDecoration.ITALIC, false)));
-    private static final ItemStack DEMON_FILLER = createItem(Material.RED_STAINED_GLASS_PANE, meta ->
-            meta.displayName(Component.text("Demon", RoleInfo.ROLE_COLORS.get(Role.Type.DEMON))
-                    .decoration(TextDecoration.ITALIC, false)));
-    private static final ItemStack TRAVELLER_FILLER = createItem(Material.PURPLE_STAINED_GLASS_PANE, meta ->
-            meta.displayName(Component.text("Trav", RoleInfo.ROLE_COLORS.get(Role.Type.TOWNSFOLK))
-                    .append(Component.text("eller", RoleInfo.ROLE_COLORS.get(Role.Type.MINION)))
-                    .decoration(TextDecoration.ITALIC, false)));
+    private static final ItemStack TOWNSFOLK_FILLER = createItem(Material.LIGHT_BLUE_STAINED_GLASS_PANE,
+            DataComponentPair.name(Component.text("Townsfolk", RoleInfo.ROLE_COLORS.get(Role.Type.TOWNSFOLK))));
+    private static final ItemStack OUTSIDER_FILLER = createItem(Material.BLUE_STAINED_GLASS_PANE,
+            DataComponentPair.name(Component.text("Outsider", RoleInfo.ROLE_COLORS.get(Role.Type.OUTSIDER))));
+    private static final ItemStack MINION_FILLER = createItem(Material.PINK_STAINED_GLASS_PANE,
+            DataComponentPair.name(Component.text("Minion", RoleInfo.ROLE_COLORS.get(Role.Type.MINION))));
+    private static final ItemStack DEMON_FILLER = createItem(Material.RED_STAINED_GLASS_PANE,
+            DataComponentPair.name(Component.text("Demon", RoleInfo.ROLE_COLORS.get(Role.Type.DEMON))));
+    private static final ItemStack TRAVELLER_FILLER = createItem(Material.PURPLE_STAINED_GLASS_PANE,
+            DataComponentPair.name(Component.text("Trav", RoleInfo.ROLE_COLORS.get(Role.Type.TOWNSFOLK))
+                    .append(Component.text("eller", RoleInfo.ROLE_COLORS.get(Role.Type.MINION)))));
 
-    private static final ItemStack EMPTY = createItem(Material.GRAY_STAINED_GLASS_PANE, meta -> {
-        meta.displayName(Component.text("Empty")
-                .decoration(TextDecoration.ITALIC, false)
-                .color(NamedTextColor.GRAY));
-        meta.lore(List.of(
-                Component.text("Click the feather to create a new script")
-                        .decoration(TextDecoration.ITALIC, false)
-                        .color(NamedTextColor.DARK_GRAY)));
-    });
+    private static final ItemStack EMPTY = createItem(Material.GRAY_STAINED_GLASS_PANE,
+            DataComponentPair.name(Component.text("Empty", NamedTextColor.GRAY)),
+            DataComponentPair.lore(Component.text("Click the feather to create a new script", NamedTextColor.DARK_GRAY)));
 
-    private static final ItemStack BACK = createItem(Material.ARROW, meta ->
-            meta.displayName(Component.text("Back")
-                    .decoration(TextDecoration.ITALIC, false)));
-    private static final ItemStack FORWARD = createItem(Material.ARROW, meta ->
-            meta.displayName(Component.text("Forward")
-                    .decoration(TextDecoration.ITALIC, false)));
+    private static final ItemStack BACK = createItem(Material.ARROW,
+            DataComponentPair.name(Component.text("Back")));
+    private static final ItemStack FORWARD = createItem(Material.ARROW,
+            DataComponentPair.name(Component.text("Forward")));
 
-    private static final ItemStack DELETE = createItem(Material.LAVA_BUCKET, meta -> {
-        meta.displayName(Component.text("Delete Script")
-                .color(TextColor.color(214, 77, 84))
-                .decoration(TextDecoration.ITALIC, false));
-        meta.lore(List.of(
-                Component.text("Delete this script")
-                        .decoration(TextDecoration.ITALIC, false)
-                        .color(NamedTextColor.GRAY)));
-    });
-    private static final ItemStack VIEW = createItem(Material.SPYGLASS, meta -> {
-        meta.displayName(Component.text("View Script")
-                .color(TextColor.color(214, 190, 124))
-                .decoration(TextDecoration.ITALIC, false));
-        meta.lore(List.of(
-                Component.text("View the full script")
-                        .decoration(TextDecoration.ITALIC, false)
-                        .color(NamedTextColor.GRAY)));
-    });
-    private static final ItemStack EDIT = createItem(Material.WRITABLE_BOOK, meta -> {
-        meta.displayName(Component.text("Edit Script")
-                .color(TextColor.color(117, 159, 214))
-                .decoration(TextDecoration.ITALIC, false));
-        meta.lore(List.of(
-                Component.text("Edit the script JSON")
-                        .decoration(TextDecoration.ITALIC, false)
-                        .color(NamedTextColor.GRAY)));
-    });
+    private static final ItemStack DELETE = createItem(Material.LAVA_BUCKET,
+            DataComponentPair.name(Component.text("Delete Script", TextColor.color(214, 77, 84))),
+            DataComponentPair.lore(Component.text("Delete this script", NamedTextColor.GRAY)));
+    private static final ItemStack VIEW = createItem(Material.SPYGLASS,
+            DataComponentPair.name(Component.text("View Script", TextColor.color(214, 190, 124))),
+            DataComponentPair.lore(Component.text("View the full script", NamedTextColor.GRAY)));
+    private static final ItemStack EDIT = createItem(Material.GRAY_CONCRETE,
+            DataComponentPair.name(Component.text("Edit Script", TextColor.color(117, 159, 214))),
+            DataComponentPair.lore(Component.text("Edit the script JSON", NamedTextColor.GRAY)));
 
-    private static final ItemStack NEW = createItem(Material.FEATHER, meta -> {
-        meta.displayName(Component.text("New Script")
-                .color(TextColor.color(96, 214, 197))
-                .decoration(TextDecoration.ITALIC, false));
-        meta.lore(List.of(
-                Component.text("Create a new script")
-                        .decoration(TextDecoration.ITALIC, false)
-                        .color(NamedTextColor.GRAY)));
-    });
-    private static final ItemStack CONTINUE_DISABLED = createItem(Material.GRAY_CONCRETE, meta -> {
-        meta.displayName(Component.text("Continue")
-                .color(NamedTextColor.GRAY)
-                .decoration(TextDecoration.ITALIC, false));
-        meta.lore(List.of(
-                Component.text("Select a script to continue")
-                        .decoration(TextDecoration.ITALIC, false)
-                        .color(NamedTextColor.DARK_GRAY)));
-    });
-    private static final ItemStack CONTINUE_ENABLED = createItem(Material.LIME_CONCRETE, meta -> {
-        meta.displayName(Component.text("Continue")
-                .color(NamedTextColor.GREEN)
-                .decoration(TextDecoration.ITALIC, false));
-    });
-    private static final ItemStack RETURN = createItem(Material.BARRIER, meta -> {
-        meta.displayName(Component.text("Return")
-                .color(NamedTextColor.RED)
-                .decoration(TextDecoration.ITALIC, false));
-    });
+    private static final ItemStack NEW = createItem(Material.FEATHER,
+            DataComponentPair.name(Component.text("New Script", TextColor.color(96, 214, 197))),
+            DataComponentPair.lore(Component.text("Create a new script", NamedTextColor.GRAY)));
+    private static final ItemStack CONTINUE_DISABLED = createItem(Material.GRAY_CONCRETE,
+            DataComponentPair.name(Component.text("Continue", NamedTextColor.GRAY)),
+            DataComponentPair.lore(Component.text("Select a script to continue", NamedTextColor.DARK_GRAY)));
+    private static final ItemStack CONTINUE_ENABLED = createItem(Material.LIME_CONCRETE,
+            DataComponentPair.name(Component.text("Continue", NamedTextColor.GREEN)));
+    private static final ItemStack RETURN = createItem(Material.BARRIER,
+            DataComponentPair.name(Component.text("Return", NamedTextColor.RED)));
 
-    // P P P P P P P P P
+            // P P P P P P P P P
     // . . . . . . . . .
     // P P P P P P P P P
     // . . . . . . . . .
@@ -220,14 +176,10 @@ public class ScriptDisplay implements Listener {
             }
 
             String script = scripts.get(index);
-            contents[itemIdx] = createItem(Material.BUNDLE, meta ->{
-                meta.displayName(Component.text(script)
-                        .decoration(TextDecoration.ITALIC, false));
-                if (selected == index) meta.setEnchantmentGlintOverride(true);
-
-                //noinspection UnstableApiUsage
-                ((BundleMeta) meta).setItems(((ScriptInfo) config.get(script)).roles.stream().map(RoleInfo::getItem).toList());
-            });
+            contents[itemIdx] = createItem(Material.BUNDLE,
+                    DataComponentPair.name(Component.text(script)),
+                    DataComponentPair.of(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, selected == index),
+                    DataComponentPair.of(DataComponentTypes.BUNDLE_CONTENTS, BundleContents.bundleContents(((ScriptInfo) config.get(script)).roles.stream().map(RoleInfo::getItem).toList())));
         }
 
         inventory.setContents(contents);
@@ -403,7 +355,7 @@ public class ScriptDisplay implements Listener {
             } else if (CONTINUE_ENABLED.equals(evt.getCurrentItem())) {
                 selectRoles();
             } else if ((selectingRoles || viewingScript != null) && Material.PAPER == Optional.ofNullable(evt.getCurrentItem()).map(ItemStack::getType).orElse(null)) {
-                String roleId = evt.getCurrentItem().getItemMeta().getPersistentDataContainer().get(RoleInfo.ROLE_ID, PersistentDataType.STRING);
+                String roleId = evt.getCurrentItem().getData(DataComponentTypes.CUSTOM_MODEL_DATA).strings().getFirst();
                 if (roleId == null) return;
 
                 RoleInfo role = RoleInfo.valueOf(roleId.toUpperCase());
@@ -455,8 +407,6 @@ public class ScriptDisplay implements Listener {
 
         previouslyHeldItem = player.getInventory().getItem(EquipmentSlot.HAND);
 
-        ItemStack book = ItemStack.of(Material.WRITABLE_BOOK);
-
         ScriptInfo info = (ScriptInfo) config.get(scripts.get(selected));
         String json = "[{\"author\":\""+info.author+"\",\"name\":\""+info.name+"\"},"+String.join(",", info.roles.stream().map(s->"\""+s.id()+"\"").toList())+"]";
 
@@ -473,13 +423,10 @@ public class ScriptDisplay implements Listener {
             pages.add(json.substring(i, endIdx));
             i = endIdx;
         }
-        //noinspection UnstableApiUsage
-        book.setData(DataComponentTypes.WRITABLE_BOOK_CONTENT, WritableBookContent.writeableBookContent().addPages(pages).build());
-        ItemMeta meta = book.getItemMeta();
-        meta.getPersistentDataContainer().set(BOTC_BOOK, PersistentDataType.BOOLEAN, true);
-        book.setItemMeta(meta);
-
-        player.getInventory().setItem(EquipmentSlot.HAND, book);
+        player.getInventory().setItem(EquipmentSlot.HAND, createItem(Material.WRITABLE_BOOK,
+                DataComponentPair.name(Component.text("Script")),
+                DataComponentPair.of(DataComponentTypes.WRITABLE_BOOK_CONTENT, WritableBookContent.writeableBookContent().addPages(pages).build()),
+                DataComponentPair.custom(Pair.of(BOTC_BOOK, ByteTag.valueOf(true)))));
     }
 
     private void newScript() {
@@ -500,12 +447,9 @@ public class ScriptDisplay implements Listener {
 
         previouslyHeldItem = player.getInventory().getItem(EquipmentSlot.HAND);
 
-        ItemStack book = ItemStack.of(Material.WRITABLE_BOOK);
-        ItemMeta meta = book.getItemMeta();
-        meta.getPersistentDataContainer().set(BOTC_BOOK, PersistentDataType.BOOLEAN, true);
-        book.setItemMeta(meta);
-
-        player.getInventory().setItem(EquipmentSlot.HAND, book);
+        player.getInventory().setItem(EquipmentSlot.HAND, createItem(Material.WRITABLE_BOOK,
+                DataComponentPair.name(Component.text("Script")),
+                DataComponentPair.custom(Pair.of(BOTC_BOOK, ByteTag.valueOf(true)))));
         saveAsNew = true;
     }
 
@@ -565,7 +509,7 @@ public class ScriptDisplay implements Listener {
 
     @EventHandler
     public void onToss(PlayerDropItemEvent evt) {
-        if (!player.equals(evt.getPlayer()) || !Optional.ofNullable(evt.getItemDrop().getItemStack().getItemMeta()).map(m->m.getPersistentDataContainer().has(BOTC_BOOK)).orElse(false)) return;
+        if (!player.equals(evt.getPlayer()) || DataComponentPair.getCustomData(evt.getItemDrop().getItemStack(), BOTC_BOOK) == null) return;
 
         evt.getItemDrop().remove();
         finishScript(null);

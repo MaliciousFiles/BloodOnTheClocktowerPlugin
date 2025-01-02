@@ -5,14 +5,12 @@ import io.github.maliciousfiles.bloodOnTheClocktower.commands.SeatsCommand;
 import io.github.maliciousfiles.bloodOnTheClocktower.commands.StartGameCommand;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.ScriptInfo;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.*;
+import io.github.maliciousfiles.bloodOnTheClocktower.util.DataComponentPair;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import java.util.function.Consumer;
 
 public final class BloodOnTheClocktower extends JavaPlugin {
     public static BloodOnTheClocktower instance;
@@ -22,11 +20,9 @@ public final class BloodOnTheClocktower extends JavaPlugin {
         getCommand(command).setTabCompleter(handler);
     }
 
-    public static ItemStack createItem(Material material, Consumer<ItemMeta> metaConsumer) {
+    public static ItemStack createItem(Material material, DataComponentPair<?>... data) {
         ItemStack item = ItemStack.of(material);
-        ItemMeta meta = item.getItemMeta();
-        metaConsumer.accept(meta);
-        item.setItemMeta(meta);
+        for (DataComponentPair<?> pair : data) item = pair.apply(item);
         return item;
     }
 

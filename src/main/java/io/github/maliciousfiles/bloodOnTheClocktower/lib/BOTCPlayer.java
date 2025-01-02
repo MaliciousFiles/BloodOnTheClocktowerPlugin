@@ -11,7 +11,7 @@ public class BOTCPlayer extends PlayerWrapper {
     private RoleInfo roleInfo;
     private Role role;
     private Game game;
-    private boolean alive;
+    private boolean alive = true;
 
     public final List<ReminderToken> reminderTokensOnMe = new ArrayList<>();
 

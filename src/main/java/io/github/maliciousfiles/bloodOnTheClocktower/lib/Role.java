@@ -59,9 +59,9 @@ public abstract class Role {
         removeAllReminderTokens();
     }
 
-    public class RoleNightAction implements  Game.NightAction {
+    public class RoleNightAction implements Game.NightAction {
         @Override
-        public String name() { return info.name(); }
+        public String name() { return info.title(); }
 
         @Override
         public boolean shouldRun() { return shouldRunNight(); }

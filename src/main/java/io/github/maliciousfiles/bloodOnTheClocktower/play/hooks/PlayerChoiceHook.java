@@ -17,13 +17,14 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public class PlayerChoiceHook extends MinecraftHook<BOTCPlayer> {
     private final Inventory grimoire;
 
-    public PlayerChoiceHook(Game game, String instruction) {
-        grimoire = Grimoire.openInventory(game, game.getStoryteller().getPlayer(), Grimoire.Access.PLAYER_SELECT,
-                Component.text(instruction, PlayerWrapper.INSTRUCTION_COLOR, TextDecoration.BOLD));
+    public PlayerChoiceHook(Game game, String instruction) throws ExecutionException, InterruptedException {
+        grimoire = Bukkit.getScheduler().callSyncMethod(BloodOnTheClocktower.instance, () -> Grimoire.openInventory(game, game.getStoryteller().getPlayer(), Grimoire.Access.PLAYER_SELECT,
+                Component.text(instruction, PlayerWrapper.INSTRUCTION_COLOR, TextDecoration.BOLD))).get();
     }
 
     @EventHandler
@@ -33,6 +34,6 @@ public class PlayerChoiceHook extends MinecraftHook<BOTCPlayer> {
 
     @EventHandler
     public void onClose(InventoryCloseEvent evt) {
-        if (grimoire.equals(evt.getInventory())) Bukkit.getScheduler().runTask(BloodOnTheClocktower.instance, () -> evt.getPlayer().openInventory(grimoire));
+        if (evt.getReason() == InventoryCloseEvent.Reason.PLAYER && grimoire.equals(evt.getInventory())) Bukkit.getScheduler().runTask(BloodOnTheClocktower.instance, () -> evt.getPlayer().openInventory(grimoire));
     }
 }

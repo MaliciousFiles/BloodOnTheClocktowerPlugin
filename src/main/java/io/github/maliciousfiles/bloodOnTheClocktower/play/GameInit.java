@@ -3,6 +3,7 @@ package io.github.maliciousfiles.bloodOnTheClocktower.play;
 import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.*;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.StorytellerPauseHook;
+import io.github.maliciousfiles.bloodOnTheClocktower.util.DataComponentPair;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.Option;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -48,9 +49,6 @@ public class GameInit {
 
         CompletableFuture<Map<Player, RoleInfo>> selectionsFuture = new CompletableFuture<>();
         ItemStack grabBag = GrabBag.createGrabBag(
-                meta ->
-                        meta.displayName(Component.text("Role Grab Bag", NamedTextColor.YELLOW, TextDecoration.BOLD)
-                                .decoration(TextDecoration.ITALIC, false)),
                 roles.stream()
                         .filter(r->r.type() != Role.Type.TRAVELLER && r.type() != Role.Type.FABLED)
                         .map(r->new Option<>(r, r.getItem())).toList(),
@@ -62,7 +60,8 @@ public class GameInit {
                     pair.getFirst().sendMessage(Component.text("You are the ").append(ChatComponents.roleInfo(pair.getSecond())));
                     storyteller.giveInfo(Component.text(pair.getFirst().getName()+" is the ").append(ChatComponents.roleInfo(pair.getSecond())));
                 },
-                selectionsFuture);
+                selectionsFuture,
+                DataComponentPair.name(Component.text("Role Grab Bag", NamedTextColor.YELLOW, TextDecoration.BOLD)));
         storytellerPlayer.getInventory().addItem(grabBag);
 
         CompletableFuture<Void> storytellerInstruction = storyteller.giveInstruction("Pass around the grab bag and allow each player to take a role");

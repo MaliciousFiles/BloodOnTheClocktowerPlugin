@@ -69,6 +69,7 @@ public class Game {
         setup();
         while (true) {
             runNight();
+            turn++;
             if (isGameOver()) { break; }
         }
         // TODO: announce game end
@@ -76,7 +77,7 @@ public class Game {
 
     private void setup() throws ExecutionException, InterruptedException {
         for (BOTCPlayer player : players) {
-            new StorytellerPauseHook(storyteller, "Setup "+player.getRole().info.name()).get();
+            new StorytellerPauseHook(storyteller, "Setup "+player.getRole().info.title()).get();
             player.getRole().setup();
         }
     }

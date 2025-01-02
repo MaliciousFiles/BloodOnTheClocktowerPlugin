@@ -2,8 +2,10 @@ package io.github.maliciousfiles.bloodOnTheClocktower.lib.roles;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.*;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.ChatComponents;
+import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.PlayerChoiceHook;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.RoleChoiceHook;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.SelectPlayerHook;
+import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.StorytellerPauseHook;
 import net.kyori.adventure.text.Component;
 
 import java.util.List;
@@ -22,16 +24,13 @@ public class Washerwoman extends Role {
 
     @Override
     public void setup() throws ExecutionException, InterruptedException {
-        Storyteller st = game.getStoryteller();
-        st.giveInstruction("Assign the Washerwoman's Townsfolk and Wrong reminder tokens");
+        new StorytellerPauseHook(game.getStoryteller(), "Assign the Washerwoman's Townsfolk and Wrong reminder tokens").get();
 
-        CompletableFuture<BOTCPlayer> townsfolk = new CompletableFuture<>();
-//        new PlayerChoiceHook(game.getStoryteller(), game, "Assign the Washerwoman's Townsfolk reminder token", null, townsfolk);
-        newReminderToken(new ReminderToken("Townsfolk", me, townsfolk.get(), ReminderToken.Effect.NONE));
+        BOTCPlayer townsfolk = new PlayerChoiceHook(game, "Townsfolk reminder token").get();
+        newReminderToken(new ReminderToken("Townsfolk", me, townsfolk, ReminderToken.Effect.NONE));
 
-        CompletableFuture<BOTCPlayer> wrong = new CompletableFuture<>();
-//        new PlayerChoiceHook(game.getStoryteller(), game, "Assign the Washerwoman's Wrong reminder token", null, wrong);
-        newReminderToken(new ReminderToken("Wrong", me, wrong.get(), ReminderToken.Effect.NONE));
+        BOTCPlayer wrong = new PlayerChoiceHook(game, "Wrong reminder token").get();
+        newReminderToken(new ReminderToken("Wrong", me, wrong, ReminderToken.Effect.NONE));
     }
 
     @Override

@@ -3,14 +3,19 @@ package io.github.maliciousfiles.bloodOnTheClocktower.play;
 import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.*;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.CustomPayloadEvent;
+import io.github.maliciousfiles.bloodOnTheClocktower.util.DataComponentPair;
+import io.github.maliciousfiles.bloodOnTheClocktower.util.Pair;
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.BundleContents;
+import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.minecraft.nbt.IntTag;
+import net.minecraft.nbt.StringTag;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
@@ -26,23 +31,19 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 import static io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower.createItem;
 
 public class Grimoire implements Listener {
     public enum Access { STORYTELLER, PLAYER_SELECT, SPY }
 
-    private static final ItemStack FILLER = createItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, meta ->
-            meta.displayName(Component.text(" ")));
-    private static final ItemStack EMPTY = createItem(Material.GRAY_STAINED_GLASS_PANE, meta -> {
-        meta.displayName(Component.text("Empty", NamedTextColor.GRAY)
-                .decoration(TextDecoration.ITALIC, false));
-        meta.lore(List.of(Component.text("No one sits here", NamedTextColor.DARK_GRAY)
-                .decoration(TextDecoration.ITALIC, false)));
-    });
+    private static final ItemStack FILLER = createItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE,
+            DataComponentPair.name(Component.text(" ")));
+    private static final ItemStack EMPTY = createItem(Material.GRAY_STAINED_GLASS_PANE,
+            DataComponentPair.name(Component.text("Empty", NamedTextColor.GRAY)),
+            DataComponentPair.lore(Component.text("No one sits here", NamedTextColor.DARK_GRAY)));
 
-    private static final NamespacedKey IDX = new NamespacedKey(BloodOnTheClocktower.instance, "botc_grimoire_idx");
+    private static final NamespacedKey IDX = new NamespacedKey(BloodOnTheClocktower.instance, "grimoire_idx");
 
     private final Access access;
     private final PlayerWrapper player;
@@ -82,16 +83,10 @@ public class Grimoire implements Listener {
         if (owner == null) return FILLER;
 
         if (selected == i) {
-            return createItem(Material.BUNDLE, meta -> {
-                meta.displayName(Component.text((owner.getName()+"'s Reminder Tokens").replace("s's", "s'"))
-                        .decoration(TextDecoration.ITALIC, false));
-                meta.lore(List.of(Component.text("Click to deselect", NamedTextColor.GRAY)
-                        .decoration(TextDecoration.ITALIC, false)));
-                meta.getPersistentDataContainer().set(IDX, PersistentDataType.INTEGER, i);
-                //noinspection UnstableApiUsage
-                ((BundleMeta) meta).setItems(owner.reminderTokensOnMe.stream()
-                        .map(ReminderToken::getItem).toList());
-            });
+            return createItem(Material.BUNDLE,
+                    DataComponentPair.name(Component.text((owner.getName()+"'s Reminder Tokens").replace("s's", "s'"))),
+                    DataComponentPair.of(DataComponentTypes.BUNDLE_CONTENTS, BundleContents.bundleContents(owner.reminderTokensOnMe.stream().map(ReminderToken::getItem).toList())),
+                    DataComponentPair.custom(Pair.of(IDX, IntTag.valueOf(i))));
         } else if (selected != -1) {
             BOTCPlayer selectedPlayer = seatOrder.get(selected);
             List<ItemStack> tokens = owner.reminderTokensOnMe.stream().filter(t -> t.source == selectedPlayer).map(ReminderToken::getItem).toList();
@@ -99,23 +94,20 @@ public class Grimoire implements Listener {
                 if (tokens.size() == 1) {
                     return tokens.getFirst();
                 } else {
-                    return createItem(Material.BUNDLE, meta -> {
-                        meta.displayName(Component.text((owner.getName()+"'s Reminder Tokens From "+selectedPlayer.getName()).replace("s's", "s'"))
-                                .decoration(TextDecoration.ITALIC, false));
-                        //noinspection UnstableApiUsage
-                        ((BundleMeta) meta).setItems(tokens);
-                    });
+                    return createItem(Material.BUNDLE,
+                            DataComponentPair.name(Component.text((owner.getName()+"'s Reminder Tokens From "+selectedPlayer.getName()).replace("s's", "s'"))),
+                            DataComponentPair.of(DataComponentTypes.BUNDLE_CONTENTS, BundleContents.bundleContents(tokens)));
                 }
             }
         }
-        return createItem(Material.PLAYER_HEAD, meta -> {
-            meta.displayName(Component.text(owner.getName())
-                    .decoration(TextDecoration.ITALIC, false));
-            meta.lore(List.of(Component.text("Click to view reminder tokens", NamedTextColor.GRAY)
-                    .decoration(TextDecoration.ITALIC, false)));
-            meta.getPersistentDataContainer().set(IDX, PersistentDataType.INTEGER, i);
-            ((SkullMeta) meta).setOwningPlayer(owner.getPlayer());
-        });
+        return createItem(Material.PLAYER_HEAD,
+                DataComponentPair.name(Component.text(owner.getName())),
+                DataComponentPair.lore(Component.text(access == Access.PLAYER_SELECT
+                        ? "Click to select player"
+                        : "Click to view reminder tokens", NamedTextColor.GRAY)),
+                DataComponentPair.of(DataComponentTypes.PROFILE,
+                        ResolvableProfile.resolvableProfile(owner.getPlayer().getPlayerProfile())),
+                DataComponentPair.custom(Pair.of(IDX, IntTag.valueOf(i))));
     }
 
     // ..PPPPP..
@@ -163,10 +155,12 @@ public class Grimoire implements Listener {
         if (!inventory.equals(evt.getClickedInventory())) return;
         evt.setCancelled(true);
 
-        int idx = Optional.ofNullable(evt.getCurrentItem()).map(i->Optional.ofNullable(i.getItemMeta()).map(m->m.getPersistentDataContainer().getOrDefault(IDX, PersistentDataType.INTEGER, -1)).orElse(-1)).orElse(-1);
+        int idx = Optional.ofNullable(evt.getCurrentItem()).map(i->DataComponentPair.<IntTag>getCustomData(i, IDX)).map(IntTag::getAsInt).orElse(-1);
         if (idx == -1) return;
         if (access == Access.PLAYER_SELECT) {
             new CustomPayloadEvent(seatOrder.get(idx)).callEvent();
+            HandlerList.unregisterAll(this);
+            inventory.close();
             return;
         }
 
@@ -183,24 +177,14 @@ public class Grimoire implements Listener {
         }, 2);
     }
 
-    private static final NamespacedKey GAME_ID = new NamespacedKey(BloodOnTheClocktower.instance, "botc_game_id");
-    private static final ItemStack GRIMOIRE = ((CraftItemType<ItemMeta>) Material.PAPER.asItemType()).createItemStack(meta -> {
-        meta.displayName(Component.text("Grimoire", NamedTextColor.DARK_PURPLE, TextDecoration.BOLD)
-                .decoration(TextDecoration.ITALIC, false));
-        meta.lore(List.of(
-                Component.text("Right-click to open the Storyteller's Grimoire", NamedTextColor.GRAY)
-                        .decoration(TextDecoration.ITALIC, false)
-        ));
-        meta.setCustomModelData(255);
-    });
+    private static final NamespacedKey GAME_ID = new NamespacedKey(BloodOnTheClocktower.instance, "game_id");
+    private static final ItemStack GRIMOIRE = createItem(Material.PAPER,
+            DataComponentPair.model("grimoire"),
+            DataComponentPair.name(Component.text("Grimoire", NamedTextColor.DARK_PURPLE, TextDecoration.BOLD)),
+            DataComponentPair.lore(Component.text("Right-click to open the Storyteller's Grimoire", NamedTextColor.GRAY)));
+
     public static ItemStack createGrimoire(Game game) {
-        ItemStack item = GRIMOIRE.clone();
-
-        ItemMeta meta = item.getItemMeta();
-        meta.getPersistentDataContainer().set(GAME_ID, PersistentDataType.STRING, game.getId().toString());
-        item.setItemMeta(meta);
-
-        return item;
+        return DataComponentPair.custom(Pair.of(GAME_ID, StringTag.valueOf(game.getId().toString()))).apply(GRIMOIRE.clone());
     }
     public static Inventory openInventory(Game game, Player player, Access access, Component title) {
         PlayerWrapper botcPlayer = game.getBOTCPlayer(player);
@@ -218,7 +202,7 @@ public class Grimoire implements Listener {
             @EventHandler
             public void onRightClick(PlayerInteractEvent evt) {
                 if (!evt.getAction().isRightClick() || evt.getItem() == null || evt.getItem().getItemMeta() == null) return;
-                String gameId = evt.getItem().getItemMeta().getPersistentDataContainer().get(GAME_ID, PersistentDataType.STRING);
+                String gameId = DataComponentPair.<StringTag>getCustomData(evt.getItem(), GAME_ID).getAsString();
                 if (gameId == null) return;
 
                 Game game = Game.getGame(UUID.fromString(gameId));
