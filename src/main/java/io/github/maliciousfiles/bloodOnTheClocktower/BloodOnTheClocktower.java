@@ -53,5 +53,6 @@ public final class BloodOnTheClocktower extends JavaPlugin {
         PacketManager.unload();
         SeatList.destruct();
         PlayerWrapper.destruct();
+        ChoppingBlock.destruct();
     }
 }

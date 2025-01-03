@@ -22,7 +22,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 public class GameInit {
-    public static void initGame(List<Location> seats, Player storytellerPlayer, List<Player> players) throws ExecutionException, InterruptedException {
+    public static void initGame(List<Location> seats, Location block, Player storytellerPlayer, List<Player> players) throws ExecutionException, InterruptedException {
         Storyteller storyteller = new Storyteller(storytellerPlayer);
         List<BOTCPlayer> botcPlayers = players.stream().map(BOTCPlayer::new).toList();
 
@@ -75,13 +75,11 @@ public class GameInit {
 
         Game game = new Game(
                 seatList,
+                Bukkit.getScheduler().callSyncMethod(BloodOnTheClocktower.instance, () -> new ChoppingBlock(block)).get(),
                 script,
                 storyteller,
                 botcPlayers);
         storytellerPlayer.getInventory().addItem(Grimoire.createGrimoire(game));
-
-        new StorytellerQuestionHook(storyteller, "This is a question; use the Yes and No items to answer").get();
-        new StorytellerPauseHook(storyteller, "Press continue to begin the game").get();
 
         game.startGame();
     }

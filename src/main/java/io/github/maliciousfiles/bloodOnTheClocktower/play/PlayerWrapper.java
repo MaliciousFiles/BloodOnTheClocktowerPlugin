@@ -6,14 +6,19 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
+import net.minecraft.network.protocol.game.ClientboundSetPlayerTeamPacket;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.Team;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Pose;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -25,6 +30,11 @@ public abstract class PlayerWrapper {
         this.mcPlayer = mcPlayer;
     }
 
+    public void setTeam(PlayerTeam team) {
+        ((CraftPlayer) mcPlayer).getHandle().connection.send(ClientboundSetPlayerTeamPacket.createAddOrModifyPacket(team, false));
+        ((CraftPlayer) mcPlayer).getHandle().connection.send(ClientboundSetPlayerTeamPacket.createAddOrModifyPacket(team, true));
+    }
+
     public Player getPlayer() {
         return mcPlayer;
     }
@@ -32,15 +42,19 @@ public abstract class PlayerWrapper {
         return mcPlayer.getName();
     }
 
+    private int activeId = 0;
+
     private CompletableFuture<Void> message(Component message) {
         CompletableFuture<Void> cancel = new CompletableFuture<>();
 
+        final int id = activeId += 1;
+
         BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(BloodOnTheClocktower.instance,
-                () -> mcPlayer.sendActionBar(message),
-                0, 20);
+                () -> { if (activeId == id) mcPlayer.sendActionBar(message); }, 0, 20);
 
         Bukkit.getScheduler().runTaskAsynchronously(BloodOnTheClocktower.instance, () -> {
             try {
+                activeId--;
                 cancel.get();
             } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException(e);
@@ -57,7 +71,7 @@ public abstract class PlayerWrapper {
     public CompletableFuture<Void> giveInstruction(String instruction) {
         return message(Component.text(instruction, INSTRUCTION_COLOR));
     }
-    public static final TextColor QUESTION_COLOR = TextColor.color(178, 88, 255);
+    public static final TextColor QUESTION_COLOR = TextColor.color(255, 162, 87);
     public CompletableFuture<Void> askQuestion(String question) {
         return message(Component.text(question, QUESTION_COLOR));
     }
@@ -95,5 +109,12 @@ public abstract class PlayerWrapper {
     public void deglow() {
         deglow.forEach(f->f.complete(null));
         deglow.clear();
+    }
+
+    public void kill() {
+        mcPlayer.setPose(Pose.DYING);
+        Bukkit.getScheduler().runTaskLater(BloodOnTheClocktower.instance, () -> {
+            mcPlayer.setInvisible(true);
+        }, 10);
     }
 }

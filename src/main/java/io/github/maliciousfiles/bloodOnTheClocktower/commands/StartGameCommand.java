@@ -45,6 +45,11 @@ public class StartGameCommand extends BOTCCommand {
 //            return;
 //        }
 
+        Location block = SeatsCommand.getBlock(players.getFirst().getWorld(), table);
+        if (block == null) {
+            error(sender, "Table must have a chopping block");
+            return;
+        }
         List<Location> seats = SeatsCommand.getSeats(players.getFirst().getWorld(), table);
         if (seats.size() != 15) {
             error(sender, "Table must have 15 seats to use");
@@ -54,7 +59,7 @@ public class StartGameCommand extends BOTCCommand {
         Bukkit.getScheduler().runTaskAsynchronously(BloodOnTheClocktower.instance, () -> {
             try {
                 gameTasks.add(Thread.currentThread());
-                GameInit.initGame(seats, players.getFirst(), players.subList(1, players.size()));
+                GameInit.initGame(seats, block, players.getFirst(), players.subList(1, players.size()));
             } catch (ExecutionException | InterruptedException _) {}
         });
     }

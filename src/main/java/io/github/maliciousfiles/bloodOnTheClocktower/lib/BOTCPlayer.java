@@ -1,8 +1,12 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.lib;
 
+import io.github.maliciousfiles.bloodOnTheClocktower.play.PlayerAction;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.PlayerWrapper;
+import io.github.maliciousfiles.bloodOnTheClocktower.play.ScriptDisplay;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,12 +18,20 @@ public class BOTCPlayer extends PlayerWrapper {
     public enum DeathCause { STORY, EXECUTION, PLAYER }
     public enum Alignment { GOOD, EVIL }
 
+    public final PlayerAction VIEW_SCRIPT = new PlayerAction(getPlayer(),
+            "View Script", TextColor.color(188, 46, 69),
+            "Hold to vote for the nominated player", Material.WRITABLE_BOOK, 8);
+    public final PlayerAction VOTE = new PlayerAction(getPlayer(),
+            "Vote", TextColor.color(51, 186, 255),
+            "Hold to vote for the nominated player", "nominate", 7);
+
     private RoleInfo roleInfo;
     private Role role;
     private Alignment alignment;
     private Game game;
     private boolean alive = true;
     private boolean awake = true;
+    private boolean deadVote = true;
 
     public final List<ReminderToken> reminderTokensOnMe = new ArrayList<>();
 
@@ -38,12 +50,21 @@ public class BOTCPlayer extends PlayerWrapper {
     public void setGame(@NotNull Game game) {
         this.game = game;
         setRole(roleInfo);
+        VIEW_SCRIPT.enable(() -> ScriptDisplay.viewRoles(getPlayer(), game.getScript(), 0, Component.text(game.getScript().name)));
     }
     public Role getRole() { return role; }
     public Alignment getAlignment() { return alignment; }
 
     public boolean isAwake() {
         return awake;
+    }
+
+    public void useDeadVote() {
+        deadVote = false;
+        VOTE.remove();
+    }
+    public boolean hasDeadVote() {
+        return deadVote;
     }
 
     public void wake() {

@@ -271,10 +271,11 @@ public class ScriptDisplay implements Listener {
             }
 
             if (viewingScript == null) contents[53] = RETURN;
-            else contents[53] = selectedRoles.size() == rolesToSelect
+            else if (rolesToSelect > 0) contents[53] = selectedRoles.size() == rolesToSelect
                     ? CONTINUE_ENABLED
                     : DataComponentPair.lore(Component.text("Must select "+rolesToSelect+" players", NamedTextColor.DARK_GRAY))
                         .apply(CONTINUE_DISABLED.clone());
+            else contents[53] = DataComponentPair.name(Component.text("Close", NamedTextColor.RED)).apply(RETURN);
         }
 
         inventory.setContents(contents);
@@ -324,8 +325,13 @@ public class ScriptDisplay implements Listener {
             }
         } else {
             if (RETURN.equals(evt.getCurrentItem())) {
-                player.openInventory(inventory = Bukkit.createInventory(null, 45, Component.text("Script Display")));
-                renderPage();
+                if (viewingScript == null) {
+                    player.openInventory(inventory = Bukkit.createInventory(null, 45, Component.text("Script Display")));
+                    renderPage();
+                } else {
+                    HandlerList.unregisterAll(this);
+                    inventory.close();
+                }
             } else if (CONTINUE_ENABLED.equals(evt.getCurrentItem())) {
                 if (viewingScript == null) {
                     selectRoles();

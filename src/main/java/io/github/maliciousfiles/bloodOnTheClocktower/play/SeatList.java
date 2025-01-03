@@ -2,23 +2,25 @@ package io.github.maliciousfiles.bloodOnTheClocktower.play;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.BOTCPlayer;
+import io.github.maliciousfiles.bloodOnTheClocktower.util.DataComponentPair;
 import net.kyori.adventure.text.Component;
 import net.minecraft.server.MinecraftServer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
-import org.bukkit.event.vehicle.VehicleEnterEvent;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+
+import static io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower.createItem;
 
 public class SeatList {
     private final List<Seat> seats;
@@ -64,6 +66,7 @@ public class SeatList {
                         s.canSit = false;
                         s.textDisplay.remove();
                         s.interaction.remove();
+                        s.voteDisplay.remove();
                     }
                     future.complete(null);
                 }
@@ -77,13 +80,31 @@ public class SeatList {
         return seats.stream().map(s->s == null ? null : s.owner).toList();
     }
 
-    public void setCanStand(BOTCPlayer player, boolean canStand) {
+    private Seat getSeat(BOTCPlayer player) {
         for (Seat seat : seats) {
-            if (seat == null || seat.owner == null || !seat.owner.equals(player.getPlayer())) continue;
+            if (seat == null || !player.getPlayer().equals(seat.owner)) continue;
+            return seat;
+        }
+
+        return null;
+    }
+
+    public void setCanStand(BOTCPlayer player, boolean canStand) {
+        getSeat(player).canStand = canStand;
+    }
+    public void setAllCanStand(boolean canStand) {
+        for (Seat seat : seats) {
+            if (seat == null) continue;
             seat.canStand = canStand;
         }
     }
 
+    public enum VoteState {NO, MAYBE, CONFIRMED }
+    public void setVoting(BOTCPlayer player, VoteState state) {
+        getSeat(player).voteDisplay.setItemStack(state == VoteState.NO ? null :
+                createItem(Material.PAPER, DataComponentPair.model("nominate"),
+                        DataComponentPair.cmd(state == VoteState.CONFIRMED)));
+    }
 
     private static final List<Entity> spawnedEntities = new ArrayList<>();
     public static void destruct() {
@@ -92,6 +113,7 @@ public class SeatList {
     private class Seat implements Listener {
         private final Interaction interaction;
         private final TextDisplay textDisplay;
+        private final ItemDisplay voteDisplay;
 
         private boolean canSit, canStand, occupied;
         @Nullable  private List<Player> whitelist;
@@ -100,16 +122,20 @@ public class SeatList {
 
         // TODO: handle stairs
         public Seat(Location location) {
-            interaction = (Interaction) location.getWorld().spawnEntity(location.add(0.5f, 0, 0.5f), EntityType.INTERACTION);
+            interaction = location.getWorld().spawn(location.add(0.5f, 0, 0.5f), Interaction.class);
             interaction.setInteractionWidth(1.05f);
             interaction.setInteractionHeight((float) location.getBlock().getBoundingBox().getHeight()+0.05f);
 
-            textDisplay = (TextDisplay) location.getWorld().spawnEntity(location.add(0, interaction.getInteractionHeight()+0.5, 0), EntityType.TEXT_DISPLAY);
+            textDisplay = location.getWorld().spawn(location.add(0, interaction.getInteractionHeight()+0.5, 0), TextDisplay.class);
             textDisplay.setSeeThrough(true);
             textDisplay.setBillboard(Display.Billboard.CENTER);
 
+            voteDisplay = location.getWorld().spawn(location.add(0, 2.25, 0), ItemDisplay.class);
+            voteDisplay.setBillboard(Display.Billboard.CENTER);
+
             spawnedEntities.add(interaction);
             spawnedEntities.add(textDisplay);
+            spawnedEntities.add(voteDisplay);
         }
 
         @EventHandler

@@ -1,16 +1,31 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.lib;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.play.ChatComponents;
+import io.github.maliciousfiles.bloodOnTheClocktower.play.ChoppingBlock;
+import io.github.maliciousfiles.bloodOnTheClocktower.play.PlayerWrapper;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.SeatList;
-import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.RoleChoiceHook;
-import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.StorytellerPauseHook;
+import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.*;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.title.Title;
+import net.kyori.adventure.title.TitlePart;
+import net.minecraft.util.Mth;
+import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.Team;
 import org.bukkit.entity.Player;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Stream;
 
 public class Game {
+    private final PlayerTeam TEAM = new PlayerTeam(null, "") {
+        public boolean canSeeFriendlyInvisibles() { return true; }
+        public Team.CollisionRule getCollisionRule() { return Team.CollisionRule.NEVER; }
+        public Collection<String> getPlayers() { return Stream.concat(players.stream(), Stream.of(storyteller)).map(PlayerWrapper::getName).toList(); }
+    };
+
     private static final Map<UUID, Game> games = new HashMap<>();
     public static Game getGame(UUID id) {
         return games.get(id);
@@ -22,19 +37,22 @@ public class Game {
     private final UUID uuid;
     private final ScriptInfo script;
     private final SeatList seats;
+    private final ChoppingBlock block;
     private final List<Role> rolesInPlay;
     private final Storyteller storyteller;
     private final List<BOTCPlayer> players;
+
     private int turn;
     private Winner winner = Winner.NONE;
 
-    public Game(SeatList seats, ScriptInfo script, Storyteller storyteller, List<BOTCPlayer> players) {
+    public Game(SeatList seats, ChoppingBlock block, ScriptInfo script, Storyteller storyteller, List<BOTCPlayer> players) {
         players.forEach(p->p.setGame(this));
 
         this.uuid = UUID.randomUUID();
         games.put(uuid, this);
 
         this.seats = seats;
+        this.block = block;
         this.script = script;
         this.storyteller = storyteller;
         this.players = players;
@@ -42,6 +60,9 @@ public class Game {
         this.turn = 1;
 
         players.forEach(p -> mcPlayerToBOTC.put(p.getPlayer().getUniqueId(), p));
+
+        storyteller.setTeam(TEAM);
+        players.forEach(p -> p.setTeam(TEAM));
     }
     public UUID getId() {
         return uuid;
@@ -73,11 +94,15 @@ public class Game {
     }
 
     public void startGame() throws ExecutionException, InterruptedException {
+        new StorytellerPauseHook(storyteller, "Continue to begin the game").get();
+
         setup();
         while (true) {
             runNight();
+            if (isGameOver()) break;
+
+            runDay();
             turn++;
-            if (isGameOver()) { break; }
         }
         // TODO: announce game end
     }
@@ -207,6 +232,86 @@ public class Game {
             if (player.getRole().hasAbility()) player.getRole().handleDawn();
         }
         players.forEach(BOTCPlayer::wake);
+    }
+
+    private void runDay() throws ExecutionException, InterruptedException {
+        seats.setAllCanStand(true);
+
+        new StorytellerPauseHook(storyteller, "Continue to call to table").get();
+
+        players.forEach(p ->
+                p.getPlayer().sendTitlePart(TitlePart.TITLE, Component.text("Return to Seat", NamedTextColor.BLUE)));
+        seats.setAllCanStand(false);
+
+        storyteller.NOMINATE.enable(() -> {
+            try {
+                BOTCPlayer nominator = new PlayerChoiceHook(this, "Select the NOMINATOR").get();
+
+                CompletableFuture<Void> instruction = storyteller.giveInstruction("Select the NOMINEE");
+                BOTCPlayer nominee = new SelectPlayerHook(storyteller, this, 1, _->true).get().getFirst();
+                instruction.complete(null);
+
+                seats.setCanStand(nominator, true);
+                seats.setCanStand(nominee, true);
+
+                int votesNecessary = Mth.ceil(players.stream().filter(BOTCPlayer::isAlive).count()/2f);
+                if (block.getOnTheBlock() == null) block.setVotesNecessary(votesNecessary);
+
+                new StorytellerPauseHook(storyteller, "Continue to vote").get();
+
+                seats.setCanStand(nominator, false);
+                seats.setCanStand(nominee, false);
+
+                List<ConfirmVoteHook> votes = players.stream().map(
+                        p -> p.isAlive() || p.hasDeadVote()
+                                ? new ConfirmVoteHook(p, storyteller, v->seats.setVoting(p, v))
+                                : null).toList();
+                CompletableFuture<Void> voteInstruction = storyteller.giveInstruction("Click players in a circle to lock their votes");
+
+                int voteCount = 0;
+                for (int start = players.indexOf(nominee)+1, i = 0; i < players.size(); i++) {
+                    int idx = (start+i)%players.size();
+                    BOTCPlayer player = players.get(idx);
+
+                    boolean vote = Optional.ofNullable(votes.get(idx)).map(h -> {
+                                try {
+                                    return h.get();
+                                } catch (ExecutionException | InterruptedException e) {
+                                    throw new RuntimeException(e);
+                                }
+                    }).orElse(false);
+
+                    if (vote) {
+                        if (!player.isAlive()) player.useDeadVote();
+                        voteCount++;
+                    }
+                }
+
+                new StorytellerPauseHook(storyteller, "Continue to update the block ("+votes+" votes)").get();
+                if (block.getVotes() > 0) {
+                    if (voteCount > block.getVotes()) {
+                        block.setPlayerWithVotes(nominee, voteCount);
+                    } else if (voteCount == block.getVotes()) {
+                        block.clear();
+                    }
+                } else if (voteCount >= votesNecessary) {
+                    block.setPlayerWithVotes(nominee, voteCount);
+                }
+
+                nominee.deglow();
+            } catch (ExecutionException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        new StorytellerPauseHook(storyteller, "Continue to execution").get();
+
+        if (block.getOnTheBlock() != null) {
+            new AnvilDropHook(block.getOnTheBlock().getPlayer().getLocation().add(0, 8, 0)).get();
+
+            block.getOnTheBlock().kill();
+
+            block.clear();
+        }
     }
 
     public boolean isGameOver() {
