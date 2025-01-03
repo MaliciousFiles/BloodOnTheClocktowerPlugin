@@ -76,8 +76,8 @@ public abstract class Role {
         public void run() throws ExecutionException, InterruptedException { handleNight(); }
     }
 
-    public Game.NightAction getNightAction() {
-        return new RoleNightAction();
+    public List<Game.NightAction> getNightActions() {
+        return List.of(new RoleNightAction());
     }
 
     public boolean countsAsAlive() {

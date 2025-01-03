@@ -173,7 +173,7 @@ public class Game {
         players.forEach(BOTCPlayer::sleep);
         for (BOTCPlayer player : players) {
             if (player.getRole().hasAbility()) player.getRole().handleDusk();
-            nightActions.add(player.getRole().getNightAction());
+            nightActions.addAll(player.getRole().getNightActions());
         }
 
         if (turn == 1 && players.size() > 5) {
