@@ -26,7 +26,7 @@ public class SeatsCommand extends BOTCCommand {
         return config.getKeys(false);
     }
     public static List<Location> getSeats(World world, String table) {
-        return config.getStringList(table).stream().limit(15).map(s -> new Location(world, Integer.parseInt(s.split(",")[0]), Integer.parseInt(s.split(",")[1]), Integer.parseInt(s.split(",")[2]))).toList();
+        return config.getStringList(table).stream().limit(15).map(s -> s.equals("empty") ? null : new Location(world, Integer.parseInt(s.split(",")[0]), Integer.parseInt(s.split(",")[1]), Integer.parseInt(s.split(",")[2]))).toList();
     }
 
     private static final List<String> subCommands = List.of("create-table", "delete-table", "get-tables", "add", "remove", "list");
@@ -82,14 +82,14 @@ public class SeatsCommand extends BOTCCommand {
                 error(sender, "Table '" + args[1] + "' is full (max 15 seats)");
                 return;
             }
-            if (!args[2].matches("-?\\d+,-?\\d+,-?\\d+")) {
-                error(sender, "Invalid location format '"+args[2]+"', must be 'x,y,z'");
+            if (!args[2].equalsIgnoreCase("empty") && !args[2].matches("-?\\d+,-?\\d+,-?\\d+")) {
+                error(sender, "Invalid location format '"+args[2]+"', must be 'x,y,z' or 'empty'");
                 return;
             }
 
             List<String> seats = config.getStringList(args[1]);
 
-            if (seats.contains(args[2])) {
+            if (!args[2].equalsIgnoreCase("empty") && seats.contains(args[2])) {
                 error(sender, "Seat already exists in table '" + args[1] + "'");
                 return;
             }
@@ -152,7 +152,7 @@ public class SeatsCommand extends BOTCCommand {
                     RayTraceResult hit = player.rayTraceBlocks(5, FluidCollisionMode.NEVER);
                     if (hit != null && hit.getHitBlock() != null) {
                         Location loc = hit.getHitBlock().getLocation();
-                        return List.of(loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ());
+                        return List.of(loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ(), "empty");
                     }
                 }
             }

@@ -26,6 +26,11 @@ public class SeatList {
     private SeatList(List<Location> locs) {
         seats = new ArrayList<>();
         for (Location location : locs) {
+            if (location == null) {
+                seats.add(null);
+                continue;
+            }
+
             Seat seat = new Seat(location);
             seats.add(seat);
             Bukkit.getPluginManager().registerEvents(seat, BloodOnTheClocktower.instance);
@@ -42,6 +47,8 @@ public class SeatList {
 
         List<Player> sitting = new ArrayList<>();
         for (Seat seat : seats) {
+            if (seat == null) continue;
+
             seat.whitelist = players;
             seat.canSit = true;
             seat.textDisplay.text(Component.text("Right click to sit down"));
@@ -67,12 +74,12 @@ public class SeatList {
     }
 
     public List<Player> getSeatOrder() {
-        return seats.stream().map(s->s.owner).toList();
+        return seats.stream().map(s->s == null ? null : s.owner).toList();
     }
 
     public void setCanStand(BOTCPlayer player, boolean canStand) {
         for (Seat seat : seats) {
-            if (seat.owner == null || !seat.owner.equals(player.getPlayer())) continue;
+            if (seat == null || seat.owner == null || !seat.owner.equals(player.getPlayer())) continue;
             seat.canStand = canStand;
         }
     }
@@ -110,7 +117,7 @@ public class SeatList {
             if (occupied || !canSit || !interaction.equals(evt.getRightClicked())
                     || (owner != null && !owner.equals(evt.getPlayer()))
                     || (whitelist != null && !whitelist.contains(evt.getPlayer()))) return;
-            if (seats.stream().anyMatch(s -> s != this && s.owner != null && s.owner.equals(evt.getPlayer()))) return;
+            if (seats.stream().anyMatch(s -> s != this && s != null && evt.getPlayer().equals(s.owner))) return;
 
             if (owner == null) owner = evt.getPlayer();
             if (onSit != null) onSit.accept(owner);
