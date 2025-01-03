@@ -1,5 +1,6 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.lib;
 
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nullable;
@@ -20,7 +21,7 @@ public class ReminderToken {
     }
 
     public ItemStack getItem() {
-        return source.getRole().info.getItem(name, false);
+        return source.getRole().info.getItem(Material.PAPER, name, false);
     }
 
     public boolean isFunctioning() {

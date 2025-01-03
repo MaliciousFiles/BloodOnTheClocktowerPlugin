@@ -28,6 +28,7 @@ public class Poisoner extends Role {
 
     @Override
     public void handleNight() throws InterruptedException, ExecutionException {
+        me.wake();
         CompletableFuture<Void> instruction = me.giveInstruction("Choose a player to poison");
 
         BOTCPlayer poisoned = new SelectPlayerHook(me, game, 1, _->true)

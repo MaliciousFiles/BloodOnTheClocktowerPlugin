@@ -32,12 +32,11 @@ public abstract class PlayerWrapper {
         return mcPlayer.getName();
     }
 
-    public static final TextColor INSTRUCTION_COLOR = TextColor.color(123, 236, 255);
-    public CompletableFuture<Void> giveInstruction(String instruction) {
+    private CompletableFuture<Void> message(Component message) {
         CompletableFuture<Void> cancel = new CompletableFuture<>();
 
         BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(BloodOnTheClocktower.instance,
-                () -> mcPlayer.sendActionBar(Component.text(instruction, INSTRUCTION_COLOR)),
+                () -> mcPlayer.sendActionBar(message),
                 0, 20);
 
         Bukkit.getScheduler().runTaskAsynchronously(BloodOnTheClocktower.instance, () -> {
@@ -51,7 +50,18 @@ public abstract class PlayerWrapper {
 
         futures.add(cancel);
         return cancel;
+
     }
+
+    public static final TextColor INSTRUCTION_COLOR = TextColor.color(123, 236, 255);
+    public CompletableFuture<Void> giveInstruction(String instruction) {
+        return message(Component.text(instruction, INSTRUCTION_COLOR));
+    }
+    public static final TextColor QUESTION_COLOR = TextColor.color(178, 88, 255);
+    public CompletableFuture<Void> askQuestion(String question) {
+        return message(Component.text(question, QUESTION_COLOR));
+    }
+
     public void giveInfo(Component info) {
         mcPlayer.sendMessage(info);
     }
@@ -65,16 +75,14 @@ public abstract class PlayerWrapper {
     public void glow(List<PlayerWrapper> recipients) {
         CompletableFuture<Void> future = new CompletableFuture<>();
 
-        SynchedEntityData data = ((CraftPlayer) mcPlayer).getHandle().getEntityData();
-        data.set(EntityDataSerializers.BYTE.createAccessor(0), (byte) 0x40);
-        Packet<?> glow = new ClientboundSetEntityDataPacket(mcPlayer.getEntityId(), data.packAll());
+        Packet<?> glow = new ClientboundSetEntityDataPacket(mcPlayer.getEntityId(), List.of(SynchedEntityData.DataValue.create(EntityDataSerializers.BYTE.createAccessor(0), (byte) 0x40)));
         recipients.forEach(p -> ((CraftPlayer) p.mcPlayer).getHandle().connection.send(glow));
 
         Bukkit.getScheduler().runTaskAsynchronously(BloodOnTheClocktower.instance, () -> {
             try {
+                future.get();
                 recipients.forEach(p -> ((CraftPlayer) mcPlayer).getHandle()
                         .refreshEntityData(((CraftPlayer) p.mcPlayer).getHandle()));
-                future.get();
             } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException(e);
             }

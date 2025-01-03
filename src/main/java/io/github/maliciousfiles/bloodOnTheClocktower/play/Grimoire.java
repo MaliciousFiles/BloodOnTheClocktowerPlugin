@@ -40,6 +40,9 @@ public class Grimoire implements Listener {
     private static final ItemStack EMPTY = createItem(Material.GRAY_STAINED_GLASS_PANE,
             DataComponentPair.name(Component.text("Empty", NamedTextColor.GRAY)),
             DataComponentPair.lore(Component.text("No one sits here", NamedTextColor.DARK_GRAY)));
+    private static final ItemStack EMPTY_HEAD = createItem(Material.GRAY_STAINED_GLASS_PANE,
+            DataComponentPair.name(Component.text("Empty", NamedTextColor.GRAY)),
+            DataComponentPair.lore(Component.text("No reminder tokens", NamedTextColor.DARK_GRAY)));
 
     private static final NamespacedKey IDX = BloodOnTheClocktower.key("grimoire_idx");
 
@@ -68,8 +71,15 @@ public class Grimoire implements Listener {
         BOTCPlayer owner = seatOrder.get(i);
         if (owner == null) return EMPTY;
 
-        ItemStack item = owner.getRole().info.getItem();
+        ItemStack item = owner.getRole().info.getItem(Material.BUNDLE);
+        item.setData(DataComponentTypes.BUNDLE_CONTENTS, BundleContents.bundleContents(owner.reminderTokensOnMe.stream().map(ReminderToken::getItem).toList()));
         item.setData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, selected == i);
+        item = DataComponentPair.custom(Pair.of(IDX, IntTag.valueOf(i))).apply(item);
+
+        List<Component> lore = new ArrayList<>(item.getData(DataComponentTypes.LORE).lines());
+        lore.add(Component.empty());
+        lore.add(Component.text("Click to view associated reminder tokens", NamedTextColor.GRAY));
+        DataComponentPair.lore(lore.toArray(Component[]::new)).apply(item);
 
         return item;
     }
@@ -78,15 +88,12 @@ public class Grimoire implements Listener {
         BOTCPlayer owner = seatOrder.get(i);
         if (owner == null) return FILLER;
 
-        if (selected == i) {
-            return createItem(Material.BUNDLE,
-                    DataComponentPair.name(Component.text((owner.getName()+"'s Reminder Tokens").replace("s's", "s'"))),
-                    DataComponentPair.of(DataComponentTypes.BUNDLE_CONTENTS, BundleContents.bundleContents(owner.reminderTokensOnMe.stream().map(ReminderToken::getItem).toList())),
-                    DataComponentPair.custom(Pair.of(IDX, IntTag.valueOf(i))));
-        } else if (selected != -1) {
+        if (selected != -1) {
             BOTCPlayer selectedPlayer = seatOrder.get(selected);
             List<ItemStack> tokens = owner.reminderTokensOnMe.stream().filter(t -> t.source == selectedPlayer).map(ReminderToken::getItem).toList();
-            if (!tokens.isEmpty()) {
+            if (tokens.isEmpty()) {
+                return EMPTY_HEAD;
+            } else {
                 if (tokens.size() == 1) {
                     return tokens.getFirst();
                 } else {
@@ -96,13 +103,15 @@ public class Grimoire implements Listener {
                 }
             }
         }
+
         return createItem(Material.PLAYER_HEAD,
-                DataComponentPair.name(Component.text(owner.getName())),
-                DataComponentPair.lore(Component.text(access == Access.PLAYER_SELECT
-                        ? "Click to select player"
-                        : "Click to view reminder tokens", NamedTextColor.GRAY)),
                 DataComponentPair.of(DataComponentTypes.PROFILE,
                         ResolvableProfile.resolvableProfile(owner.getPlayer().getPlayerProfile())),
+                DataComponentPair.of(DataComponentTypes.CUSTOM_NAME, Component.text(owner.getName())
+                        .decoration(TextDecoration.ITALIC, false)),
+                DataComponentPair.lore(Component.text(access == Access.PLAYER_SELECT
+                        ? "Click to select player"
+                        : "Click to edit player", NamedTextColor.GRAY)),
                 DataComponentPair.custom(Pair.of(IDX, IntTag.valueOf(i))));
     }
 
@@ -153,10 +162,16 @@ public class Grimoire implements Listener {
 
         int idx = Optional.ofNullable(evt.getCurrentItem()).map(i->DataComponentPair.<IntTag>getCustomData(i, IDX)).map(IntTag::getAsInt).orElse(-1);
         if (idx == -1) return;
-        if (access == Access.PLAYER_SELECT) {
-            new CustomPayloadEvent(seatOrder.get(idx)).callEvent();
-            HandlerList.unregisterAll(this);
-            inventory.close();
+
+        if (evt.getCurrentItem().getType() == Material.PLAYER_HEAD) {
+            if (access == Access.PLAYER_SELECT) {
+                new CustomPayloadEvent(seatOrder.get(idx)).callEvent();
+                HandlerList.unregisterAll(this);
+                inventory.close();
+            } else if (access == Access.STORYTELLER) {
+                // TODO: player edit
+            }
+
             return;
         }
 

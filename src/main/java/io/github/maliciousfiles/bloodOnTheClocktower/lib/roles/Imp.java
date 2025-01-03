@@ -4,6 +4,7 @@ import io.github.maliciousfiles.bloodOnTheClocktower.lib.*;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.PlayerChoiceHook;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.SelectPlayerHook;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class Imp extends Role {
@@ -28,10 +29,12 @@ public class Imp extends Role {
 
     @Override
     public void handleNight() throws InterruptedException, ExecutionException {
-        me.giveInstruction("Choose a player to kill");
+        me.wake();
+        CompletableFuture<Void> instruction = me.giveInstruction("Choose a player to kill");
 
         BOTCPlayer dead = new SelectPlayerHook(me, game, 1, _->true)
                 .get().getFirst();
+        instruction.complete(null);
         if (!me.isImpaired()) {
             moveReminderToken(deadReminder, dead);
             dead.getRole().handleDeathAttempt(BOTCPlayer.DeathCause.PLAYER, me);

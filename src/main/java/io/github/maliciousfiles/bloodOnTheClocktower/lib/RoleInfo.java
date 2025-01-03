@@ -231,11 +231,14 @@ public enum RoleInfo {
             Role.Type.DEMON, TextColor.color(119, 13, 14),
             Role.Type.FABLED, TextColor.color(255, 205, 0)
     );
-    public ItemStack getItem() {
-        return getItem(null, true);
-    }
 
-    public ItemStack getItem(String nameOverride, boolean showDescription) {
+    public ItemStack getItem() {
+        return getItem(Material.PAPER);
+    }
+    public ItemStack getItem(Material material) {
+        return getItem(material, null, true);
+    }
+    public ItemStack getItem(Material material, String nameOverride, boolean showDescription) {
         String name = nameOverride == null ? title : nameOverride;
 
         List<Component> lore = new ArrayList<>();
@@ -256,7 +259,7 @@ public enum RoleInfo {
             }
         }
 
-        return createItem(Material.PAPER,
+        return createItem(material,
                 DataComponentPair.name(ROLE_COLORS.containsKey(type)
                         ? Component.text(name, ROLE_COLORS.get(type))
                         : Component.text(name.substring(0, name.length()/2), ROLE_COLORS.get(Role.Type.TOWNSFOLK))

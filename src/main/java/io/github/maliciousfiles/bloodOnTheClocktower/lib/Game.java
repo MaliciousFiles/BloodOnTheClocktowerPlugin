@@ -123,6 +123,8 @@ public class Game {
                     minion.giveInfo(Component.text("The demons are " + String.join(", ", demons.stream().map(BOTCPlayer::getName).toList())));
                 }
             }
+
+            new StorytellerPauseHook(storyteller, "Give Minion information, then continue").get();
             minions.forEach(BOTCPlayer::sleep);
         }
     }
@@ -157,10 +159,12 @@ public class Game {
             }
 
             List<RoleInfo> bluffs = new RoleChoiceHook(storyteller, Game.this, "Select bluffs for the demon", 3).get();
-            Component bluffInfo = Component.text("Your bluffs are ");
-            bluffs.forEach(bluff -> bluffInfo.append(ChatComponents.roleInfo(bluff)));
+
+            Component bluffInfo = bluffs.stream().map(ChatComponents::roleInfo).reduce(Component.text("Your bluffs are "),
+                    (curr, bluff) -> curr.append(bluff).append(Component.text(", ")));
             demons.forEach(d->d.giveInfo(bluffInfo));
 
+            new StorytellerPauseHook(storyteller, "Give Demon information, then continue").get();
             demons.forEach(BOTCPlayer::sleep);
         }
     }

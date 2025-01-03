@@ -8,9 +8,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.event.vehicle.VehicleEnterEvent;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -21,21 +23,18 @@ import java.util.function.Consumer;
 public class SeatList {
     private final List<Seat> seats;
 
-    private SeatList(List<Seat> seats) {
-        this.seats = seats;
-    }
-
-    public static SeatList initSeats(List<Location> locs) {
-        assert Thread.currentThread() == MinecraftServer.getServer().getRunningThread(); // must be called sync
-
-        List<Seat> seats = new ArrayList<>();
+    private SeatList(List<Location> locs) {
+        seats = new ArrayList<>();
         for (Location location : locs) {
             Seat seat = new Seat(location);
             seats.add(seat);
             Bukkit.getPluginManager().registerEvents(seat, BloodOnTheClocktower.instance);
-        }
+        }}
 
-        return new SeatList(seats);
+    public static SeatList initSeats(List<Location> locs) {
+        assert Thread.currentThread() == MinecraftServer.getServer().getRunningThread(); // must be called sync
+
+        return new SeatList(locs);
     }
 
     public CompletableFuture<Void> selectSeats(List<Player> players, Consumer<Player> onSit) {
@@ -83,7 +82,7 @@ public class SeatList {
     public static void destruct() {
         spawnedEntities.forEach(Entity::remove);
     }
-    private static class Seat implements Listener {
+    private class Seat implements Listener {
         private final Interaction interaction;
         private final TextDisplay textDisplay;
 
@@ -111,17 +110,18 @@ public class SeatList {
             if (occupied || !canSit || !interaction.equals(evt.getRightClicked())
                     || (owner != null && !owner.equals(evt.getPlayer()))
                     || (whitelist != null && !whitelist.contains(evt.getPlayer()))) return;
+            if (seats.stream().anyMatch(s -> s != this && s.owner != null && s.owner.equals(evt.getPlayer()))) return;
+
             if (owner == null) owner = evt.getPlayer();
             if (onSit != null) onSit.accept(owner);
 
             occupied = true;
             interaction.addPassenger(owner);
             textDisplay.text(Component.empty());
-            textDisplay.setInvisible(true);
         }
 
         @EventHandler
-        public void onExitVehicle(PlayerToggleSneakEvent evt) {
+        public void onSneak(PlayerToggleSneakEvent evt) {
             if (!occupied || !evt.isSneaking() || !evt.getPlayer().equals(owner)) return;
             if (!canStand) {
                 evt.setCancelled(true);

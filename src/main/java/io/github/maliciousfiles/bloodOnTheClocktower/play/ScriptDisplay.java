@@ -271,7 +271,7 @@ public class ScriptDisplay implements Listener {
             }
 
             if (viewingScript == null) contents[53] = RETURN;
-            else contents[44] = selectedRoles.size() == rolesToSelect
+            else contents[53] = selectedRoles.size() == rolesToSelect
                     ? CONTINUE_ENABLED
                     : DataComponentPair.lore(Component.text("Must select "+rolesToSelect+" players", NamedTextColor.DARK_GRAY))
                         .apply(CONTINUE_DISABLED.clone());
@@ -513,8 +513,7 @@ public class ScriptDisplay implements Listener {
         Bukkit.getPluginManager().registerEvents(sd, BloodOnTheClocktower.instance);
         sd.viewingScript = script;
         sd.rolesToSelect = numToSelect;
-        sd.renderViewScript(title);
 
-        Bukkit.getScheduler().runTask(BloodOnTheClocktower.instance, () -> player.openInventory(inventory));
+        Bukkit.getScheduler().runTask(BloodOnTheClocktower.instance, () -> sd.renderViewScript(title));
     }
 }
