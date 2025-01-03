@@ -3,6 +3,7 @@ package io.github.maliciousfiles.bloodOnTheClocktower.play;
 import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.*;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.StorytellerPauseHook;
+import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.StorytellerQuestionHook;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.DataComponentPair;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.Option;
 import net.kyori.adventure.text.Component;
@@ -79,6 +80,7 @@ public class GameInit {
                 botcPlayers);
         storytellerPlayer.getInventory().addItem(Grimoire.createGrimoire(game));
 
+        new StorytellerQuestionHook(storyteller, "This is a question; use the Yes and No items to answer").get();
         new StorytellerPauseHook(storyteller, "Press continue to begin the game").get();
 
         game.startGame();
