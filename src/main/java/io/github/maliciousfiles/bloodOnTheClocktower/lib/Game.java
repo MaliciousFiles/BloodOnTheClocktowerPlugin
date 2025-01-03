@@ -68,6 +68,10 @@ public class Game {
         return script;
     }
 
+    public List<BOTCPlayer> getAwake() {
+        return players.stream().filter(BOTCPlayer::isAwake).toList();
+    }
+
     public void startGame() throws ExecutionException, InterruptedException {
         setup();
         while (true) {
@@ -80,10 +84,7 @@ public class Game {
 
     private void setup() throws ExecutionException, InterruptedException {
         for (BOTCPlayer player : players) {
-            if (player.getRole().hasSetup()) {
-                new StorytellerPauseHook(storyteller, "Continue to setup for " + player.getRole().info.title()).get();
-                player.getRole().setup();
-            }
+            player.getRole().setup();
         }
     }
 
@@ -102,7 +103,7 @@ public class Game {
         public boolean shouldRun() { return true; }
 
         @Override
-        public float order() { return 12; }
+        public float order() { return 10.5f; }
 
         @Override
         public void run() throws ExecutionException, InterruptedException {
@@ -134,7 +135,7 @@ public class Game {
         public boolean shouldRun() { return true; }
 
         @Override
-        public float order() { return 15; }
+        public float order() { return 11.5f; }
 
         @Override
         public void run() throws ExecutionException, InterruptedException {
@@ -187,6 +188,10 @@ public class Game {
             NightAction action = nightActions.poll();
             if (action.shouldRun()) {
                 new StorytellerPauseHook(storyteller, "Continue to " + action.name()).get();
+
+                storyteller.deglow();
+                players.forEach(BOTCPlayer::deglow);
+
                 action.run();
             }
         }

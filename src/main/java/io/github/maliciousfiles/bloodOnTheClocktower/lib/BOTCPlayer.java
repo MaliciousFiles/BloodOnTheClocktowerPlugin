@@ -19,6 +19,7 @@ public class BOTCPlayer extends PlayerWrapper {
     private Alignment alignment;
     private Game game;
     private boolean alive = true;
+    private boolean awake = true;
 
     public final List<ReminderToken> reminderTokensOnMe = new ArrayList<>();
 
@@ -41,12 +42,20 @@ public class BOTCPlayer extends PlayerWrapper {
     public Role getRole() { return role; }
     public Alignment getAlignment() { return alignment; }
 
+    public boolean isAwake() {
+        return awake;
+    }
+
     public void wake() {
         // TODO: Storyteller#prompt for player to wake up, with info on who they are, and make wake
+        awake = true;
+        game.getSeats().setCanStand(this, true);
     }
 
     public void sleep() {
         // TODO
+        awake = false;
+        game.getSeats().setCanStand(this, false);
     }
 
     public boolean isImpaired() {

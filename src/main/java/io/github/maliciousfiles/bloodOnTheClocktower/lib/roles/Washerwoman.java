@@ -18,16 +18,13 @@ public class Washerwoman extends Role {
     public Washerwoman(BOTCPlayer me, Game game, RoleInfo info) { super(me, game, info); }
 
     @Override
-    public boolean hasSetup() { return true; }
-
-    @Override
     protected boolean hasNightAction() {
         return !hasInfo;
     }
 
     @Override
     public void setup() throws ExecutionException, InterruptedException {
-        new StorytellerPauseHook(game.getStoryteller(), "Assign the Washerwoman's Townsfolk and Wrong reminder tokens").get();
+        new StorytellerPauseHook(game.getStoryteller(), "Continue to assign the Washerwoman's Townsfolk and Wrong reminder tokens").get();
 
         BOTCPlayer townsfolk = new PlayerChoiceHook(game, "Townsfolk reminder token").get();
         newReminderToken(new ReminderToken("Townsfolk", me, townsfolk, ReminderToken.Effect.NONE));

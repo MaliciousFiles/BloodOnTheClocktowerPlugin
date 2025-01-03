@@ -12,9 +12,6 @@ public class Imp extends Role {
     public Imp(BOTCPlayer me, Game game, RoleInfo info) { super(me, game, info); }
 
     @Override
-    public boolean hasSetup() { return false; }
-
-    @Override
     protected boolean hasNightAction() {
         return game.getTurn() != 1;
     }

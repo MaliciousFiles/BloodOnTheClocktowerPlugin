@@ -12,9 +12,6 @@ public class Poisoner extends Role {
     public Poisoner(BOTCPlayer me, Game game, RoleInfo info) { super(me, game, info); }
 
     @Override
-    public boolean hasSetup() { return false; }
-
-    @Override
     protected boolean hasNightAction() {
         return true;
     }

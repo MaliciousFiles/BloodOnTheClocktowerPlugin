@@ -45,7 +45,7 @@ public class GameInit {
         waitInstruction.complete(null);
 
         Map<Player, CompletableFuture<Void>> roleBagInstructions = botcPlayers.stream().collect(Collectors.toMap(PlayerWrapper::getPlayer,
-                p -> p.giveInstruction("Wait for the the Role Grab Bag, then right click in your inventory to take your role")));
+                p -> p.giveInstruction("Wait for the the Role Grab Bag")));
 
         CompletableFuture<Map<Player, RoleInfo>> selectionsFuture = new CompletableFuture<>();
         ItemStack grabBag = GrabBag.createGrabBag(

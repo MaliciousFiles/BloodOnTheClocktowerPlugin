@@ -4,6 +4,7 @@ import io.github.maliciousfiles.bloodOnTheClocktower.lib.BOTCPlayer;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.Game;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.MinecraftHook;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.PlayerWrapper;
+import io.papermc.paper.event.player.PrePlayerAttackEntityEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -30,17 +31,33 @@ public class SelectPlayerHook extends MinecraftHook<List<BOTCPlayer>> {
         this.interacter = interacter.getPlayer().getUniqueId();
     }
 
-    @EventHandler
-    public void onInteract(PlayerInteractEntityEvent event) {
-        if (!event.getPlayer().getUniqueId().equals(interacter) ||
-            !(event.getRightClicked() instanceof Player other)) return;
-
+    private void select(Player other) {
         BOTCPlayer interacted = game.getBOTCPlayer(other);
         if (interacted == null || !validate.test(interacted)) return;
 
         players.add(interacted);
-        // TODO: make glowing, give feedback, etc.
+
+        List<PlayerWrapper> toGlow = new ArrayList<>(game.getAwake());
+        toGlow.add(game.getStoryteller());
+        interacted.glow(toGlow);
 
         if (players.size() == number) complete(players);
+    }
+
+    @EventHandler
+    public void onPunch(PrePlayerAttackEntityEvent evt) {
+        if (!evt.getPlayer().getUniqueId().equals(interacter) ||
+                !(evt.getAttacked() instanceof Player other)) return;
+
+        select(other);
+        evt.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onInteract(PlayerInteractEntityEvent evt) {
+        if (!evt.getPlayer().getUniqueId().equals(interacter) ||
+            !(evt.getRightClicked() instanceof Player other)) return;
+
+        select(other);
     }
 }

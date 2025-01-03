@@ -41,7 +41,6 @@ public abstract class Role {
     public boolean hasAbility() {
         return me.isAlive() || me.reminderTokensOnMe.stream().anyMatch(tok -> tok.getEffect() == ReminderToken.Effect.HAS_ABILITY);
     }
-    public abstract boolean hasSetup();
     protected abstract boolean hasNightAction();
     public final boolean shouldRunNight() {
         return hasAbility() && hasNightAction();
@@ -73,7 +72,10 @@ public abstract class Role {
         public float order() { return info.nightOrder(); }
 
         @Override
-        public void run() throws ExecutionException, InterruptedException { handleNight(); }
+        public void run() throws ExecutionException, InterruptedException {
+            handleNight();
+            me.sleep();
+        }
     }
 
     public List<Game.NightAction> getNightActions() {

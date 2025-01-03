@@ -1,6 +1,7 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.play;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
+import io.github.maliciousfiles.bloodOnTheClocktower.lib.BOTCPlayer;
 import net.kyori.adventure.text.Component;
 import net.minecraft.server.MinecraftServer;
 import org.bukkit.Bukkit;
@@ -9,16 +10,12 @@ import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
-import org.bukkit.event.vehicle.VehicleExitEvent;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 public class SeatList {
@@ -74,8 +71,11 @@ public class SeatList {
         return seats.stream().map(s->s.owner).toList();
     }
 
-    public void setLocked(boolean canStand) {
-        for (Seat seat : seats) seat.canStand = canStand;
+    public void setCanStand(BOTCPlayer player, boolean canStand) {
+        for (Seat seat : seats) {
+            if (seat.owner == null || !seat.owner.equals(player.getPlayer())) continue;
+            seat.canStand = canStand;
+        }
     }
 
 

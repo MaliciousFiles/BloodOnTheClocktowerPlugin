@@ -118,6 +118,7 @@ public class ScriptDisplay implements Listener {
     private List<RoleInfo> selectedRoles = new ArrayList<>();
 
     private ScriptInfo viewingScript;
+    private int rolesToSelect;
 
     private ScriptDisplay(Player player, Inventory inventory, int numPlayers, CompletableFuture<ScriptInfo> script, CompletableFuture<List<RoleInfo>> roles) {
         this.scriptFuture = script;
@@ -270,6 +271,10 @@ public class ScriptDisplay implements Listener {
             }
 
             if (viewingScript == null) contents[53] = RETURN;
+            else contents[44] = selectedRoles.size() == rolesToSelect
+                    ? CONTINUE_ENABLED
+                    : DataComponentPair.lore(Component.text("Must select "+rolesToSelect+" players", NamedTextColor.DARK_GRAY))
+                        .apply(CONTINUE_DISABLED.clone());
         }
 
         inventory.setContents(contents);
@@ -322,27 +327,27 @@ public class ScriptDisplay implements Listener {
                 player.openInventory(inventory = Bukkit.createInventory(null, 45, Component.text("Script Display")));
                 renderPage();
             } else if (CONTINUE_ENABLED.equals(evt.getCurrentItem())) {
-                selectRoles();
+                if (viewingScript == null) {
+                    selectRoles();
+                } else {
+                    new CustomPayloadEvent(selectedRoles).callEvent();
+
+                    HandlerList.unregisterAll(this);
+                    inventory.close();
+                }
             } else if ((selectingRoles || viewingScript != null) && Material.PAPER == Optional.ofNullable(evt.getCurrentItem()).map(ItemStack::getType).orElse(null)) {
                 String roleId = evt.getCurrentItem().getData(DataComponentTypes.CUSTOM_MODEL_DATA).strings().getFirst();
                 if (roleId == null) return;
 
                 RoleInfo role = RoleInfo.valueOf(roleId.toUpperCase());
 
-                if (selectingRoles) {
-                    if (selectedRoles.contains(role)) {
-                        selectedRoles.remove(role);
-                    } else {
-                        selectedRoles.add(role);
-                    }
-
-                    renderViewScript(null);
+                if (selectedRoles.contains(role)) {
+                    selectedRoles.remove(role);
                 } else {
-                    new CustomPayloadEvent(role).callEvent();
-
-                    HandlerList.unregisterAll(this);
-                    inventory.close();
+                    selectedRoles.add(role);
                 }
+
+                renderViewScript(null);
             }
         }
     }
@@ -501,12 +506,13 @@ public class ScriptDisplay implements Listener {
         Bukkit.getScheduler().callSyncMethod(BloodOnTheClocktower.instance, () -> player.openInventory(inventory)).get();
     }
 
-    public static void viewRoles(Player player, ScriptInfo script, Component title) {
+    public static void viewRoles(Player player, ScriptInfo script, int numToSelect, Component title) {
         Inventory inventory = Bukkit.createInventory(null, 54, Component.text("Script Display"));
 
         ScriptDisplay sd = new ScriptDisplay(player, inventory, 0, null, null);
         Bukkit.getPluginManager().registerEvents(sd, BloodOnTheClocktower.instance);
         sd.viewingScript = script;
+        sd.rolesToSelect = numToSelect;
         sd.renderViewScript(title);
 
         Bukkit.getScheduler().runTask(BloodOnTheClocktower.instance, () -> player.openInventory(inventory));
