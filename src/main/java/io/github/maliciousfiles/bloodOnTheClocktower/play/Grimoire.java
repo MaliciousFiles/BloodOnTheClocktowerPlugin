@@ -71,7 +71,7 @@ public class Grimoire implements Listener {
         BOTCPlayer owner = seatOrder.get(i);
         if (owner == null) return EMPTY;
 
-        ItemStack item = owner.getRole().info.getItem(Material.BUNDLE);
+        ItemStack item = owner.getRole().info.getItem(owner.reminderTokensOnMe.isEmpty() ? Material.PAPER : Material.BUNDLE);
         item.setData(DataComponentTypes.BUNDLE_CONTENTS, BundleContents.bundleContents(owner.reminderTokensOnMe.stream().map(ReminderToken::getItem).toList()));
         item.setData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, selected == i);
         item = DataComponentPair.custom(Pair.of(IDX, IntTag.valueOf(i))).apply(item);

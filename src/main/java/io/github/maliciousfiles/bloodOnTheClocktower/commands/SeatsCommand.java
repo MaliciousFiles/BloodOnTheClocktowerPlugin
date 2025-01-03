@@ -153,6 +153,8 @@ public class SeatsCommand extends BOTCCommand {
                     if (hit != null && hit.getHitBlock() != null) {
                         Location loc = hit.getHitBlock().getLocation();
                         return List.of(loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ(), "empty");
+                    } else {
+                        return List.of("empty");
                     }
                 }
             }

@@ -60,7 +60,7 @@ public class SeatList {
                 sitting.add(player);
                 if (sitting.size() == players.size()) {
                     for (Seat s : seats) {
-                        if (s.owner != null) continue;
+                        if (s == null || s.owner != null) continue;
                         s.canSit = false;
                         s.textDisplay.remove();
                         s.interaction.remove();
