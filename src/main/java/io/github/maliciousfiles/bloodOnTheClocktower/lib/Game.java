@@ -177,7 +177,8 @@ public class Game {
             nightActions.addAll(player.getRole().getNightActions());
         }
 
-        if (turn == 1 && players.size() > 5) {
+        // TODO: uncomment
+        if (turn == 1 /*&& players.size() > 5*/) {
             nightActions.add(new MinionInfoNightAction());
             nightActions.add(new DemonInfoNightAction());
         }
