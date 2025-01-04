@@ -15,8 +15,8 @@ public class ChatComponents {
                 .hoverEvent(role.getItem());
     }
 
-    public static Component playerInfo(BOTCPlayer player) {
-        return Component.text(player.getName() + " the ").append(roleInfo(player.getRoleInfo()));
+    public static Component playerInfo(BOTCPlayer player, TextColor color) {
+        return Component.text(player.getName() + " the ", color).append(roleInfo(player.getRoleInfo()));
     }
 
     public static Component substitutePlayerInfo(String message, TextColor color, BOTCPlayer... players) {
@@ -27,7 +27,7 @@ public class ChatComponents {
             if (part.matches(regex)) {
                 int idx = Integer.parseInt(part.substring(1, part.length()-1));
                 if (idx < players.length) {
-                    result = result.append(idx < players.length ? ChatComponents.playerInfo(players[idx])
+                    result = result.append(idx < players.length ? ChatComponents.playerInfo(players[idx], color)
                             : Component.text("<player not given>"));
                 }
             } else {

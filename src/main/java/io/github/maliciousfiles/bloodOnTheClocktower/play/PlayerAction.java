@@ -30,6 +30,7 @@ import static io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower
 
 public class PlayerAction implements Listener {
     private final ItemStack enabled, disabled;
+    private final TextColor color;
     private final int slot;
     private final Player player;
 
@@ -39,6 +40,7 @@ public class PlayerAction implements Listener {
         this(player, name, color, description, BloodOnTheClocktower.key(model), slot);
     }
     public PlayerAction(Player player, String name, TextColor color, String description, NamespacedKey model, int slot) {
+        this.color = color;
         this.player = player;
         this.enabled = createItem(Material.PAPER,
                 DataComponentPair.name(Component.text(name, color, TextDecoration.BOLD)),
@@ -60,6 +62,10 @@ public class PlayerAction implements Listener {
         return enabled.equals(item) || disabled.equals(item);
     }
 
+    public void enable(Runnable onUse, Component name) {
+        DataComponentPair.name(name.color(color)).apply(enabled);
+        enable(onUse);
+    }
     public void enable(Runnable onUse) {
         if (onUse != null) this.onUse.push(onUse);
         player.getInventory().setItem(slot, enabled);
@@ -68,6 +74,10 @@ public class PlayerAction implements Listener {
         if (!onUse.empty()) onUse.pop();
         if (onUse.empty()) player.getInventory().setItem(slot, disabled);
     }
+    public void tempDisable() {
+        player.getInventory().setItem(slot, disabled);
+    }
+
     public void remove() {
         onUse.clear();
         player.getInventory().setItem(slot, null);

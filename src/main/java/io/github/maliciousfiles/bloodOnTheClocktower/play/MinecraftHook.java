@@ -5,23 +5,36 @@ import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public abstract class MinecraftHook<D> implements Listener {
-    private final CompletableFuture<D> complete;
+    private CompletableFuture<D> future;
 
     public MinecraftHook() {
-        this.complete = new CompletableFuture<>();
+        this.future = new CompletableFuture<>();
         Bukkit.getPluginManager().registerEvents(this, BloodOnTheClocktower.instance);
     }
 
-    public D get() throws ExecutionException, InterruptedException {
-        return complete.get();
+    public final void complete(D data) {
+        HandlerList.unregisterAll(this);
+        future.complete(data);
     }
 
-    protected final void complete(D data) {
-        HandlerList.unregisterAll(this);
-        complete.complete(data);
+    public final D get() throws ExecutionException, InterruptedException {
+        try {
+            return future.get();
+        } catch (CancellationException _) {
+            return null;
+        }
+    }
+
+    protected final void cancel() {
+        future.cancel(true);
+    }
+
+    public boolean isCancelled() {
+        return future.isCancelled();
     }
 }

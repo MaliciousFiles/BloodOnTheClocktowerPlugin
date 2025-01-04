@@ -21,7 +21,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class RoleChoiceHook extends MinecraftHook<List<RoleInfo>> {
     public RoleChoiceHook(PlayerWrapper player, Game game, String instruction, int number) {
-        ScriptDisplay.viewRoles(player.getPlayer(), game.getScript(), number, Component.text(instruction, PlayerWrapper.INSTRUCTION_COLOR));
+        ScriptDisplay.viewRoles(player.getPlayer(), game.getScript(), number, Component.text(instruction, PlayerWrapper.QUESTION_COLOR));
     }
 
     @EventHandler

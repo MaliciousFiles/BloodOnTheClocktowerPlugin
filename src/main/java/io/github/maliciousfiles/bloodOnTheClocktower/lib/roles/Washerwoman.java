@@ -24,7 +24,7 @@ public class Washerwoman extends Role {
 
     @Override
     public void setup() throws ExecutionException, InterruptedException {
-        new StorytellerPauseHook(game.getStoryteller(), "Continue to assign the Washerwoman's Townsfolk and Wrong reminder tokens").get();
+        new StorytellerPauseHook(game.getStoryteller(), "assign the Washerwoman's Townsfolk and Wrong reminder tokens").get();
 
         BOTCPlayer townsfolk = new PlayerChoiceHook(game, "Townsfolk reminder token").get();
         newReminderToken(new ReminderToken("Townsfolk", me, townsfolk, ReminderToken.Effect.NONE));

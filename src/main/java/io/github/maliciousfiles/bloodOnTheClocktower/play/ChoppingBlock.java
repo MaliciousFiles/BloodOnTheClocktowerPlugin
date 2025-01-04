@@ -69,7 +69,7 @@ public class ChoppingBlock {
 
     public void setVotesNecessary(int votes) {
         text.text(Component.text("Needs ")
-                .append(Component.text(votes).decoration(TextDecoration.BOLD, true))
+                .append(Component.text(votes).decorate(TextDecoration.BOLD))
                 .append(Component.text(" to execute"))
                 .color(NamedTextColor.DARK_RED));
     }
