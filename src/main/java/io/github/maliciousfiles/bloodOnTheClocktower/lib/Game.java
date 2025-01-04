@@ -108,7 +108,10 @@ public class Game {
 
     public void log(Component message, LogPriority priority) {
         // TODO
-        storyteller.giveInfo(message);
+        BloodOnTheClocktower.logger().info(message);
+        if (priority == LogPriority.HIGH || priority == LogPriority.MEDIUM) {
+            storyteller.giveInfo(message);
+        }
     }
 
     // Include a "{n}" in message to substitute in a component for players[n]
