@@ -26,17 +26,17 @@ public class StartGameCommand extends BOTCCommand {
             return;
         }
 
-        // TODO: uncomment checks
-//        if (Arrays.stream(args).anyMatch(a->Arrays.stream(args).skip(1).filter(v->v.equals(a)).count()>1)) {
-//            error(sender, "Duplicate players provided");
-//            return;
-//        }
+        if (Arrays.stream(args).anyMatch(a->Arrays.stream(args).skip(1).filter(v->v.equals(a)).count()>1)) {
+            error(sender, "Duplicate players provided");
+            return;
+        }
 
         List<Player> players = Arrays.stream(args).skip(1).map(Bukkit::getPlayer).toList();
         if (players.contains(null)) {
             error(sender, "Invalid player provided");
             return;
         }
+        // TODO: uncomment
 //        if (players.size() < 5) {
 //            error(sender, "Not enough players");
 //            return;

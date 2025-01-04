@@ -16,6 +16,7 @@ import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 
 import static io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower.createItem;
@@ -50,6 +51,11 @@ public class MiscGameHandler implements Listener {
         } else if (GrabBag.isGrabBag(evt.getItemDrop().getItemStack())) {
             evt.getItemDrop().setPickupDelay(10);
         }
+    }
+
+    @EventHandler
+    public void onClick(InventoryClickEvent evt) {
+        if (RoleInfo.isRoleItem(evt.getCurrentItem())) evt.setCancelled(true);
     }
 
     @EventHandler

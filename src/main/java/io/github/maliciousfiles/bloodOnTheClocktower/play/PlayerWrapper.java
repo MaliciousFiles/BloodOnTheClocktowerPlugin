@@ -60,8 +60,6 @@ public abstract class PlayerWrapper {
         CompletableFuture<Void> cancel = new CompletableFuture<>();
 
         final int id = activeId += 1;
-        Bukkit.broadcast(Component.text("adding new message with id "+id+" | ").append(message));
-
         BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(BloodOnTheClocktower.instance,
                 () -> { if (activeId == id) mcPlayer.sendActionBar(message); }, 0, 20);
 
