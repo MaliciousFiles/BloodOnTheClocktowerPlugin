@@ -67,7 +67,7 @@ public class Game {
         storyteller.setTeam(TEAM);
         players.forEach(p -> p.setTeam(TEAM));
 
-        Component playerList = players.stream().map(p -> ChatComponents.playerInfo(p, NamedTextColor.WHITE)).reduce(Component.text("Players: "),
+        Component playerList = players.stream().map(p -> ChatComponents.playerInfo(p, NamedTextColor.WHITE)).reduce(Component.text("Players: ", NamedTextColor.WHITE),
                 (result, p) -> result.append(p).append(Component.text(", ")));
         log(playerList, LogPriority.HIGH);
     }
@@ -107,7 +107,7 @@ public class Game {
     public enum LogPriority { LOW, MEDIUM, HIGH }
 
     public void log(Component message, LogPriority priority) {
-        // TODO
+        message = Component.text("[BOTC] ", NamedTextColor.BLUE).append(message);
         BloodOnTheClocktower.logger().info(message);
         if (priority == LogPriority.HIGH || priority == LogPriority.MEDIUM) {
             storyteller.giveInfo(message);
@@ -116,7 +116,6 @@ public class Game {
 
     // Include a "{n}" in message to substitute in a component for players[n]
     public void log(String message, LogPriority priority, BOTCPlayer... players) {
-        message = "[BOTC] " + message;
         TextColor color = switch (priority) {
             case LOW -> NamedTextColor.DARK_GRAY;
             case MEDIUM -> NamedTextColor.GRAY;
