@@ -23,6 +23,9 @@ public class Poisoner extends Role {
 
     @Override
     public void handleDusk() {
+        if (poisonedReminder.target != null) {
+            game.log("{0} is no longer poisoned", Game.LogPriority.MEDIUM, poisonedReminder.target);
+        }
         moveReminderToken(poisonedReminder, null);
     }
 
@@ -36,6 +39,9 @@ public class Poisoner extends Role {
         instruction.complete(null);
         if (!me.isImpaired()) {
             moveReminderToken(poisonedReminder, poisoned);
+            game.log("{0} poisoned {1}", Game.LogPriority.HIGH, me, poisoned);
+        } else {
+            game.log("{0} attempted to poison {1}", Game.LogPriority.MEDIUM, me, poisoned);
         }
     }
 }

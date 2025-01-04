@@ -1,5 +1,6 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.lib;
 
+import io.github.maliciousfiles.bloodOnTheClocktower.play.ChatComponents;
 import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.PlayerAction;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.PlayerWrapper;
@@ -71,6 +72,7 @@ public class BOTCPlayer extends PlayerWrapper {
     public void useDeadVote() {
         deadVote = false;
         VOTE.remove();
+        game.log("{0} used their dead vote", Game.LogPriority.LOW, this);
     }
     public boolean hasDeadVote() {
         return deadVote;
@@ -80,12 +82,14 @@ public class BOTCPlayer extends PlayerWrapper {
         // TODO: Storyteller#prompt for player to wake up, with info on who they are, and make wake
         awake = true;
         game.getSeats().setCanStand(this, true);
+        game.log("{0} woke up", Game.LogPriority.LOW, this);
     }
 
     public void sleep() {
         // TODO
         awake = false;
         game.getSeats().setCanStand(this, false);
+        game.log("{0} went to sleep", Game.LogPriority.LOW, this);
     }
 
     public boolean isImpaired() {
@@ -105,6 +109,7 @@ public class BOTCPlayer extends PlayerWrapper {
     public void die() {
         // TODO
         alive = false;
+        game.log("{0} died", Game.LogPriority.MEDIUM, this);
         game.checkVictory();
     }
 
@@ -121,6 +126,7 @@ public class BOTCPlayer extends PlayerWrapper {
         setRole(newRole);
         setAlignment(newAlignment);
         role = roleInfo.getInstance(this, game);
+        game.log("{0} became the " + newAlignment + " " + newRole.title(), Game.LogPriority.MEDIUM, this);
         // TODO: tell new role/alignment and do new role setup
     }
 

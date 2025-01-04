@@ -8,7 +8,7 @@ import io.github.maliciousfiles.bloodOnTheClocktower.play.SeatList;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.title.Title;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.title.TitlePart;
 import net.minecraft.network.protocol.game.ClientboundSetPlayerTeamPacket;
 import net.minecraft.util.Mth;
@@ -21,6 +21,7 @@ import org.bukkit.entity.Player;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public class Game {
@@ -101,6 +102,23 @@ public class Game {
 
     public List<BOTCPlayer> getAwake() {
         return players.stream().filter(BOTCPlayer::isAwake).toList();
+    }
+
+    public enum LogPriority { LOW, MEDIUM, HIGH }
+
+    public void log(Component message, LogPriority priority) {
+        // TODO
+        storyteller.giveInfo(message);
+    }
+
+    // Include a "{n}" in message to substitute in a component for players[n]
+    public void log(String message, LogPriority priority, BOTCPlayer... players) {
+        TextColor color = switch (priority) {
+            case LOW -> NamedTextColor.DARK_GRAY;
+            case MEDIUM -> NamedTextColor.GRAY;
+            case HIGH -> NamedTextColor.WHITE;
+        };
+        log(ChatComponents.substitutePlayerInfo(message, color, players), priority);
     }
 
     public void startGame() throws ExecutionException, InterruptedException {
@@ -366,8 +384,10 @@ public class Game {
 
         if (!demonAlive && !goodVictoryBlocked) {
             winner = Winner.GOOD;
+            log("The good team has won", LogPriority.HIGH);
         } else if (alive <= 2) {
             winner = Winner.EVIL;
+            log("The evil team has won", LogPriority.HIGH);
         }
     }
 

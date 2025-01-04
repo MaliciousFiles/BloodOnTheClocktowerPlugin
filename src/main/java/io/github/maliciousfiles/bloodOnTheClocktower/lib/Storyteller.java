@@ -2,8 +2,10 @@ package io.github.maliciousfiles.bloodOnTheClocktower.lib;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.play.PlayerWrapper;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.PlayerAction;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.entity.Player;
+import org.jline.utils.Log;
 
 public class Storyteller extends PlayerWrapper {
     public final PlayerAction CONTINUE = new PlayerAction(getPlayer(),
@@ -23,8 +25,4 @@ public class Storyteller extends PlayerWrapper {
         super(mcPlayer);
     }
 
-    public BOTCPlayer pickPlayer(String prompt) {
-        // TODO
-        return null;
-    }
 }

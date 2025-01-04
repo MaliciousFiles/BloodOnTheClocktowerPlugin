@@ -36,16 +36,20 @@ public class Imp extends Role {
                 .get().getFirst();
         instruction.complete(null);
         if (!me.isImpaired()) {
+            game.log("{0} killed {1}", Game.LogPriority.HIGH, me, dead);
             moveReminderToken(deadReminder, dead);
             dead.getRole().handleDeathAttempt(BOTCPlayer.DeathCause.PLAYER, me);
+        } else {
+            game.log("{0} attempted to kill {1}", Game.LogPriority.MEDIUM, me, dead);
         }
     }
 
     @Override
     public void handleDeathAttempt(BOTCPlayer.DeathCause cause, BOTCPlayer killer) throws ExecutionException, InterruptedException {
         if (cause == BOTCPlayer.DeathCause.PLAYER && killer == me) {
-            new PlayerChoiceHook(game, "Pick a minion for the Imp to jump to")
-                    .get().changeRoleAndAlignment(info, null);
+            BOTCPlayer newImp = new PlayerChoiceHook(game, "Pick a minion for the Imp to jump to").get();
+            game.log("{0} is jumping to {1}", Game.LogPriority.HIGH, me, newImp);
+            newImp.changeRoleAndAlignment(info, null);
         }
         super.handleDeathAttempt(cause, killer);
     }
