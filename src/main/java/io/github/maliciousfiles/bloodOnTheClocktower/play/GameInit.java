@@ -32,6 +32,7 @@ public class GameInit {
                 p -> p.giveInstruction("Pick a seat for the game")));
         CompletableFuture<Void> seatFuture = seatList.selectSeats(players, player -> {
             seatInstructions.get(player).complete(null);
+            botcPlayers.get(players.indexOf(player)).setupInventory();
         });
 
         CompletableFuture<ScriptInfo> scriptFuture = new CompletableFuture<>();
@@ -40,39 +41,15 @@ public class GameInit {
 
         ScriptInfo script = scriptFuture.get();
         List<RoleInfo> roles = roleFuture.get();
+        storyteller.setupInventory();
 
         CompletableFuture<Void> waitInstruction = storyteller.giveInstruction("Wait for the players to pick their seats");
         seatFuture.get();
         waitInstruction.complete(null);
 
-        Map<Player, CompletableFuture<Void>> roleBagInstructions = botcPlayers.stream().collect(Collectors.toMap(PlayerWrapper::getPlayer,
-                p -> p.giveInstruction("Wait for the the Role Grab Bag")));
-
-        CompletableFuture<Map<Player, RoleInfo>> selectionsFuture = new CompletableFuture<>();
-        ItemStack grabBag = GrabBag.createGrabBag(
-                roles.stream()
-                        .filter(r->r.type() != Role.Type.TRAVELLER && r.type() != Role.Type.FABLED)
-                        .map(r->new Option<>(r, r.getItem())).toList(),
-                script.roles.stream().filter(r->r.type() != Role.Type.TRAVELLER).map(RoleInfo::getItem).toList(),
-                players,
-                pair -> {
-                    roleBagInstructions.get(pair.getFirst()).complete(null);
-
-                    BOTCPlayer player = botcPlayers.get(players.indexOf(pair.getFirst()));
-                    player.setRole(pair.getSecond());
-                    player.setAlignment(pair.getSecond().alignment());
-
-                    pair.getFirst().sendMessage(Component.text("You are the ").append(ChatComponents.roleInfo(pair.getSecond())));
-                    storyteller.giveInfo(Component.text(pair.getFirst().getName()+" is the ").append(ChatComponents.roleInfo(pair.getSecond())));
-                },
-                selectionsFuture,
-                DataComponentPair.name(Component.text("Role Grab Bag", NamedTextColor.YELLOW, TextDecoration.BOLD)));
-        storytellerPlayer.getInventory().addItem(grabBag);
-
-        CompletableFuture<Void> storytellerInstruction = storyteller.giveInstruction("Pass around the grab bag and allow each player to take a role");
-        selectionsFuture.get();
-        storytellerInstruction.complete(null);
-        GrabBag.removeGrabBag(grabBag);
+        // TODO: uncomment
+//        Map<Player, CompletableFuture<Void>> roleBagInstructions = botcPlayers.stream().collect(Collectors.toMap(PlayerWrapper::getPlayer,
+//                p -> p.giveInstruction("Wait for the the Role Grab Bag")));
 
         Game game = new Game(
                 seatList,
@@ -80,6 +57,44 @@ public class GameInit {
                 script,
                 storyteller,
                 botcPlayers);
+
+        // TODO: uncomment
+//        CompletableFuture<Map<Player, RoleInfo>> selectionsFuture = new CompletableFuture<>();
+//        ItemStack grabBag = GrabBag.createGrabBag(
+//                roles.stream()
+//                        .filter(r->r.type() != Role.Type.TRAVELLER && r.type() != Role.Type.FABLED)
+//                        .map(r->new Option<>(r, r.getItem())).toList(),
+//                script.roles.stream().filter(r->r.type() != Role.Type.TRAVELLER).map(RoleInfo::getItem).toList(),
+//                players,
+//                pair -> {
+//                    roleBagInstructions.get(pair.getFirst()).complete(null);
+//
+//                    BOTCPlayer player = botcPlayers.get(players.indexOf(pair.getFirst()));
+//                    player.setRole(pair.getSecond());
+//                    player.setAlignment(pair.getSecond().alignment());
+//
+//                    pair.getFirst().sendMessage(Component.text("You are the ").append(ChatComponents.roleInfo(pair.getSecond())));
+//                    game.logDirect(Component.text(pair.getFirst().getName()+" is the ").append(ChatComponents.roleInfo(pair.getSecond())), Game.LogPriority.HIGH);
+//                },
+//                selectionsFuture,
+//                DataComponentPair.name(Component.text("Role Grab Bag", NamedTextColor.YELLOW, TextDecoration.BOLD)));
+//        storytellerPlayer.getInventory().addItem(grabBag);
+//
+//        CompletableFuture<Void> storytellerInstruction = storyteller.giveInstruction("Pass around the grab bag and allow each player to take a role");
+//        selectionsFuture.get();
+//        storytellerInstruction.complete(null);
+//        GrabBag.removeGrabBag(grabBag);
+
+        // TODO: remove
+        for (int i = 0; i < botcPlayers.size(); i++) {
+            botcPlayers.get(i).setRole(roles.get(i));
+            botcPlayers.get(i).setAlignment(roles.get(i).alignment());
+            botcPlayers.get(i).getPlayer().getInventory().addItem(roles.get(i).getItem());
+
+            botcPlayers.get(i).getPlayer().sendMessage(Component.text("You are the ").append(ChatComponents.roleInfo(roles.get(i))));
+            game.logDirect(Component.text(botcPlayers.get(i).getPlayer().getName()+" is the ").append(ChatComponents.roleInfo(roles.get(i))), Game.LogPriority.HIGH);
+        }
+
         storytellerPlayer.getInventory().addItem(Grimoire.createGrimoire(game));
 
         game.startGame();

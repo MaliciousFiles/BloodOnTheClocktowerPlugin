@@ -16,6 +16,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Pose;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
@@ -25,10 +27,20 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public abstract class PlayerWrapper {
+    private ItemStack[] inventory;
     private final Player mcPlayer;
 
     public PlayerWrapper(Player mcPlayer) {
         this.mcPlayer = mcPlayer;
+    }
+
+    public void setupInventory() {
+        inventory = getPlayer().getInventory().getContents();
+        getPlayer().getInventory().clear();
+    }
+
+    public void resetInventory() {
+        getPlayer().getInventory().setContents(inventory);
     }
 
     public void setTeam(PlayerTeam team) {
@@ -48,6 +60,7 @@ public abstract class PlayerWrapper {
         CompletableFuture<Void> cancel = new CompletableFuture<>();
 
         final int id = activeId += 1;
+        Bukkit.broadcast(Component.text("adding new message with id "+id+" | ").append(message));
 
         BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(BloodOnTheClocktower.instance,
                 () -> { if (activeId == id) mcPlayer.sendActionBar(message); }, 0, 20);
@@ -94,7 +107,7 @@ public abstract class PlayerWrapper {
         recipients.forEach(p -> ((CraftPlayer) p.mcPlayer).getHandle().connection.send(glow));
 
         Runnable unregister = PacketManager.registerListener(ClientboundSetEntityDataPacket.class, (player, packet) -> {
-            if (recipients.stream().noneMatch(p->p.getPlayer().equals(player))) return;
+            if (!player.equals(mcPlayer) || recipients.stream().noneMatch(p->p.getPlayer().equals(player))) return;
 
             for (int i = 0; i < packet.packedItems().size(); i++) {
                 SynchedEntityData.DataValue<?> val = packet.packedItems().get(i);
@@ -109,8 +122,9 @@ public abstract class PlayerWrapper {
             try {
                 future.get();
                 unregister.run();
-                recipients.forEach(p -> ((CraftPlayer) mcPlayer).getHandle()
-                        .refreshEntityData(((CraftPlayer) p.mcPlayer).getHandle()));
+                recipients.forEach(p ->
+                        ((CraftPlayer) p.mcPlayer).getHandle().connection.send(new ClientboundSetEntityDataPacket(getPlayer().getEntityId(), ((CraftPlayer) mcPlayer).getHandle().getEntityData().packAll())));
+                futures.remove(future);
             } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException(e);
             }

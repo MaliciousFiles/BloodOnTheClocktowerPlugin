@@ -4,6 +4,7 @@ import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.BOTCPlayer;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.Game;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.ReminderToken;
+import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.PlayerChoiceHook;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.CustomPayloadEvent;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.DataComponentPair;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.Pair;
@@ -12,6 +13,7 @@ import io.papermc.paper.datacomponent.item.BundleContents;
 import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.StringTag;
@@ -29,24 +31,85 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower.createItem;
 
 public class Grimoire implements Listener {
     public enum Access { STORYTELLER, PLAYER_SELECT, SPY }
 
-    private static final ItemStack FILLER = createItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE,
+    private final ItemStack FILLER = createItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE,
             DataComponentPair.name(Component.text(" ")));
-    private static final ItemStack EMPTY = createItem(Material.GRAY_STAINED_GLASS_PANE,
+    private final ItemStack DARK_FILLER = createItem(Material.GRAY_STAINED_GLASS_PANE,
+            DataComponentPair.name(Component.text(" ")));
+    private final ItemStack EMPTY = createItem(Material.GRAY_STAINED_GLASS_PANE,
             DataComponentPair.name(Component.text("Empty", NamedTextColor.GRAY)),
             DataComponentPair.lore(Component.text("No one sits here", NamedTextColor.DARK_GRAY)));
-    private static final ItemStack EMPTY_HEAD = createItem(Material.GRAY_STAINED_GLASS_PANE,
+    private final ItemStack EMPTY_HEAD = createItem(Material.GRAY_STAINED_GLASS_PANE,
             DataComponentPair.name(Component.text("Empty", NamedTextColor.GRAY)),
             DataComponentPair.lore(Component.text("No reminder tokens", NamedTextColor.DARK_GRAY)));
+    private final ItemStack EMPTY_TARGET = createItem(Material.GRAY_STAINED_GLASS_PANE,
+            DataComponentPair.name(Component.text("No Target", NamedTextColor.GRAY)),
+            DataComponentPair.lore(Component.text("Click to move reminder token (close selection inventory to select no-one)", NamedTextColor.DARK_GRAY)));
+
+    private final ItemStack KILL_DISABLED = createItem(Material.PAPER,
+            DataComponentPair.name(Component.text("Kill", NamedTextColor.GRAY)),
+            DataComponentPair.lore(Component.text("Instantly kill this player", NamedTextColor.DARK_GRAY)),
+            DataComponentPair.of(DataComponentTypes.ITEM_MODEL, NamespacedKey.minecraft("stone_sword")));
+    private final ItemStack KILL_ENABLED = createItem(Material.PAPER,
+            DataComponentPair.name(Component.text("Kill", TextColor.color(255, 71, 36))),
+            DataComponentPair.lore(Component.text("Instantly kill this player", NamedTextColor.GRAY)),
+            DataComponentPair.of(DataComponentTypes.ITEM_MODEL, NamespacedKey.minecraft("iron_sword")));
+    private final ItemStack EXECUTE_DISABLED = createItem(Material.PAPER,
+            DataComponentPair.name(Component.text("Execute", NamedTextColor.GRAY)),
+            DataComponentPair.lore(Component.text("Instantly execute this player", NamedTextColor.DARK_GRAY)),
+            DataComponentPair.of(DataComponentTypes.ITEM_MODEL, NamespacedKey.minecraft("stone_axe")));
+    private final ItemStack EXECUTE_ENABLED = createItem(Material.PAPER,
+            DataComponentPair.name(Component.text("Execute", TextColor.color(177, 20, 21))),
+            DataComponentPair.lore(Component.text("Instantly execute this player", NamedTextColor.GRAY)),
+            DataComponentPair.of(DataComponentTypes.ITEM_MODEL, NamespacedKey.minecraft("diamond_axe")));
+    private final ItemStack REVIVE_DISABLED = createItem(Material.GRAY_STAINED_GLASS_PANE,
+            DataComponentPair.name(Component.text("Revive", NamedTextColor.GRAY)),
+            DataComponentPair.lore(Component.text("Bring the player back to life", NamedTextColor.DARK_GRAY)));
+    private final ItemStack REVIVE_ENABLED = createItem(Material.TOTEM_OF_UNDYING,
+            DataComponentPair.name(Component.text("Revive", TextColor.color(202, 148, 75))),
+            DataComponentPair.lore(Component.text("Bring the player back to life", NamedTextColor.GRAY)));
+    private final ItemStack DRUNK = createItem(Material.PAPER,
+            DataComponentPair.name(Component.text("Drunk", TextColor.color(74, 97, 200))),
+            DataComponentPair.lore(Component.text("Toggle the Storyteller Drunk token", NamedTextColor.GRAY)),
+            DataComponentPair.model("role"),
+            DataComponentPair.cmd("drunk"));
+    private final ItemStack SOBER = createItem(Material.PAPER,
+            DataComponentPair.name(Component.text("Sober", TextColor.color(73, 200, 114))),
+            DataComponentPair.lore(Component.text("Toggle the Storyteller Sober and Healthy token", NamedTextColor.GRAY)),
+            DataComponentPair.model("role"),
+            DataComponentPair.cmd("barista"));
+    private final ItemStack WAKE = createItem(Material.LIGHT,
+            DataComponentPair.name(Component.text("Wake", TextColor.color(209, 189, 44))),
+            DataComponentPair.lore(Component.text("Awaken this player", NamedTextColor.GRAY)));
+    private final ItemStack SLEEP = createItem(Material.RED_BED,
+            DataComponentPair.name(Component.text("Sleep", TextColor.color(1, 0, 201))),
+            DataComponentPair.lore(Component.text("Put this player to sleep", NamedTextColor.GRAY)));
+    private final ItemStack DEAD_VOTE_DISABLED = createItem(Material.PAPER,
+            DataComponentPair.name(Component.text("Grant Dead Vote", NamedTextColor.GRAY)),
+            DataComponentPair.lore(Component.text("Give the player back their dead vote", NamedTextColor.DARK_GRAY)),
+            DataComponentPair.model("nominate"),
+            DataComponentPair.cmd(false));
+    private final ItemStack DEAD_VOTE_ENABLED = createItem(Material.PAPER,
+            DataComponentPair.name(Component.text("Grant Dead Vote", TextColor.color(104, 215, 250))),
+            DataComponentPair.lore(Component.text("Give the player back their dead vote", NamedTextColor.GRAY)),
+            DataComponentPair.model("nominate"),
+            DataComponentPair.cmd(true));
+
+    private final ItemStack RETURN = createItem(Material.BARRIER,
+            DataComponentPair.name(Component.text("Return", NamedTextColor.RED)));
 
     private static final NamespacedKey IDX = BloodOnTheClocktower.key("grimoire_idx");
 
-    private final Access access;
+    private CompletableFuture<Integer> select;
+
+    private Access access;
     private final PlayerWrapper player;
     private final Game game;
     private final Inventory inventory;
@@ -66,6 +129,7 @@ public class Grimoire implements Listener {
     }
 
     private int selected = -1;
+    private int editing = -1;
 
     private ItemStack createRole(int i) {
         BOTCPlayer owner = seatOrder.get(i);
@@ -104,15 +168,17 @@ public class Grimoire implements Listener {
             }
         }
 
-        return createItem(Material.PLAYER_HEAD,
+        ItemStack item = createItem(Material.PLAYER_HEAD,
                 DataComponentPair.of(DataComponentTypes.PROFILE,
                         ResolvableProfile.resolvableProfile(owner.getPlayer().getPlayerProfile())),
                 DataComponentPair.of(DataComponentTypes.CUSTOM_NAME, Component.text(owner.getName())
                         .decoration(TextDecoration.ITALIC, false)),
-                DataComponentPair.lore(Component.text(access == Access.PLAYER_SELECT
-                        ? "Click to select player"
-                        : "Click to edit player", NamedTextColor.GRAY)),
                 DataComponentPair.custom(Pair.of(IDX, IntTag.valueOf(i))));
+
+        return DataComponentPair.lore(Component.text(access == Access.PLAYER_SELECT
+                    ? "Click to select player"
+                    : editing == -1 ? "Click to edit player"
+                    : "Click to move reminder token (close selection inventory to select no-one)", NamedTextColor.GRAY)).apply(item);
     }
 
     // ..PPPPP..
@@ -155,34 +221,152 @@ public class Grimoire implements Listener {
         inventory.setContents(contents);
     }
 
+    private void renderEditPlayer() {
+        BOTCPlayer selectedPlayer = seatOrder.get(editing);
+
+        ItemStack[] contents = inventory.getContents();
+        Arrays.fill(contents, FILLER);
+
+        contents[0] = createHead(editing);
+        contents[1] = createRole(editing);
+        for (int i = 2; i < 8; i++) contents[i+9] = DARK_FILLER;
+        contents[8] = RETURN;
+
+        for (int i = 0; i < 9; i++) contents[i+9] = DARK_FILLER;
+
+        contents[18] = selectedPlayer.isAlive() ? KILL_ENABLED : KILL_DISABLED;
+        contents[19] = selectedPlayer.isAlive() ? EXECUTE_ENABLED : EXECUTE_DISABLED;
+        contents[20] = !selectedPlayer.isAlive() ? REVIVE_ENABLED : REVIVE_DISABLED;
+        contents[21] = DARK_FILLER;
+        contents[22] = DataComponentPair.of(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE,
+                selectedPlayer.reminderTokensOnMe.contains(ReminderToken.STORYTELLER_DRUNK)).apply(DRUNK);
+        contents[23] = DataComponentPair.of(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE,
+                selectedPlayer.reminderTokensOnMe.contains(ReminderToken.STORYTELLER_SOBER_AND_HEALTHY)).apply(SOBER);
+        contents[24] = DARK_FILLER;
+        contents[25] = selectedPlayer.isAwake() ? SLEEP : WAKE;
+        contents[26] = !selectedPlayer.hasDeadVote() ? DEAD_VOTE_ENABLED : DEAD_VOTE_DISABLED;
+
+        for (int i = 0; i < 9; i++) contents[i+27] = DARK_FILLER;
+
+        for (int i = 0; i < 9; i++) {
+            if (i >= selectedPlayer.getMyReminderTokens().size()) continue;
+            ReminderToken token = selectedPlayer.getMyReminderTokens().get(i);
+
+            contents[i+36] = token.getItem();
+            contents[i+45] = token.target == null ? EMPTY_TARGET : createHead(seatOrder.indexOf(token.target));
+        }
+
+        inventory.setContents(contents);
+    }
+
     @EventHandler
-    public void inventoryInteract(InventoryClickEvent evt) {
+    public void inventoryInteract(InventoryClickEvent evt) throws ExecutionException, InterruptedException {
         if (!inventory.equals(evt.getClickedInventory())) return;
         evt.setCancelled(true);
 
-        int idx = Optional.ofNullable(evt.getCurrentItem()).map(i->DataComponentPair.<IntTag>getCustomData(i, IDX)).map(IntTag::getAsInt).orElse(-1);
-        if (idx == -1) return;
+        if (editing == -1 || access == Access.PLAYER_SELECT) {
+            int idx = Optional.ofNullable(evt.getCurrentItem()).map(i->DataComponentPair.<IntTag>getCustomData(i, IDX)).map(IntTag::getAsInt).orElse(-1);
+            if (idx == -1) return;
 
-        if (evt.getCurrentItem().getType() == Material.PLAYER_HEAD) {
-            if (access == Access.PLAYER_SELECT) {
-                new CustomPayloadEvent(seatOrder.get(idx)).callEvent();
-                HandlerList.unregisterAll(this);
-                inventory.close();
-            } else if (access == Access.STORYTELLER) {
-                // TODO: player edit
+            if (evt.getCurrentItem().getType() == Material.PLAYER_HEAD) {
+                if (access == Access.PLAYER_SELECT) {
+                    if (select != null) {
+                        select.complete(idx);
+                        return;
+                    }
+
+                    new CustomPayloadEvent(seatOrder.get(idx)).callEvent();
+                    HandlerList.unregisterAll(this);
+                    inventory.close();
+                } else if (access == Access.STORYTELLER) {
+                    selected = -1;
+                    editing = idx;
+
+                    renderEditPlayer();
+                }
+
+                return;
             }
+
+            if (selected == idx) selected = -1;
+            else selected = idx;
+            render();
 
             return;
         }
 
-        if (selected == idx) selected = -1;
-        else selected = idx;
-        render();
+        if (RETURN.equals(evt.getCurrentItem())) {
+            editing = -1;
+            render();
+        } else if (KILL_ENABLED.equals(evt.getCurrentItem())) {
+            seatOrder.get(editing).die();
+            inventory.close();
+        } else if (EXECUTE_ENABLED.equals(evt.getCurrentItem())) {
+            Bukkit.getScheduler().runTaskAsynchronously(BloodOnTheClocktower.instance, () -> {
+                try {
+                    seatOrder.get(editing).execute(true);
+                } catch (ExecutionException | InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+            inventory.close();
+        } else if (REVIVE_ENABLED.equals(evt.getCurrentItem())) {
+            seatOrder.get(editing).revive();
+            inventory.close();
+        } else if (DRUNK.equals(evt.getCurrentItem())) {
+            List<ReminderToken> tokens = seatOrder.get(editing).reminderTokensOnMe;
+            if (tokens.contains(ReminderToken.STORYTELLER_DRUNK)) tokens.remove(ReminderToken.STORYTELLER_DRUNK);
+            else tokens.add(ReminderToken.STORYTELLER_DRUNK);
+
+            renderEditPlayer();
+        } else if (SOBER.equals(evt.getCurrentItem())) {
+            List<ReminderToken> tokens = seatOrder.get(editing).reminderTokensOnMe;
+            if (tokens.contains(ReminderToken.STORYTELLER_SOBER_AND_HEALTHY)) tokens.remove(ReminderToken.STORYTELLER_SOBER_AND_HEALTHY);
+            else tokens.add(ReminderToken.STORYTELLER_SOBER_AND_HEALTHY);
+
+            renderEditPlayer();
+        } else if (WAKE.equals(evt.getCurrentItem())) {
+            seatOrder.get(editing).wake();
+            renderEditPlayer();
+        } else if (SLEEP.equals(evt.getCurrentItem())) {
+            seatOrder.get(editing).sleep();
+            renderEditPlayer();
+        } else if (DEAD_VOTE_ENABLED.equals(evt.getCurrentItem())) {
+            seatOrder.get(editing).returnDeadVote();
+            renderEditPlayer();
+        } else if (evt.getSlot() >= 45 && evt.getSlot()-45 < seatOrder.get(editing).getMyReminderTokens().size()) {
+            Bukkit.getScheduler().runTaskAsynchronously(BloodOnTheClocktower.instance, () -> {
+                try {
+                    select = new CompletableFuture<>();
+
+                    access = Access.PLAYER_SELECT;
+                    render();
+
+                    Integer val = select.get();
+
+                    access = Access.STORYTELLER;
+                    select = null;
+
+                    seatOrder.get(editing).moveReminderToken(
+                            seatOrder.get(editing).getMyReminderTokens().get(evt.getSlot()-45),
+                            val == null ? null : seatOrder.get(val));
+                    renderEditPlayer();
+                } catch (ExecutionException | InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
     }
 
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent evt) {
         if (!inventory.equals(evt.getInventory())) return;
+        if (select != null) {
+            Bukkit.getScheduler().runTask(BloodOnTheClocktower.instance, () -> evt.getPlayer().openInventory(inventory));
+            select.complete(null);
+            return;
+        }
+
         Bukkit.getScheduler().runTaskLater(BloodOnTheClocktower.instance, () -> {
             if (!inventory.equals(evt.getPlayer().getOpenInventory().getTopInventory())) HandlerList.unregisterAll(this);
         }, 2);
@@ -198,7 +382,8 @@ public class Grimoire implements Listener {
         return DataComponentPair.custom(Pair.of(GAME_ID, StringTag.valueOf(game.getId().toString()))).apply(GRIMOIRE.clone());
     }
     public static Inventory openInventory(Game game, Player player, Access access, Component title) {
-        PlayerWrapper botcPlayer = game.getBOTCPlayer(player);
+        PlayerWrapper botcPlayer = player == game.getStoryteller().getPlayer() ? game.getStoryteller()
+                : game.getBOTCPlayer(player);
         Inventory inventory = Bukkit.createInventory(null, 54, title);
 
         Grimoire grimoire = new Grimoire(botcPlayer, game, access, inventory);

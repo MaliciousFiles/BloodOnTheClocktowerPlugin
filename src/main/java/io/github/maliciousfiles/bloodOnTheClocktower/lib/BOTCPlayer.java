@@ -1,23 +1,24 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.lib;
 
-import io.github.maliciousfiles.bloodOnTheClocktower.play.ChatComponents;
+import io.github.maliciousfiles.bloodOnTheClocktower.play.*;
 import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
-import io.github.maliciousfiles.bloodOnTheClocktower.play.PlayerAction;
-import io.github.maliciousfiles.bloodOnTheClocktower.play.PlayerWrapper;
-import io.github.maliciousfiles.bloodOnTheClocktower.play.ScriptDisplay;
+import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.AnvilDropHook;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
-import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
-import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.*;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.world.entity.Pose;
+import net.minecraft.world.level.gameevent.GameEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Pose;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -45,6 +46,7 @@ public class BOTCPlayer extends PlayerWrapper {
     private boolean alive = true;
     private boolean awake = true;
     private boolean deadVote = true;
+    private boolean shouldDie;
 
     public final List<ReminderToken> reminderTokensOnMe = new ArrayList<>();
 
@@ -53,20 +55,26 @@ public class BOTCPlayer extends PlayerWrapper {
     }
     public void setRole(@NotNull RoleInfo role) {
         this.roleInfo = role;
-        if (game != null) {
-            this.role = roleInfo.getInstance(this, game);
-        }
+        this.role = roleInfo.getInstance(this, game);
     }
     public void setAlignment(@NotNull Alignment alignment) {
         this.alignment = alignment;
     }
     public void setGame(@NotNull Game game) {
         this.game = game;
-        setRole(roleInfo);
         VIEW_SCRIPT.enable(() -> ScriptDisplay.viewRoles(getPlayer(), game.getScript(), 0, Component.text(game.getScript().name)));
     }
     public RoleInfo getRoleInfo() { return roleInfo; }
     public Alignment getAlignment() { return alignment; }
+    public List<ReminderToken> getMyReminderTokens() { return new ArrayList<>(role.myReminderTokens); }
+    public void moveReminderToken(ReminderToken token, BOTCPlayer target) { role.moveReminderToken(token, target); }
+
+    @Override
+    public void setupInventory() {
+        super.setupInventory();
+        VOTE.disable();
+        VIEW_SCRIPT.disable();
+    }
 
     public boolean isAwake() {
         return awake;
@@ -75,24 +83,56 @@ public class BOTCPlayer extends PlayerWrapper {
     public void useDeadVote() {
         deadVote = false;
         VOTE.remove();
-        game.log("{0} used their dead vote", Game.LogPriority.LOW, this);
+        game.log("used dead vote", this, Game.LogPriority.LOW);
+    }
+    public void returnDeadVote() {
+        deadVote = true;
+        VOTE.disable();
     }
     public boolean hasDeadVote() {
         return deadVote;
     }
 
+    private Runnable allowSounds1, allowSounds2;
     public void wake() {
-        // TODO: Storyteller#prompt for player to wake up, with info on who they are, and make wake
+        game.getPlayers().forEach(p -> {
+            if (p == this) return;
+            ((CraftPlayer) p.getPlayer()).getHandle().moonrise$getTrackedEntity().serverEntity.sendPairingData(((CraftPlayer) getPlayer()).getHandle(), ((CraftPlayer) getPlayer()).getHandle().connection::send);
+        });
+        getPlayer().sendPotionEffectChangeRemove(getPlayer(), PotionEffectType.BLINDNESS);
+        if (allowSounds1 != null) {
+            allowSounds1.run();
+            allowSounds2.run();
+            allowSounds1 = allowSounds2 = null;
+        }
+
         awake = true;
         game.getSeats().setCanStand(this, true);
-        game.log("{0} woke up", Game.LogPriority.LOW, this);
+        game.log("woke up", this, Game.LogPriority.LOW);
     }
 
     public void sleep() {
-        // TODO
+        game.getSeats().forceSit(this);
+
+        getPlayer().sendPotionEffectChange(getPlayer(), new PotionEffect(PotionEffectType.DARKNESS, PotionEffect.INFINITE_DURATION, 255, true, false, false));
+
+        Bukkit.getScheduler().runTaskLater(BloodOnTheClocktower.instance, () -> {
+            getPlayer().sendPotionEffectChangeRemove(getPlayer(), PotionEffectType.DARKNESS);
+            if (awake) return;
+
+            getPlayer().sendPotionEffectChange(getPlayer(), new PotionEffect(PotionEffectType.BLINDNESS, PotionEffect.INFINITE_DURATION, 255, true, false, false));
+
+            ((CraftPlayer) getPlayer()).getHandle().connection.send(new ClientboundRemoveEntitiesPacket(
+                    game.getPlayers().stream().filter(p->p!=this).mapToInt(p->p.getPlayer().getEntityId()).toArray()));
+
+            allowSounds1 = PacketManager.registerListener(ClientboundSoundPacket.class, (player, _) -> player == getPlayer());
+            allowSounds2 = PacketManager.registerListener(ClientboundSoundEntityPacket.class, (player, _) -> player == getPlayer());
+        }, 15);
+
         awake = false;
+
         game.getSeats().setCanStand(this, false);
-        game.log("{0} went to sleep", Game.LogPriority.LOW, this);
+        game.log("went to sleep", this, Game.LogPriority.LOW);
     }
 
     public boolean isImpaired() {
@@ -109,10 +149,41 @@ public class BOTCPlayer extends PlayerWrapper {
         return isImpaired;
     }
 
+    public void revive() {
+        alive = true;
+        returnDeadVote();
+        game.log("revived", this, Game.LogPriority.MEDIUM);
+        getPlayer().setInvisible(false);
+    }
+
+    public void visuallyDie() {
+        game.getPlayers().forEach(p -> {
+            if (p == this) return;
+
+            ((CraftPlayer) p.getPlayer()).getHandle().connection.send(new ClientboundSetEntityDataPacket(getPlayer().getEntityId(),
+                    List.of(SynchedEntityData.DataValue.create(EntityDataSerializers.FLOAT.createAccessor(9), 0f))));
+        });
+        Bukkit.getScheduler().runTaskLater(BloodOnTheClocktower.instance, () -> {
+            getPlayer().setInvisible(true);
+
+            game.getPlayers().forEach(p -> {
+                ((CraftPlayer) p.getPlayer()).getHandle().connection.send(new ClientboundEntityEventPacket(((CraftPlayer) getPlayer()).getHandle(), (byte) 60));
+
+                if (p == this) return;
+                ((CraftPlayer) p.getPlayer()).getHandle().connection.send(new ClientboundRemoveEntitiesPacket(getPlayer().getEntityId()));
+                ((CraftPlayer) getPlayer()).getHandle().moonrise$getTrackedEntity().serverEntity.sendPairingData(((CraftPlayer) p.getPlayer()).getHandle(), ((CraftPlayer) p.getPlayer()).getHandle().connection::send);
+            });
+        }, 20);
+
+        shouldDie = false;
+    }
+
     public void die() {
-        // TODO
+        if (!game.isNight()) visuallyDie();
+        else shouldDie = true;
+
         alive = false;
-        game.log("{0} died", Game.LogPriority.MEDIUM, this);
+        game.log("died", this, Game.LogPriority.MEDIUM);
         game.checkVictory();
     }
 
@@ -129,11 +200,12 @@ public class BOTCPlayer extends PlayerWrapper {
         setRole(newRole);
         setAlignment(newAlignment);
         role = roleInfo.getInstance(this, game);
-        game.log("{0} became the " + newAlignment + " " + newRole.title(), Game.LogPriority.MEDIUM, this);
+        game.log("{0} became the " + newAlignment + " " + newRole.title(), null, Game.LogPriority.MEDIUM, this);
         // TODO: tell new role/alignment and do new role setup
     }
 
     public boolean isAlive() { return alive; }
+    public boolean shouldDie() { return shouldDie; }
 
     public boolean hasAbility() { return role.hasAbility(); }
     public boolean countsAsAlive() { return role.countsAsAlive(); }
@@ -145,28 +217,21 @@ public class BOTCPlayer extends PlayerWrapper {
 
     public void handleDeathAttempt(DeathCause cause, @Nullable BOTCPlayer killer) throws ExecutionException, InterruptedException {
         if (killer == null) {
-            game.log("{0} had a death attempt from " + cause, Game.LogPriority.LOW, this);
+            game.log("death attempt from " + cause, this, Game.LogPriority.LOW);
         } else {
-            game.log("{0} had a death attempt from {1}", Game.LogPriority.LOW, this, killer);
+            game.log("death attempt from {0}", this, Game.LogPriority.LOW, killer);
         }
 
         role.handleDeathAttempt(cause, killer);
     }
 
-    public void kill() {
-        game.getPlayers().forEach(p -> {
-            if (p == this) return;
+    public void execute(boolean force) throws ExecutionException, InterruptedException {
+        new AnvilDropHook(getPlayer().getLocation().add(0, 5, 0)).get();
 
-            ((CraftPlayer) p.getPlayer()).getHandle().connection.send(new ClientboundSetEntityDataPacket(getPlayer().getEntityId(),
-                    List.of(SynchedEntityData.DataValue.create(EntityDataSerializers.FLOAT.createAccessor(9), 0f))));
-        });
-        Bukkit.getScheduler().runTaskLater(BloodOnTheClocktower.instance, () -> {
-            game.getPlayers().forEach(p -> {
-                ((CraftPlayer) p.getPlayer()).getHandle().connection.send(new ClientboundEntityEventPacket(((CraftPlayer) getPlayer()).getHandle(), (byte) 60));
-                ((CraftPlayer) p.getPlayer()).getHandle().connection.send(new ClientboundSetEntityDataPacket(getPlayer().getEntityId(),
-                        List.of(SynchedEntityData.DataValue.create(EntityDataSerializers.FLOAT.createAccessor(9), (float) getPlayer().getHealth()))));
-            });
-            getPlayer().setInvisible(true);
-        }, 20);
+        Bukkit.getScheduler().callSyncMethod(BloodOnTheClocktower.instance, () -> {
+            if (force) die();
+            else handleDeathAttempt(BOTCPlayer.DeathCause.EXECUTION, null);
+            return null; // it wants a return type >:c
+        }).get();
     }
 }

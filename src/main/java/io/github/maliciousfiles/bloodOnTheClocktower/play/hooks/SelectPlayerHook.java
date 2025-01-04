@@ -22,13 +22,20 @@ public class SelectPlayerHook extends MinecraftHook<List<BOTCPlayer>> {
     private final int number;
     private final Game game;
     private final UUID interacter;
+    private final boolean shouldGlow;
 
     public SelectPlayerHook(PlayerWrapper interacter, Game game, int number, Predicate<BOTCPlayer> validate) {
+        this(interacter, game, number, validate, true);
+    }
+
+    public SelectPlayerHook(PlayerWrapper interacter, Game game, int number, Predicate<BOTCPlayer> validate, boolean shouldGlow) {
         this.number = number;
         this.validate = validate;
         this.players = new ArrayList<>();
         this.game = game;
         this.interacter = interacter.getPlayer().getUniqueId();
+
+        this.shouldGlow = shouldGlow;
     }
 
     private void select(Player other) {
@@ -37,11 +44,13 @@ public class SelectPlayerHook extends MinecraftHook<List<BOTCPlayer>> {
 
         players.add(interacted);
 
-        List<PlayerWrapper> toGlow = new ArrayList<>(game.getAwake());
-        toGlow.add(game.getStoryteller());
-        interacted.glow(toGlow);
+        if (shouldGlow) {
+            List<PlayerWrapper> toGlow = new ArrayList<>(game.getAwake());
+            toGlow.add(game.getStoryteller());
+            interacted.glow(toGlow);
+        }
 
-        if (players.size() == number) complete(players);
+        if (players.size() == number) complete(new ArrayList<>(players));
     }
 
     @EventHandler
@@ -59,5 +68,10 @@ public class SelectPlayerHook extends MinecraftHook<List<BOTCPlayer>> {
             !(evt.getRightClicked() instanceof Player other)) return;
 
         select(other);
+    }
+
+    @Override
+    protected void cleanup() {
+        if (isCancelled()) players.forEach(PlayerWrapper::deglow);
     }
 }

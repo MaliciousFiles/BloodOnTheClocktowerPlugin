@@ -38,14 +38,12 @@ public class Washerwoman extends Role {
         if (hasInfo) { return; }
         hasInfo = true;
 
-        me.wake();
-
         CompletableFuture<Void> instruction = game.getStoryteller().giveInstruction("Select two players for the Washerwoman" + (me.isImpaired() ? " (impaired)" : ""));
 
         List<BOTCPlayer> players = new SelectPlayerHook(game.getStoryteller(), game, 2, p->!p.equals(me)).get();
         RoleInfo role = new RoleChoiceHook(game.getStoryteller(), game, "Pick a role to show the Washerwoman", 1).get().getFirst();
 
-        game.log("{0} learned that either {1} or {2} is the " + role.title(), Game.LogPriority.HIGH, me, players.get(0), players.get(1));
+        game.log("learned that either {1} or {2} is the " + role.title(), me, Game.LogPriority.HIGH, players.get(0), players.get(1));
         me.giveInfo(Component.text("One of " + players.get(0).getName() + " and " + players.get(1).getName() + " is a ").append(ChatComponents.roleInfo(role)));
         instruction.complete(null);
     }

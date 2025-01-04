@@ -15,17 +15,25 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
+import org.bukkit.inventory.Inventory;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class RoleChoiceHook extends MinecraftHook<List<RoleInfo>> {
+    private final Inventory inv;
+
     public RoleChoiceHook(PlayerWrapper player, Game game, String instruction, int number) {
-        ScriptDisplay.viewRoles(player.getPlayer(), game.getScript(), number, Component.text(instruction, PlayerWrapper.QUESTION_COLOR));
+        inv = ScriptDisplay.viewRoles(player.getPlayer(), game.getScript(), number, Component.text(instruction, NamedTextColor.DARK_RED));
     }
 
     @EventHandler
     protected void onEvent(CustomPayloadEvent evt) {
         if (evt.source() == ScriptDisplay.class && evt.data() instanceof List<?> roles) complete((List<RoleInfo>) roles);
+    }
+
+    @Override
+    protected void cleanup() {
+        Bukkit.getScheduler().runTask(BloodOnTheClocktower.instance, inv::close);
     }
 }

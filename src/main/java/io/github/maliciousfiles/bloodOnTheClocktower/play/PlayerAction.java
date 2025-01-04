@@ -30,20 +30,21 @@ import static io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower
 
 public class PlayerAction implements Listener {
     private final ItemStack enabled, disabled;
+    private final Component name;
     private final TextColor color;
     private final int slot;
     private final Player player;
 
     private final Stack<Runnable> onUse = new Stack<>();
+    private final Stack<Component> names = new Stack<>();
 
     public PlayerAction(Player player, String name, TextColor color, String description, String model, int slot) {
         this(player, name, color, description, BloodOnTheClocktower.key(model), slot);
     }
     public PlayerAction(Player player, String name, TextColor color, String description, NamespacedKey model, int slot) {
-        this.color = color;
         this.player = player;
         this.enabled = createItem(Material.PAPER,
-                DataComponentPair.name(Component.text(name, color, TextDecoration.BOLD)),
+                DataComponentPair.name(this.name = Component.text(name, this.color = color, TextDecoration.BOLD)),
                 DataComponentPair.lore(Component.text(description, NamedTextColor.GRAY)),
                 DataComponentPair.of(DataComponentTypes.ITEM_MODEL, model),
                 DataComponentPair.cmd(true));
@@ -54,8 +55,11 @@ public class PlayerAction implements Listener {
                 DataComponentPair.cmd(false));
         this.slot = slot;
 
-        disable();
         Bukkit.getPluginManager().registerEvents(this, BloodOnTheClocktower.instance);
+    }
+
+    public TextColor color() {
+        return color;
     }
 
     public boolean isItem(ItemStack item) {
@@ -63,16 +67,26 @@ public class PlayerAction implements Listener {
     }
 
     public void enable(Runnable onUse, Component name) {
+        if (onUse != null) {
+            this.onUse.push(onUse);
+            this.names.push(name.color(color));
+        }
         DataComponentPair.name(name.color(color)).apply(enabled);
-        enable(onUse);
-    }
-    public void enable(Runnable onUse) {
-        if (onUse != null) this.onUse.push(onUse);
         player.getInventory().setItem(slot, enabled);
     }
+    public void enable(Runnable onUse) {
+        enable(onUse, name);
+    }
     public void disable() {
-        if (!onUse.empty()) onUse.pop();
-        if (onUse.empty()) player.getInventory().setItem(slot, disabled);
+        if (!onUse.empty()) {
+            onUse.pop();
+            names.pop();
+        }
+        if (onUse.empty()) {
+            player.getInventory().setItem(slot, disabled);
+        } else {
+            player.getInventory().setItem(slot, DataComponentPair.name(names.peek()).apply(enabled));
+        }
     }
     public void tempDisable() {
         player.getInventory().setItem(slot, disabled);

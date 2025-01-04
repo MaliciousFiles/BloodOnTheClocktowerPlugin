@@ -4,6 +4,8 @@ import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
 import io.netty.channel.*;
 import net.minecraft.network.PacketListener;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
+import net.minecraft.network.protocol.game.ClientboundLightUpdatePacket;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
@@ -11,20 +13,28 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 public class PacketManager implements Listener {
-    private static final Map<Class<? extends Packet<?>>, List<BiConsumer<Player, ? extends Packet<?>>>> listeners = new HashMap<>();
+    private static final Map<Class<? extends Packet<?>>, Map<UUID, BiFunction<Player, ? extends Packet<?>, Boolean>>> listeners = new HashMap<>();
 
+    public static <T extends Packet<?>> Runnable registerListener(Class<T> packetClass, BiFunction<Player, T, Boolean> listener) {
+        UUID uuid = UUID.randomUUID();
+
+        listeners.computeIfAbsent(packetClass, _ -> new HashMap<>()).put(uuid,listener);
+        return () -> listeners.get(packetClass).remove(uuid);
+    }
     public static <T extends Packet<?>> Runnable registerListener(Class<T> packetClass, BiConsumer<Player, T> listener) {
-        listeners.computeIfAbsent(packetClass, k -> new ArrayList<>()).add(listener);
+        UUID uuid = UUID.randomUUID();
 
-        return () -> listeners.get(packetClass).remove(listener);
+        listeners.computeIfAbsent(packetClass, _ -> new HashMap<>()).put(uuid,(Player p, T pa) -> {
+            listener.accept(p, pa);
+            return false;
+        });
+        return () -> listeners.get(packetClass).remove(uuid);
     }
 
     private static List<Runnable> unloadTasks = new ArrayList<>();
@@ -40,22 +50,25 @@ public class PacketManager implements Listener {
             pipeline.remove("botc_packet_listener");
         }
         pipeline.addBefore("packet_handler", "botc_packet_listener", new ChannelDuplexHandler() {
-            private void handleMessage(Object msg) {
-                if (!(msg instanceof Packet<?> packet)) return;
+            private boolean handleMessage(Object msg) {
+                if (!(msg instanceof Packet<?> packet)) return false;
 
-                listeners.getOrDefault(packet.getClass(), new ArrayList<>())
-                        .forEach(listener -> ((BiConsumer<Player, Packet<?>>) listener).accept(player, packet));
+                for (BiFunction<Player, ? extends Packet<?>, Boolean> listener : listeners.getOrDefault(packet.getClass(), new HashMap<>()).values()) {
+                    if (((BiFunction<Player, Packet<?>, Boolean>) listener).apply(player, packet)) return true;
+                }
+
+                return false;
             }
 
             @Override
             public void channelRead(ChannelHandlerContext ctx, Object msg) {
-                handleMessage(msg);
+                if (handleMessage(msg)) return;
                 ctx.fireChannelRead(msg);
             }
 
             @Override
             public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-                handleMessage(msg);
+                if (handleMessage(msg)) return;
                 super.write(ctx, msg, promise);
             }
         });

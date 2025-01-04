@@ -38,7 +38,6 @@ public class ConfirmVoteHook extends MinecraftHook<Boolean> {
         boolean vote = voter.VOTE.isItem(voter.getPlayer().getInventory().getItemInMainHand());
 
         setVote.accept(vote ? SeatList.VoteState.CONFIRMED : SeatList.VoteState.NO);
-        voter.VOTE.disable();
 
         complete(vote);
     }
@@ -56,5 +55,10 @@ public class ConfirmVoteHook extends MinecraftHook<Boolean> {
 
         evt.setCancelled(true);
         handleSelect();
+    }
+
+    @Override
+    protected void cleanup() {
+        voter.VOTE.disable();
     }
 }

@@ -51,49 +51,49 @@ public class ScriptDisplay implements Listener {
         return new ArrayList<>(config.getKeys(false).stream().sorted().toList());
     }
 
-    private static final ItemStack FILLER = createItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE,
+    private final ItemStack FILLER = createItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE,
             DataComponentPair.name(Component.text(" ", NamedTextColor.GRAY)));
 
-    private static final ItemStack TOWNSFOLK_FILLER = createItem(Material.LIGHT_BLUE_STAINED_GLASS_PANE,
+    private final ItemStack TOWNSFOLK_FILLER = createItem(Material.LIGHT_BLUE_STAINED_GLASS_PANE,
             DataComponentPair.name(Component.text("Townsfolk", RoleInfo.ROLE_COLORS.get(Role.Type.TOWNSFOLK))));
-    private static final ItemStack OUTSIDER_FILLER = createItem(Material.BLUE_STAINED_GLASS_PANE,
+    private final ItemStack OUTSIDER_FILLER = createItem(Material.BLUE_STAINED_GLASS_PANE,
             DataComponentPair.name(Component.text("Outsider", RoleInfo.ROLE_COLORS.get(Role.Type.OUTSIDER))));
-    private static final ItemStack MINION_FILLER = createItem(Material.PINK_STAINED_GLASS_PANE,
+    private final ItemStack MINION_FILLER = createItem(Material.PINK_STAINED_GLASS_PANE,
             DataComponentPair.name(Component.text("Minion", RoleInfo.ROLE_COLORS.get(Role.Type.MINION))));
-    private static final ItemStack DEMON_FILLER = createItem(Material.RED_STAINED_GLASS_PANE,
+    private final ItemStack DEMON_FILLER = createItem(Material.RED_STAINED_GLASS_PANE,
             DataComponentPair.name(Component.text("Demon", RoleInfo.ROLE_COLORS.get(Role.Type.DEMON))));
-    private static final ItemStack TRAVELLER_FILLER = createItem(Material.PURPLE_STAINED_GLASS_PANE,
+    private final ItemStack TRAVELLER_FILLER = createItem(Material.PURPLE_STAINED_GLASS_PANE,
             DataComponentPair.name(Component.text("Trav", RoleInfo.ROLE_COLORS.get(Role.Type.TOWNSFOLK))
                     .append(Component.text("eller", RoleInfo.ROLE_COLORS.get(Role.Type.MINION)))));
 
-    private static final ItemStack EMPTY = createItem(Material.GRAY_STAINED_GLASS_PANE,
+    private final ItemStack EMPTY = createItem(Material.GRAY_STAINED_GLASS_PANE,
             DataComponentPair.name(Component.text("Empty", NamedTextColor.GRAY)),
             DataComponentPair.lore(Component.text("Click the feather to create a new script", NamedTextColor.DARK_GRAY)));
 
-    private static final ItemStack BACK = createItem(Material.ARROW,
+    private final ItemStack BACK = createItem(Material.ARROW,
             DataComponentPair.name(Component.text("Back")));
-    private static final ItemStack FORWARD = createItem(Material.ARROW,
+    private final ItemStack FORWARD = createItem(Material.ARROW,
             DataComponentPair.name(Component.text("Forward")));
 
-    private static final ItemStack DELETE = createItem(Material.LAVA_BUCKET,
+    private final ItemStack DELETE = createItem(Material.LAVA_BUCKET,
             DataComponentPair.name(Component.text("Delete Script", TextColor.color(214, 77, 84))),
             DataComponentPair.lore(Component.text("Delete this script", NamedTextColor.GRAY)));
-    private static final ItemStack VIEW = createItem(Material.SPYGLASS,
+    private final ItemStack VIEW = createItem(Material.SPYGLASS,
             DataComponentPair.name(Component.text("View Script", TextColor.color(214, 190, 124))),
             DataComponentPair.lore(Component.text("View the full script", NamedTextColor.GRAY)));
-    private static final ItemStack EDIT = createItem(Material.WRITABLE_BOOK,
+    private final ItemStack EDIT = createItem(Material.WRITABLE_BOOK,
             DataComponentPair.name(Component.text("Edit Script", TextColor.color(117, 159, 214))),
             DataComponentPair.lore(Component.text("Edit the script JSON", NamedTextColor.GRAY)));
 
-    private static final ItemStack NEW = createItem(Material.FEATHER,
+    private final ItemStack NEW = createItem(Material.FEATHER,
             DataComponentPair.name(Component.text("New Script", TextColor.color(96, 214, 197))),
             DataComponentPair.lore(Component.text("Create a new script", NamedTextColor.GRAY)));
-    private static final ItemStack CONTINUE_DISABLED = createItem(Material.GRAY_CONCRETE,
+    private final ItemStack CONTINUE_DISABLED = createItem(Material.GRAY_CONCRETE,
             DataComponentPair.name(Component.text("Continue", NamedTextColor.GRAY)),
             DataComponentPair.lore(Component.text("Select a script to continue", NamedTextColor.DARK_GRAY)));
-    private static final ItemStack CONTINUE_ENABLED = createItem(Material.LIME_CONCRETE,
+    private final ItemStack CONTINUE_ENABLED = createItem(Material.LIME_CONCRETE,
             DataComponentPair.name(Component.text("Continue", NamedTextColor.GREEN)));
-    private static final ItemStack RETURN = createItem(Material.BARRIER,
+    private final ItemStack RETURN = createItem(Material.BARRIER,
             DataComponentPair.name(Component.text("Return", NamedTextColor.RED)));
 
             // P P P P P P P P P
@@ -520,7 +520,7 @@ public class ScriptDisplay implements Listener {
         Bukkit.getScheduler().callSyncMethod(BloodOnTheClocktower.instance, () -> player.openInventory(inventory)).get();
     }
 
-    public static void viewRoles(Player player, ScriptInfo script, int numToSelect, Component title) {
+    public static Inventory viewRoles(Player player, ScriptInfo script, int numToSelect, Component title) {
         Inventory inventory = Bukkit.createInventory(null, 54, Component.text("Script Display"));
 
         ScriptDisplay sd = new ScriptDisplay(player, inventory, 0, null, null);
@@ -529,5 +529,7 @@ public class ScriptDisplay implements Listener {
         sd.rolesToSelect = numToSelect;
 
         Bukkit.getScheduler().runTask(BloodOnTheClocktower.instance, () -> sd.renderViewScript(title));
+
+        return inventory;
     }
 }

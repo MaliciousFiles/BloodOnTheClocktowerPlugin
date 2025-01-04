@@ -47,9 +47,6 @@ public class ChoppingBlock {
             head.setInterpolationDelay(0);
             head.setInterpolationDuration(TICKS_PER_ROT/3);
         }, 0, TICKS_PER_ROT/3);
-
-        entities.add(head);
-        entities.add(text);
     }
 
     public void clear() {
@@ -85,8 +82,8 @@ public class ChoppingBlock {
                         .decoration(TextDecoration.BOLD, false)));
     }
 
-    private static final List<Entity> entities = new ArrayList<>();
-    public static void destruct() {
-        entities.forEach(Entity::remove);
+    public void cleanup() {
+        head.remove();
+        text.remove();
     }
 }

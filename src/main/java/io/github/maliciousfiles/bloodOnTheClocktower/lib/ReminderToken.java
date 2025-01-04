@@ -6,6 +6,15 @@ import org.bukkit.inventory.ItemStack;
 import javax.annotation.Nullable;
 
 public class ReminderToken {
+    public static final ReminderToken STORYTELLER_DRUNK = new ReminderToken("[ST] Drunk", null, null, Effect.DRUNK) {
+        public ItemStack getItem() { return RoleInfo.DRUNK.getItem(Material.PAPER, name, false); }
+        public boolean isFunctioning() { return true; }
+    };
+    public static final ReminderToken STORYTELLER_SOBER_AND_HEALTHY = new ReminderToken("[ST] Sober and Healthy", null, null, Effect.SOBER_AND_HEALTHY) {
+        public ItemStack getItem() { return RoleInfo.BARISTA.getItem(Material.PAPER, name, false); }
+        public boolean isFunctioning() { return true; }
+    };
+
     public enum Effect { NONE, DRUNK, POISONED, HAS_ABILITY, SOBER_AND_HEALTHY }
 
     public final String name;

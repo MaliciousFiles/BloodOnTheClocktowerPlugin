@@ -1,8 +1,10 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.lib.roles;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.*;
+import io.github.maliciousfiles.bloodOnTheClocktower.play.MinecraftHook;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.SelectPlayerHook;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -24,24 +26,28 @@ public class Poisoner extends Role {
     @Override
     public void handleDusk() {
         if (poisonedReminder.target != null) {
-            game.log("{0} is no longer poisoned", Game.LogPriority.MEDIUM, poisonedReminder.target);
+            game.log("{0} is no longer poisoned", me, Game.LogPriority.MEDIUM, poisonedReminder.target);
         }
         moveReminderToken(poisonedReminder, null);
     }
 
     @Override
     public void handleNight() throws InterruptedException, ExecutionException {
-        me.wake();
         CompletableFuture<Void> instruction = me.giveInstruction("Choose a player to poison");
 
-        BOTCPlayer poisoned = new SelectPlayerHook(me, game, 1, _->true)
-                .get().getFirst();
+        MinecraftHook<List<BOTCPlayer>> hook = new SelectPlayerHook(me, game, 1, _->true)
+                .cancellable(game.getStoryteller().CANCEL, "cancel choosing poisoned");
+
+        List<BOTCPlayer> poisoned = hook.get();
         instruction.complete(null);
+
+        if (hook.isCancelled()) return;
+
         if (!me.isImpaired()) {
-            moveReminderToken(poisonedReminder, poisoned);
-            game.log("{0} poisoned {1}", Game.LogPriority.HIGH, me, poisoned);
+            moveReminderToken(poisonedReminder, poisoned.getFirst());
+            game.log("poisoned {0}", me, Game.LogPriority.HIGH, poisoned.getFirst());
         } else {
-            game.log("{0} attempted to poison {1}", Game.LogPriority.MEDIUM, me, poisoned);
+            game.log("attempted to poison {0}", me, Game.LogPriority.MEDIUM, poisoned.getFirst());
         }
     }
 }

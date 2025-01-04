@@ -1,14 +1,12 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.lib;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
-import io.github.maliciousfiles.bloodOnTheClocktower.play.ChatComponents;
-import io.github.maliciousfiles.bloodOnTheClocktower.play.ChoppingBlock;
-import io.github.maliciousfiles.bloodOnTheClocktower.play.PlayerWrapper;
-import io.github.maliciousfiles.bloodOnTheClocktower.play.SeatList;
+import io.github.maliciousfiles.bloodOnTheClocktower.play.*;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.TitlePart;
 import net.minecraft.network.protocol.game.ClientboundSetPlayerTeamPacket;
 import net.minecraft.util.Mth;
@@ -32,9 +30,8 @@ public class Game {
     };
 
     private static final Map<UUID, Game> games = new HashMap<>();
-    public static Game getGame(UUID id) {
-        return games.get(id);
-    }
+    public static Game getGame(UUID id) { return games.get(id); }
+    public static Collection<Game> getGames() { return games.values(); }
 
     public enum Winner { NONE, GOOD, EVIL }
 
@@ -47,6 +44,7 @@ public class Game {
     private final List<BOTCPlayer> players;
 
     private int turn;
+    private boolean night;
     private Winner winner = Winner.NONE;
 
     public Game(SeatList seats, ChoppingBlock block, ScriptInfo script, Storyteller storyteller, List<BOTCPlayer> players) {
@@ -66,11 +64,8 @@ public class Game {
 
         storyteller.setTeam(TEAM);
         players.forEach(p -> p.setTeam(TEAM));
-
-        Component playerList = players.stream().map(p -> ChatComponents.playerInfo(p, NamedTextColor.WHITE)).reduce(Component.text("Players: ", NamedTextColor.WHITE),
-                (result, p) -> result.append(p).append(Component.text(", ")));
-        log(playerList, LogPriority.HIGH);
     }
+
     public UUID getId() {
         return uuid;
     }
@@ -85,6 +80,9 @@ public class Game {
 
     public int getTurn() {
         return turn;
+    }
+    public boolean isNight() {
+        return night;
     }
     public Storyteller getStoryteller() {
         return storyteller;
@@ -104,24 +102,37 @@ public class Game {
         return players.stream().filter(BOTCPlayer::isAwake).toList();
     }
 
-    public enum LogPriority { LOW, MEDIUM, HIGH }
+    public enum LogPriority {
+        LOW(NamedTextColor.DARK_GRAY),
+        MEDIUM(NamedTextColor.GRAY),
+        HIGH(TextColor.color(206, 206, 206));
 
-    public void log(Component message, LogPriority priority) {
-        message = Component.text("[BOTC] ", NamedTextColor.BLUE).append(message);
-        BloodOnTheClocktower.logger().info(message);
-        if (priority == LogPriority.HIGH || priority == LogPriority.MEDIUM) {
-            storyteller.giveInfo(message);
+        public final TextColor color;
+        LogPriority(TextColor color) {
+            this.color = color;
         }
     }
 
+    public void logDirect(Component message, LogPriority priority) {
+        message = Component.empty().append(Component.text("[BOTC] ", NamedTextColor.BLUE))
+                .append(message.color(priority.color));
+
+        if (priority != LogPriority.LOW) storyteller.giveInfo(message);
+        BloodOnTheClocktower.logger().info(message);
+    }
+
     // Include a "{n}" in message to substitute in a component for players[n]
-    public void log(String message, LogPriority priority, BOTCPlayer... players) {
-        TextColor color = switch (priority) {
-            case LOW -> NamedTextColor.DARK_GRAY;
-            case MEDIUM -> NamedTextColor.GRAY;
-            case HIGH -> NamedTextColor.WHITE;
-        };
-        log(ChatComponents.substitutePlayerInfo(message, color, players), priority);
+    public void log(String message, BOTCPlayer source, LogPriority priority, BOTCPlayer... players) {
+        Component component = ChatComponents.substitutePlayerInfo(" "+message, priority.color, players);
+
+        if (source != null) {
+            component = Component.empty().append(ChatComponents.roleInfo(source.getRoleInfo())).append(component);
+        } else {
+            component = Component.empty().append(Component.text("[BOTC]", NamedTextColor.BLUE)).append(component);
+        }
+
+        if (priority != LogPriority.LOW) storyteller.giveInfo(component);
+        BloodOnTheClocktower.logger().info(component);
     }
 
     public void startGame() throws ExecutionException, InterruptedException {
@@ -129,22 +140,27 @@ public class Game {
 
         setup();
         while (true) {
+            night = true;
             runNight();
+            night = false;
             if (isGameOver()) break;
 
             runDay();
             turn++;
         }
-        // TODO: announce game end
+
         if (winner == Winner.GOOD) {
-            log("The good team has won", LogPriority.HIGH);
+            log("the good team has won", null, LogPriority.HIGH);
         } else {
-            log("The evil team has won", LogPriority.HIGH);
+            log("the evil team has won", null, LogPriority.HIGH);
         }
+
+        Bukkit.getScheduler().runTask(BloodOnTheClocktower.instance, this::cleanup);
+        games.remove(uuid);
     }
 
     private void setup() throws ExecutionException, InterruptedException {
-        log("Setup", LogPriority.LOW);
+        log("setup", null, LogPriority.LOW);
         for (BOTCPlayer player : players) {
             player.setup();
         }
@@ -154,6 +170,7 @@ public class Game {
         String name();
         boolean shouldRun();
         float order();
+        public List<BOTCPlayer> players();
         void run() throws ExecutionException, InterruptedException;
     }
 
@@ -168,17 +185,25 @@ public class Game {
         public float order() { return 10.5f; }
 
         @Override
+        public List<BOTCPlayer> players() {
+            return players.stream()
+                    .filter(p->p.getRoleInfo().type() == Role.Type.MINION)
+                    .toList();
+        }
+
+        @Override
         public void run() throws ExecutionException, InterruptedException {
-            log("Minion info", LogPriority.LOW);
+            log("minion info", null, LogPriority.LOW);
             List<BOTCPlayer> demons = players.stream()
                     .filter(p->p.getRoleInfo().type() == Role.Type.DEMON)
                     .toList();
-            List<BOTCPlayer> minions = players.stream()
-                    .filter(p->p.getRoleInfo().type() == Role.Type.MINION)
-                    .toList();
+            List<BOTCPlayer> minions = players();
+
             minions.forEach(BOTCPlayer::wake);
+            demons.forEach(m->m.glow(Stream.concat(minions.stream(), Stream.of(storyteller)).toList()));
+
             for (BOTCPlayer minion : minions) {
-                if (demons.size() == 0) {
+                if (demons.isEmpty()) {
                     minion.giveInfo(Component.text("There is no demon"));
                 } else if (demons.size() == 1) {
                     minion.giveInfo(Component.text("The demon is " + demons.getFirst().getName()));
@@ -186,9 +211,6 @@ public class Game {
                     minion.giveInfo(Component.text("The demons are " + String.join(", ", demons.stream().map(BOTCPlayer::getName).toList())));
                 }
             }
-
-            new StorytellerPauseHook(storyteller, "put Minions to sleep").get();
-            minions.forEach(BOTCPlayer::sleep);
         }
     }
 
@@ -203,17 +225,25 @@ public class Game {
         public float order() { return 11.5f; }
 
         @Override
-        public void run() throws ExecutionException, InterruptedException {
-            log("Demon info", LogPriority.LOW);
-            List<BOTCPlayer> demons = players.stream()
+        public List<BOTCPlayer> players() {
+            return players.stream()
                     .filter(p->p.getRoleInfo().type() == Role.Type.DEMON)
                     .toList();
+        }
+
+        @Override
+        public void run() throws ExecutionException, InterruptedException {
+            log("demon info", null, LogPriority.LOW);
+            List<BOTCPlayer> demons = players();
             List<BOTCPlayer> minions = players.stream()
                     .filter(p->p.getRoleInfo().type() == Role.Type.MINION)
                     .toList();
+
             demons.forEach(BOTCPlayer::wake);
+            minions.forEach(m->m.glow(Stream.concat(demons.stream(), Stream.of(storyteller)).toList()));
+
             for (BOTCPlayer demon : demons) {
-                if (minions.size() == 0) {
+                if (minions.isEmpty()) {
                     demon.giveInfo(Component.text("You have no minions"));
                 } else if (minions.size() == 1) {
                     demon.giveInfo(Component.text("Your minion is " + minions.getFirst().getName()));
@@ -223,27 +253,24 @@ public class Game {
             }
 
             List<RoleInfo> bluffs = new RoleChoiceHook(storyteller, Game.this, "Select bluffs for the demon", 3).get();
-            log("Demon bluffs: " + String.join(", ", bluffs.stream().map(RoleInfo::title).toList()), LogPriority.MEDIUM);
+            log("demon bluffs: " + String.join(", ", bluffs.stream().map(RoleInfo::title).toList()), null, LogPriority.MEDIUM);
 
             Component bluffInfo = bluffs.stream().map(ChatComponents::roleInfo).reduce(Component.text("Your bluffs are "),
                     (curr, bluff) -> curr.append(bluff).append(Component.text(", ")));
             demons.forEach(d->d.giveInfo(bluffInfo));
-
-            new StorytellerPauseHook(storyteller, "put Demon to sleep").get();
-            demons.forEach(BOTCPlayer::sleep);
         }
     }
 
     private void runNight() throws ExecutionException, InterruptedException {
         if (isGameOver()) { return; }
 
-        log("Night " + turn, LogPriority.HIGH);
+        log("begin Night " + turn, null, LogPriority.HIGH);
 
         PriorityQueue<NightAction> nightActions = new PriorityQueue<>(Comparator.comparing(NightAction::order));
 
         new StorytellerPauseHook(storyteller, "begin Night").get();
         players.forEach(BOTCPlayer::sleep);
-        log("Dusk", LogPriority.LOW);
+        log("dusk", null, LogPriority.LOW);
         for (BOTCPlayer player : players) {
             if (player.hasAbility()) player.handleDusk();
             nightActions.addAll(player.getNightActions());
@@ -260,30 +287,40 @@ public class Game {
 
             NightAction action = nightActions.poll();
             if (action.shouldRun()) {
-                StorytellerPauseHook pause = new StorytellerPauseHook(storyteller, "run " + action.name(), "skip "+action.name());
+                MinecraftHook<Void> pause = new StorytellerPauseHook(storyteller, "run " + action.name())
+                        .cancellable(storyteller.CANCEL, "skip "+action.name());
                 pause.get();
                 if (pause.isCancelled()) continue;
 
-                storyteller.deglow();
-                players.forEach(BOTCPlayer::deglow);
+                action.players().forEach(BOTCPlayer::wake);
 
                 action.run();
+
+                new StorytellerPauseHook(storyteller, "put players to sleep").get();
+                action.players().forEach(BOTCPlayer::sleep);
+                storyteller.deglow();
+                players.forEach(BOTCPlayer::deglow);
             }
         }
 
         if (isGameOver()) { return; }
         new StorytellerPauseHook(storyteller, "begin Dawn").get();
-        log("Dawn", LogPriority.LOW);
+        log("dawn", null, LogPriority.LOW);
         for (BOTCPlayer player : players) {
             if (player.hasAbility()) player.handleDawn();
         }
         players.forEach(BOTCPlayer::wake);
+
+        List<BOTCPlayer> shouldDie = players.stream().filter(BOTCPlayer::shouldDie).toList();
+        new StorytellerPauseHook(storyteller, "show deaths ("+
+                String.join(", ", shouldDie.stream().map(BOTCPlayer::getName).toList())+")").get();
+        shouldDie.forEach(BOTCPlayer::die);
     }
 
     private void runDay() throws ExecutionException, InterruptedException {
         if (isGameOver()) { return; }
 
-        log("Day " + turn, LogPriority.HIGH);
+        log("begin Day " + turn, null, LogPriority.HIGH);
 
         seats.setAllCanStand(true);
 
@@ -296,40 +333,47 @@ public class Game {
         storyteller.NOMINATE.enable(()-> Bukkit.getScheduler().runTaskAsynchronously(BloodOnTheClocktower.instance, () -> {
             try {
                 storyteller.CANCEL.tempDisable();
+                storyteller.CONTINUE.tempDisable();
                 storyteller.NOMINATE.tempDisable();
+
+                CompletableFuture<Void> instruction2 = storyteller.giveInstruction("Select the NOMINEE");
                 CompletableFuture<Void> instruction = storyteller.giveInstruction("Select the NOMINATOR");
-                BOTCPlayer nominator = new SelectPlayerHook(storyteller, this, 1, _->true).get().getFirst();
+
+                BOTCPlayer nominator = new SelectPlayerHook(storyteller, this, 1, _->true, false).get().getFirst();
                 instruction.complete(null);
 
-                instruction = storyteller.giveInstruction("Select the NOMINEE");
                 BOTCPlayer nominee = new SelectPlayerHook(storyteller, this, 1, _->true).get().getFirst();
-                instruction.complete(null);
+                instruction2.complete(null);
 
                 // TODO: give the roles a chance to run actions
-                log("{0} nominated {1}", LogPriority.MEDIUM, nominator, nominee);
+                log("{0} nominated {1}", null, LogPriority.MEDIUM, nominator, nominee);
 
-                StorytellerPauseHook pause = new StorytellerPauseHook(storyteller, "allow nominator and nominee to stand", "exit nomination");
+                MinecraftHook<Void> pause = new StorytellerPauseHook(storyteller, "make nominator and nominee stand")
+                        .cancellable(storyteller.CANCEL, "exit nomination");
                 pause.get();
                 if (pause.isCancelled()) {
                     nominee.deglow();
+                    storyteller.NOMINATE.enable(null);
                     return;
                 }
 
-                seats.setCanStand(nominator, true);
-                seats.setCanStand(nominee, true);
+                seats.eject(nominator);
+                seats.eject(nominee);
 
                 int votesNecessary = Mth.ceil(players.stream().filter(BOTCPlayer::isAlive).count()/2f);
                 if (block.getOnTheBlock() == null) block.setVotesNecessary(votesNecessary);
 
-                pause = new StorytellerPauseHook(storyteller, "tally votes", "exit nomination");
+                pause = new StorytellerPauseHook(storyteller, "tally votes")
+                        .cancellable(storyteller.CANCEL, "exit nomination");
                 pause.get();
 
-                seats.setCanStand(nominator, false);
-                seats.setCanStand(nominee, false);
+                seats.forceSit(nominator);
+                seats.forceSit(nominee);
 
                 if (pause.isCancelled()) {
                     if (block.getOnTheBlock() == null) block.clear();
                     nominee.deglow();
+                    storyteller.NOMINATE.enable(null);
                     return;
                 }
 
@@ -342,6 +386,9 @@ public class Game {
                                 ? new ConfirmVoteHook(p, storyteller, v->seats.setVoting(p, v))
                                 : null).toList();
                 CompletableFuture<Void> voteInstruction = storyteller.giveInstruction("Click players in a circle to lock their votes");
+
+                storyteller.CANCEL.tempDisable();
+                storyteller.CONTINUE.tempDisable();
 
                 int voteCount = 0;
                 for (int start = players.indexOf(nominee)+1, i = 0; i < players.size(); i++) {
@@ -364,8 +411,9 @@ public class Game {
                 instructions.forEach(c -> c.complete(null));
                 voteInstruction.complete(null);
 
-                log("{0} received " + voteCount + " votes", LogPriority.MEDIUM, nominee);
-                pause = new StorytellerPauseHook(storyteller, ("update the block ("+voteCount+" votes)").replace("1 votes", "1 vote"), "exit nomination");
+                log("{0} received " + voteCount + " votes", null, LogPriority.MEDIUM, nominee);
+                pause = new StorytellerPauseHook(storyteller, ("update the block ("+voteCount+" votes)").replace("1 votes", "1 vote"))
+                        .cancellable(storyteller.CANCEL, "exit nomination");
                 pause.get();
 
                 if (!pause.isCancelled()) {
@@ -384,12 +432,13 @@ public class Game {
                 players.forEach(p -> seats.setVoting(p, SeatList.VoteState.NO));
 
                 nominee.deglow();
+                storyteller.NOMINATE.enable(null);
             } catch (ExecutionException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            storyteller.NOMINATE.enable(null);
         }));
-        StorytellerPauseHook pause = new StorytellerPauseHook(storyteller, "execute the player on the block", "go to Night");
+        MinecraftHook<Void> pause = new StorytellerPauseHook(storyteller, "execute the player on the block")
+                .cancellable(storyteller.CANCEL, "go to Night");
         pause.get();
 
         storyteller.NOMINATE.disable();
@@ -397,14 +446,8 @@ public class Game {
         if (!pause.isCancelled()) {
             BOTCPlayer executee = block.getOnTheBlock();
             if (executee != null) {
-                log("{0} was executed", LogPriority.HIGH, executee);
-                // TODO: make this happen on ALL executions (including storyteller ones)
-                new AnvilDropHook(executee.getPlayer().getLocation().add(0, 8, 0)).get();
-
-                Bukkit.getScheduler().callSyncMethod(BloodOnTheClocktower.instance, () -> {
-                    executee.handleDeathAttempt(BOTCPlayer.DeathCause.EXECUTION, null);
-                    return null; // it wants a return type >:c
-                }).get();
+                log("{0} was executed", null, LogPriority.HIGH, executee);
+                executee.execute(false);
             }
         }
         block.clear();
@@ -425,12 +468,11 @@ public class Game {
                 alive++;
                 if (player.getRoleInfo().type() == Role.Type.DEMON) {
                     demonAlive = true;
-                    break;
+                    continue;
                 }
             }
             if (player.blocksGoodVictory()) {
                 goodVictoryBlocked = true;
-                break;
             }
         }
 
@@ -442,10 +484,16 @@ public class Game {
     }
 
     private void cleanup() {
-        players.forEach(p -> {
+        getPlayers().forEach(p -> {
+            if (p instanceof BOTCPlayer bp) bp.wake();
+
+            p.deglow();
             p.getPlayer().setInvisible(false);
             ((CraftPlayer) p.getPlayer()).getHandle().connection.send(ClientboundSetPlayerTeamPacket.createRemovePacket(TEAM));
+            p.resetInventory();
         });
+        seats.cleanup();
+        block.cleanup();
     }
 
     public static void destruct() {

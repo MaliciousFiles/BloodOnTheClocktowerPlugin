@@ -9,6 +9,7 @@ import io.github.maliciousfiles.bloodOnTheClocktower.play.MinecraftHook;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.PlayerWrapper;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.CustomPayloadEvent;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
@@ -24,7 +25,7 @@ public class PlayerChoiceHook extends MinecraftHook<BOTCPlayer> {
 
     public PlayerChoiceHook(Game game, String instruction) throws ExecutionException, InterruptedException {
         grimoire = Bukkit.getScheduler().callSyncMethod(BloodOnTheClocktower.instance, () -> Grimoire.openInventory(game, game.getStoryteller().getPlayer(), Grimoire.Access.PLAYER_SELECT,
-                Component.text(instruction, PlayerWrapper.QUESTION_COLOR))).get();
+                Component.text(instruction, NamedTextColor.DARK_RED))).get();
     }
 
     @EventHandler
@@ -35,5 +36,10 @@ public class PlayerChoiceHook extends MinecraftHook<BOTCPlayer> {
     @EventHandler
     public void onClose(InventoryCloseEvent evt) {
         if (evt.getReason() == InventoryCloseEvent.Reason.PLAYER && grimoire.equals(evt.getInventory())) Bukkit.getScheduler().runTask(BloodOnTheClocktower.instance, () -> evt.getPlayer().openInventory(grimoire));
+    }
+
+    @Override
+    protected void cleanup() {
+        Bukkit.getScheduler().runTask(BloodOnTheClocktower.instance, grimoire::close);
     }
 }

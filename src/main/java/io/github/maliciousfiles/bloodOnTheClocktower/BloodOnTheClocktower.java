@@ -9,21 +9,25 @@ import io.github.maliciousfiles.bloodOnTheClocktower.play.*;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.DataComponentPair;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
-import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
-import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
-import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
+import net.minecraft.network.protocol.game.*;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.lighting.LevelLightEngine;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.entity.Interaction;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
+import java.util.BitSet;
 import java.util.List;
 
 public final class BloodOnTheClocktower extends JavaPlugin {
@@ -68,9 +72,7 @@ public final class BloodOnTheClocktower extends JavaPlugin {
     public void onDisable() {
         StartGameCommand.destruct();
         PacketManager.unload();
-        SeatList.destruct();
         PlayerWrapper.destruct();
-        ChoppingBlock.destruct();
         Game.destruct();
     }
 }

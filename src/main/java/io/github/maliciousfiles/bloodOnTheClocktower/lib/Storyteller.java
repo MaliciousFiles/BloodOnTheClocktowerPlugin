@@ -4,8 +4,8 @@ import io.github.maliciousfiles.bloodOnTheClocktower.play.PlayerWrapper;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.PlayerAction;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.entity.Player;
-import org.jline.utils.Log;
 
 public class Storyteller extends PlayerWrapper {
     public final PlayerAction CONTINUE = new PlayerAction(getPlayer(),
@@ -28,4 +28,17 @@ public class Storyteller extends PlayerWrapper {
         super(mcPlayer);
     }
 
+    @Override
+    public void setupInventory() {
+        super.setupInventory();
+        CONTINUE.disable();
+        CANCEL.disable();
+        YES.disable();
+        NO.disable();
+        NOMINATE.disable();
+    }
+
+    public void enableCancel(Runnable action, String text) {
+        ;
+    }
 }

@@ -99,6 +99,14 @@ public class SeatList {
         }
     }
 
+    public void eject(BOTCPlayer player) {
+        Bukkit.getScheduler().runTask(BloodOnTheClocktower.instance, getSeat(player).interaction::eject);
+        getSeat(player).exit();
+    }
+    public void forceSit(BOTCPlayer player) {
+        Bukkit.getScheduler().runTask(BloodOnTheClocktower.instance, getSeat(player)::enter);
+    }
+
     public enum VoteState {NO, MAYBE, CONFIRMED }
     public void setVoting(BOTCPlayer player, VoteState state) {
         getSeat(player).voteDisplay.setItemStack(state == VoteState.NO ? null :
@@ -106,10 +114,15 @@ public class SeatList {
                         DataComponentPair.cmd(state == VoteState.CONFIRMED)));
     }
 
-    private static final List<Entity> spawnedEntities = new ArrayList<>();
-    public static void destruct() {
-        spawnedEntities.forEach(Entity::remove);
+    public void cleanup() {
+        for (Seat seat : seats) {
+            if (seat == null) continue;
+            seat.interaction.remove();
+            seat.textDisplay.remove();
+            seat.voteDisplay.remove();
+        }
     }
+
     private class Seat implements Listener {
         private final Interaction interaction;
         private final TextDisplay textDisplay;
@@ -132,10 +145,12 @@ public class SeatList {
 
             voteDisplay = location.getWorld().spawn(location.add(0, 1.75, 0), ItemDisplay.class);
             voteDisplay.setBillboard(Display.Billboard.VERTICAL);
+        }
 
-            spawnedEntities.add(interaction);
-            spawnedEntities.add(textDisplay);
-            spawnedEntities.add(voteDisplay);
+        private void enter() {
+            occupied = true;
+            interaction.addPassenger(owner);
+            textDisplay.text(Component.empty());
         }
 
         @EventHandler
@@ -148,9 +163,12 @@ public class SeatList {
             if (owner == null) owner = evt.getPlayer();
             if (onSit != null) onSit.accept(owner);
 
-            occupied = true;
-            interaction.addPassenger(owner);
-            textDisplay.text(Component.empty());
+            enter();
+        }
+
+        private void exit() {
+            occupied = false;
+            textDisplay.text(Component.text((owner.getName()+"'s Seat").replace("s's", "s'")));
         }
 
         @EventHandler
@@ -161,8 +179,7 @@ public class SeatList {
                 return;
             }
 
-            occupied = false;
-            textDisplay.text(Component.text((owner.getName()+"'s Seat").replace("s's", "s'")));
+            exit();
         }
     }
 }

@@ -28,4 +28,9 @@ public class AnvilDropHook extends MinecraftHook<Void> {
     public void onAnvil(EntityRemoveFromWorldEvent evt) {
         if (evt.getEntity().equals(block)) complete(null);
     }
+
+    @Override
+    protected void cleanup() {
+        if (block.isValid()) Bukkit.getScheduler().runTask(BloodOnTheClocktower.instance, block::remove);
+    }
 }

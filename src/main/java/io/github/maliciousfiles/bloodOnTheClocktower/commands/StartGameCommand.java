@@ -9,10 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 public class StartGameCommand extends BOTCCommand {
@@ -55,11 +52,16 @@ public class StartGameCommand extends BOTCCommand {
             error(sender, "Table must have 15 seats to use");
             return;
         }
+        if (seats.stream().filter(Objects::nonNull).count() < players.size()) {
+            error(sender, "Not enough seats for players");
+            return;
+        }
 
         Bukkit.getScheduler().runTaskAsynchronously(BloodOnTheClocktower.instance, () -> {
             try {
                 gameTasks.add(Thread.currentThread());
                 GameInit.initGame(seats, block, players.getFirst(), players.subList(1, players.size()));
+                gameTasks.remove(Thread.currentThread());
             } catch (ExecutionException | InterruptedException _) {}
         });
     }

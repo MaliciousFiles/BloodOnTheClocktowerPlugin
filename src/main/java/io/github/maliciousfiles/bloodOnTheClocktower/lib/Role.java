@@ -25,19 +25,19 @@ public abstract class Role {
 
     protected void newReminderToken(ReminderToken token) {
         if (token.target != null) {
-            game.log("{0} placed reminder token " + token.name + " on {1}", Game.LogPriority.LOW, me, token.target);
+            game.log("placed reminder token " + token.name + " on {0}", me, Game.LogPriority.LOW, token.target);
             token.target.reminderTokensOnMe.add(token);
         }
         myReminderTokens.add(token);
     }
     protected void moveReminderToken(ReminderToken token, @Nullable BOTCPlayer newTarget) {
         if (token.target != null) {
-            game.log("Reminder token " + token.name + " removed from {0}", Game.LogPriority.LOW, token.target);
+            game.log("reminder token " + token.name + " removed from {0}", me, Game.LogPriority.LOW, token.target);
             token.target.reminderTokensOnMe.remove(token);
         }
         token.target = newTarget;
         if (newTarget != null) {
-            game.log("{0} placed reminder token " + token.name + " on {1}", Game.LogPriority.LOW, me, token.target);
+            game.log("placed reminder token " + token.name + " on {0}", me, Game.LogPriority.LOW, token.target);
             newTarget.reminderTokensOnMe.add(token);
         }
     }
@@ -82,10 +82,12 @@ public abstract class Role {
         public float order() { return info.nightOrder(); }
 
         @Override
+        public List<BOTCPlayer> players() { return List.of(me); }
+
+        @Override
         public void run() throws ExecutionException, InterruptedException {
-            game.log("{0} running night", Game.LogPriority.LOW, me);
+            game.log("running night", me, Game.LogPriority.LOW);
             handleNight();
-            me.sleep();
         }
     }
 
