@@ -53,6 +53,7 @@ public class GameInit {
                 roles.stream()
                         .filter(r->r.type() != Role.Type.TRAVELLER && r.type() != Role.Type.FABLED)
                         .map(r->new Option<>(r, r.getItem())).toList(),
+                script.roles.stream().filter(r->r.type() != Role.Type.TRAVELLER).map(RoleInfo::getItem).toList(),
                 players,
                 pair -> {
                     roleBagInstructions.get(pair.getFirst()).complete(null);

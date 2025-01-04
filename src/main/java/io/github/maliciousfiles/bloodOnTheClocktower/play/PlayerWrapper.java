@@ -43,7 +43,6 @@ public abstract class PlayerWrapper {
     }
 
     private int activeId = 0;
-
     private CompletableFuture<Void> message(Component message) {
         CompletableFuture<Void> cancel = new CompletableFuture<>();
 
@@ -54,11 +53,11 @@ public abstract class PlayerWrapper {
 
         Bukkit.getScheduler().runTaskAsynchronously(BloodOnTheClocktower.instance, () -> {
             try {
-                activeId--;
                 cancel.get();
             } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException(e);
             }
+            activeId--;
             task.cancel();
         });
 
@@ -109,12 +108,5 @@ public abstract class PlayerWrapper {
     public void deglow() {
         deglow.forEach(f->f.complete(null));
         deglow.clear();
-    }
-
-    public void kill() {
-        mcPlayer.setPose(Pose.DYING);
-        Bukkit.getScheduler().runTaskLater(BloodOnTheClocktower.instance, () -> {
-            mcPlayer.setInvisible(true);
-        }, 10);
     }
 }

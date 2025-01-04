@@ -1,9 +1,11 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.lib;
 
+import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.roles.Imp;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.roles.Poisoner;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.roles.Washerwoman;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.DataComponentPair;
+import io.papermc.paper.datacomponent.DataComponentTypes;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
@@ -267,5 +269,9 @@ public enum RoleInfo {
                 DataComponentPair.lore(lore.toArray(Component[]::new)),
                 DataComponentPair.model("role"),
                 DataComponentPair.cmd(id()));
+    }
+
+    public static boolean isRoleItem(ItemStack item) {
+        return item != null && BloodOnTheClocktower.key("role").equals(item.getData(DataComponentTypes.ITEM_MODEL));
     }
 }

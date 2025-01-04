@@ -1,13 +1,17 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.lib;
 
+import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.PlayerAction;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.PlayerWrapper;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.ScriptDisplay;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Pose;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -20,7 +24,7 @@ public class BOTCPlayer extends PlayerWrapper {
 
     public final PlayerAction VIEW_SCRIPT = new PlayerAction(getPlayer(),
             "View Script", TextColor.color(188, 46, 69),
-            "Hold to vote for the nominated player", Material.WRITABLE_BOOK, 8);
+            "Hold to vote for the nominated player", NamespacedKey.minecraft("writable_book"), 8);
     public final PlayerAction VOTE = new PlayerAction(getPlayer(),
             "Vote", TextColor.color(51, 186, 255),
             "Hold to vote for the nominated player", "nominate", 7);
@@ -116,4 +120,17 @@ public class BOTCPlayer extends PlayerWrapper {
     }
 
     public boolean isAlive() { return alive; }
+
+    public void kill() {
+        getPlayer().setPose(Pose.DYING);
+        Bukkit.getScheduler().runTaskLater(BloodOnTheClocktower.instance, () -> {
+            invisible.add(getPlayer());
+            getPlayer().setInvisible(true);
+        }, 10);
+    }
+
+    private static final List<Player> invisible = new ArrayList<>();
+    public static void destruct() {
+        invisible.forEach(p -> p.setInvisible(false));
+    }
 }

@@ -26,7 +26,7 @@ import java.util.List;
 import static io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower.createItem;
 
 public class ChoppingBlock {
-    private static final int TICKS_PER_ROT = 40;
+    private static final int TICKS_PER_ROT = 36;
 
     private final TextDisplay text;
     private final ItemDisplay head;
@@ -71,7 +71,7 @@ public class ChoppingBlock {
         text.text(Component.text("Needs ")
                 .append(Component.text(votes).decoration(TextDecoration.BOLD, true))
                 .append(Component.text(" to execute"))
-                .color(NamedTextColor.DARK_GRAY));
+                .color(NamedTextColor.DARK_RED));
     }
 
     public void setPlayerWithVotes(BOTCPlayer player, int votes) {
@@ -80,8 +80,8 @@ public class ChoppingBlock {
 
         head.setItemStack(createItem(Material.PLAYER_HEAD,
                 DataComponentPair.of(DataComponentTypes.PROFILE, ResolvableProfile.resolvableProfile(player.getPlayer().getPlayerProfile()))));
-        text.text(Component.text(player.getName(), NamedTextColor.DARK_GRAY, TextDecoration.BOLD)
-                .append(Component.text("\n(" + votes + " votes)")
+        text.text(Component.text(player.getName(), NamedTextColor.DARK_RED, TextDecoration.BOLD)
+                .append(Component.text(("\n(" + votes + " votes)").replace("1 votes", "1 vote"))
                         .decoration(TextDecoration.BOLD, false)));
     }
 

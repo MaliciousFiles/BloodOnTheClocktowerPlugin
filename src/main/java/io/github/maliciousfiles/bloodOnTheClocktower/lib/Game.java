@@ -1,5 +1,6 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.lib;
 
+import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.ChatComponents;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.ChoppingBlock;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.PlayerWrapper;
@@ -12,6 +13,7 @@ import net.kyori.adventure.title.TitlePart;
 import net.minecraft.util.Mth;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.*;
@@ -243,8 +245,9 @@ public class Game {
                 p.getPlayer().sendTitlePart(TitlePart.TITLE, Component.text("Return to Seat", NamedTextColor.BLUE)));
         seats.setAllCanStand(false);
 
-        storyteller.NOMINATE.enable(() -> {
+        storyteller.NOMINATE.enable(()-> Bukkit.getScheduler().runTaskAsynchronously(BloodOnTheClocktower.instance, () -> {
             try {
+                storyteller.NOMINATE.disable();
                 BOTCPlayer nominator = new PlayerChoiceHook(this, "Select the NOMINATOR").get();
 
                 CompletableFuture<Void> instruction = storyteller.giveInstruction("Select the NOMINEE");
@@ -262,6 +265,10 @@ public class Game {
                 seats.setCanStand(nominator, false);
                 seats.setCanStand(nominee, false);
 
+                List<CompletableFuture<Void>> instructions = players.stream()
+                        .filter(p->p.isAlive() || p.hasDeadVote())
+                        .map(p -> p.giveInstruction("Select the Vote item to vote YES"))
+                        .toList();
                 List<ConfirmVoteHook> votes = players.stream().map(
                         p -> p.isAlive() || p.hasDeadVote()
                                 ? new ConfirmVoteHook(p, storyteller, v->seats.setVoting(p, v))
@@ -286,8 +293,10 @@ public class Game {
                         voteCount++;
                     }
                 }
+                instructions.forEach(c -> c.complete(null));
+                voteInstruction.complete(null);
 
-                new StorytellerPauseHook(storyteller, "Continue to update the block ("+votes+" votes)").get();
+                new StorytellerPauseHook(storyteller, ("Continue to update the block ("+voteCount+" votes)").replace("1 votes", "1 vote")).get();
                 if (block.getVotes() > 0) {
                     if (voteCount > block.getVotes()) {
                         block.setPlayerWithVotes(nominee, voteCount);
@@ -297,21 +306,28 @@ public class Game {
                 } else if (voteCount >= votesNecessary) {
                     block.setPlayerWithVotes(nominee, voteCount);
                 }
+                if (block.getOnTheBlock() == null) block.clear();
+
+                players.forEach(p -> seats.setVoting(p, SeatList.VoteState.NO));
 
                 nominee.deglow();
             } catch (ExecutionException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
-        });
+            storyteller.NOMINATE.enable(null);
+        }));
         new StorytellerPauseHook(storyteller, "Continue to execution").get();
+        storyteller.NOMINATE.disable();
 
         if (block.getOnTheBlock() != null) {
             new AnvilDropHook(block.getOnTheBlock().getPlayer().getLocation().add(0, 8, 0)).get();
 
-            block.getOnTheBlock().kill();
-
-            block.clear();
+            Bukkit.getScheduler().callSyncMethod(BloodOnTheClocktower.instance, ()->{
+                block.getOnTheBlock().kill();
+                return null; // it wants a return type >:c
+            }).get();
         }
+        block.clear();
     }
 
     public boolean isGameOver() {

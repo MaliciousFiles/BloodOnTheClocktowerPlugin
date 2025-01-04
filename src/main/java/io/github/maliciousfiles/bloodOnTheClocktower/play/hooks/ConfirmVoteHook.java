@@ -21,6 +21,8 @@ public class ConfirmVoteHook extends MinecraftHook<Boolean> {
         (this.voter = voter).VOTE.enable(null);
         this.storyteller = storyteller.getPlayer();
         this.setVote = setVote;
+
+        if (voter.VOTE.isItem(voter.getPlayer().getInventory().getItemInMainHand())) setVote.accept(SeatList.VoteState.MAYBE);
     }
 
     @EventHandler

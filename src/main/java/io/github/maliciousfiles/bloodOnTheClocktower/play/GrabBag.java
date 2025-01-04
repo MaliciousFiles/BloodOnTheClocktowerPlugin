@@ -26,8 +26,9 @@ import java.util.function.Consumer;
 import static io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower.createItem;
 
 public class GrabBag<D> {
-    private final List<Option<D>> contents;
     private int index;
+
+    private final List<ItemStack> visible;
 
     private final List<UUID> playersTaken = new ArrayList<>();
     private final List<Option<D>> remaining;
@@ -37,13 +38,13 @@ public class GrabBag<D> {
     private final CompletableFuture<Map<Player, D>> future;
     private final Map<Player, D> received = new HashMap<>();
 
-    private GrabBag(Collection<Option<D>> options, List<Player> recipients, Consumer<Pair<Player, D>> onGrab, CompletableFuture<Map<Player, D>> future) {
+    private GrabBag(Collection<Option<D>> options, List<ItemStack> visible, List<Player> recipients, Consumer<Pair<Player, D>> onGrab, CompletableFuture<Map<Player, D>> future) {
         this.recipients = recipients;
         this.future = future;
         this.onGrab = onGrab;
         this.remaining = new ArrayList<>(options);
-        this.contents = new ArrayList<>(options);
-        Collections.shuffle(contents);
+        this.visible = new ArrayList<>(visible);
+        Collections.shuffle(this.visible);
 
         this.index = 0;
     }
@@ -58,6 +59,9 @@ public class GrabBag<D> {
         if (item == null) return null;
 
         return Optional.ofNullable(DataComponentPair.<StringTag>getCustomData(item, UUID_KEY)).map(StringTag::getAsString).orElse(null);
+    }
+    public static boolean isGrabBag(ItemStack item) {
+        return getId(item) != null;
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -74,9 +78,9 @@ public class GrabBag<D> {
 
             List<ItemStack> items = new ArrayList<>();
             for (int i = 0; i < 4; i++) {
-                items.add(bag.contents.get((bag.index+i) % bag.contents.size()).representation());
+                items.add(bag.visible.get((bag.index+i) % bag.visible.size()));
             }
-            bag.index = bag.index+1 % bag.contents.size();
+            bag.index = bag.index+1 % bag.visible.size();
 
             item.setData(DataComponentTypes.BUNDLE_CONTENTS, BundleContents.bundleContents(items));
         }
@@ -93,9 +97,9 @@ public class GrabBag<D> {
         Bukkit.getPluginManager().registerEvents(new GrabBagHandler(), BloodOnTheClocktower.instance);
     }
 
-    public static <D> ItemStack createGrabBag(Collection<Option<D>> options, List<Player> recipients, Consumer<Pair<Player, D>> onGrab, CompletableFuture<Map<Player, D>> future, DataComponentPair<?> data) {
+    public static <D> ItemStack createGrabBag(Collection<Option<D>> options, List<ItemStack> visible, List<Player> recipients, Consumer<Pair<Player, D>> onGrab, CompletableFuture<Map<Player, D>> future, DataComponentPair<?> data) {
         String uuid = UUID.randomUUID().toString();
-        grabBags.put(uuid, new GrabBag<>(options, recipients, onGrab, future));
+        grabBags.put(uuid, new GrabBag<>(options, visible, recipients, onGrab, future));
 
         return createItem(Material.BUNDLE,
                 data,

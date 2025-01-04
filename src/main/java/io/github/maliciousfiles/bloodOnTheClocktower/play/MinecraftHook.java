@@ -21,7 +21,7 @@ public abstract class MinecraftHook<D> implements Listener {
     }
 
     protected final void complete(D data) {
-        complete.complete(data);
         HandlerList.unregisterAll(this);
+        complete.complete(data);
     }
 }

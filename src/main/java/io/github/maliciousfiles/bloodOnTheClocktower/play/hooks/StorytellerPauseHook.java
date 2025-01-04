@@ -22,8 +22,11 @@ public class StorytellerPauseHook extends MinecraftHook<Void> {
         storyteller.CONTINUE.enable(() -> {
             if (activeIds.get(uuid) != id) return;
 
-            if (activeIds.get(uuid) == 1) activeIds.remove(uuid);
-            else activeIds.put(uuid, activeIds.get(uuid)-1);
+            if (activeIds.get(uuid) == 1) {
+                activeIds.remove(uuid);
+            } else {
+                activeIds.put(uuid, activeIds.get(uuid)-1);
+            }
 
             storyteller.CONTINUE.disable();
             future.complete(null);

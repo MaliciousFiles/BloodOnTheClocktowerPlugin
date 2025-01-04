@@ -130,8 +130,8 @@ public class SeatList {
             textDisplay.setSeeThrough(true);
             textDisplay.setBillboard(Display.Billboard.CENTER);
 
-            voteDisplay = location.getWorld().spawn(location.add(0, 2.25, 0), ItemDisplay.class);
-            voteDisplay.setBillboard(Display.Billboard.CENTER);
+            voteDisplay = location.getWorld().spawn(location.add(0, 1.75, 0), ItemDisplay.class);
+            voteDisplay.setBillboard(Display.Billboard.VERTICAL);
 
             spawnedEntities.add(interaction);
             spawnedEntities.add(textDisplay);

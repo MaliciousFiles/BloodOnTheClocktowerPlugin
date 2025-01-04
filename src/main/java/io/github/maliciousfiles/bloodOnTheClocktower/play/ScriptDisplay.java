@@ -28,6 +28,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
@@ -273,7 +274,7 @@ public class ScriptDisplay implements Listener {
             if (viewingScript == null) contents[53] = RETURN;
             else if (rolesToSelect > 0) contents[53] = selectedRoles.size() == rolesToSelect
                     ? CONTINUE_ENABLED
-                    : DataComponentPair.lore(Component.text("Must select "+rolesToSelect+" players", NamedTextColor.DARK_GRAY))
+                    : DataComponentPair.lore(Component.text("Must select "+rolesToSelect+" characters", NamedTextColor.DARK_GRAY))
                         .apply(CONTINUE_DISABLED.clone());
             else contents[53] = DataComponentPair.name(Component.text("Close", NamedTextColor.RED)).apply(RETURN);
         }
@@ -283,6 +284,7 @@ public class ScriptDisplay implements Listener {
 
     @EventHandler
     public void inventoryClose(InventoryCloseEvent evt) {
+        if (viewingScript != null && rolesToSelect == 0) return;
         if (!inventory.equals(evt.getInventory()) || evt.getReason() != InventoryCloseEvent.Reason.PLAYER) return;
 
         Bukkit.getScheduler().runTask(BloodOnTheClocktower.instance, () -> evt.getPlayer().openInventory(inventory));
@@ -290,6 +292,12 @@ public class ScriptDisplay implements Listener {
 
     @EventHandler
     public void inventoryHandler(InventoryClickEvent evt) {
+        if (inventory.equals(evt.getInventory())
+                && !inventory.equals(evt.getClickedInventory())
+                && evt.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY
+                && RoleInfo.isRoleItem(evt.getCurrentItem())) {
+            evt.setCancelled(true);
+        }
         if (!inventory.equals(evt.getClickedInventory())) return;
 
         evt.setCancelled(true);
@@ -341,7 +349,7 @@ public class ScriptDisplay implements Listener {
                     HandlerList.unregisterAll(this);
                     inventory.close();
                 }
-            } else if ((selectingRoles || viewingScript != null) && Material.PAPER == Optional.ofNullable(evt.getCurrentItem()).map(ItemStack::getType).orElse(null)) {
+            } else if ((selectingRoles || (viewingScript != null && rolesToSelect != 0)) && Material.PAPER == Optional.ofNullable(evt.getCurrentItem()).map(ItemStack::getType).orElse(null)) {
                 String roleId = evt.getCurrentItem().getData(DataComponentTypes.CUSTOM_MODEL_DATA).strings().getFirst();
                 if (roleId == null) return;
 
