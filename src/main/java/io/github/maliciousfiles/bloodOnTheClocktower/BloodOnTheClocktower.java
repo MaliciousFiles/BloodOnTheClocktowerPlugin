@@ -7,6 +7,8 @@ import io.github.maliciousfiles.bloodOnTheClocktower.lib.Game;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.ScriptInfo;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.*;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.DataComponentPair;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
 import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
@@ -40,6 +42,10 @@ public final class BloodOnTheClocktower extends JavaPlugin {
         ItemStack item = ItemStack.of(material);
         for (DataComponentPair<?> pair : data) item = pair.apply(item);
         return item;
+    }
+
+    public static ComponentLogger logger() {
+        return instance.getComponentLogger();
     }
 
     @Override
