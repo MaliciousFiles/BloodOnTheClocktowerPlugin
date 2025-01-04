@@ -116,6 +116,7 @@ public class Game {
 
     // Include a "{n}" in message to substitute in a component for players[n]
     public void log(String message, LogPriority priority, BOTCPlayer... players) {
+        message = "[BOTC] " + message;
         TextColor color = switch (priority) {
             case LOW -> NamedTextColor.DARK_GRAY;
             case MEDIUM -> NamedTextColor.GRAY;
@@ -169,6 +170,7 @@ public class Game {
 
         @Override
         public void run() throws ExecutionException, InterruptedException {
+            log("Minion info", LogPriority.LOW);
             List<BOTCPlayer> demons = players.stream()
                     .filter(p->p.getRoleInfo().type() == Role.Type.DEMON)
                     .toList();
@@ -203,6 +205,7 @@ public class Game {
 
         @Override
         public void run() throws ExecutionException, InterruptedException {
+            log("Demon info", LogPriority.LOW);
             List<BOTCPlayer> demons = players.stream()
                     .filter(p->p.getRoleInfo().type() == Role.Type.DEMON)
                     .toList();
@@ -221,6 +224,7 @@ public class Game {
             }
 
             List<RoleInfo> bluffs = new RoleChoiceHook(storyteller, Game.this, "Select bluffs for the demon", 3).get();
+            log("Demon bluffs: " + String.join(", ", bluffs.stream().map(RoleInfo::title).toList()), LogPriority.MEDIUM);
 
             Component bluffInfo = bluffs.stream().map(ChatComponents::roleInfo).reduce(Component.text("Your bluffs are "),
                     (curr, bluff) -> curr.append(bluff).append(Component.text(", ")));
