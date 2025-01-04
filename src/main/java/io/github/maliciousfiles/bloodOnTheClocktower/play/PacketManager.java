@@ -21,8 +21,10 @@ import java.util.function.Consumer;
 public class PacketManager implements Listener {
     private static final Map<Class<? extends Packet<?>>, List<BiConsumer<Player, ? extends Packet<?>>>> listeners = new HashMap<>();
 
-    public static <T extends Packet<?>> void registerListener(Class<T> packetClass, BiConsumer<Player, T> listener) {
+    public static <T extends Packet<?>> Runnable registerListener(Class<T> packetClass, BiConsumer<Player, T> listener) {
         listeners.computeIfAbsent(packetClass, k -> new ArrayList<>()).add(listener);
+
+        return () -> listeners.get(packetClass).remove(listener);
     }
 
     private static List<Runnable> unloadTasks = new ArrayList<>();

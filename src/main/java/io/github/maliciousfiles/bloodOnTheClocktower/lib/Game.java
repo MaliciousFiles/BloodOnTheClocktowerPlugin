@@ -10,10 +10,12 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
 import net.kyori.adventure.title.TitlePart;
+import net.minecraft.network.protocol.game.ClientboundSetPlayerTeamPacket;
 import net.minecraft.util.Mth;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
 import org.bukkit.Bukkit;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 import java.util.*;
@@ -89,6 +91,12 @@ public class Game {
     }
     public ScriptInfo getScript() {
         return script;
+    }
+    public List<PlayerWrapper> getPlayers() {
+        List<PlayerWrapper> list = new ArrayList<>(players);
+        list.add(storyteller);
+
+        return list;
     }
 
     public List<BOTCPlayer> getAwake() {
@@ -248,9 +256,11 @@ public class Game {
         storyteller.NOMINATE.enable(()-> Bukkit.getScheduler().runTaskAsynchronously(BloodOnTheClocktower.instance, () -> {
             try {
                 storyteller.NOMINATE.disable();
-                BOTCPlayer nominator = new PlayerChoiceHook(this, "Select the NOMINATOR").get();
+                CompletableFuture<Void> instruction = storyteller.giveInstruction("Select the NOMINATOR");
+                BOTCPlayer nominator = new SelectPlayerHook(storyteller, this, 1, _->true).get().getFirst();
+                instruction.complete(null);
 
-                CompletableFuture<Void> instruction = storyteller.giveInstruction("Select the NOMINEE");
+                instruction = storyteller.giveInstruction("Select the NOMINEE");
                 BOTCPlayer nominee = new SelectPlayerHook(storyteller, this, 1, _->true).get().getFirst();
                 instruction.complete(null);
 
@@ -359,5 +369,16 @@ public class Game {
         } else if (alive <= 2) {
             winner = Winner.EVIL;
         }
+    }
+
+    private void cleanup() {
+        players.forEach(p -> {
+            p.getPlayer().setInvisible(false);
+            ((CraftPlayer) p.getPlayer()).getHandle().connection.send(ClientboundSetPlayerTeamPacket.createRemovePacket(TEAM));
+        });
+    }
+
+    public static void destruct() {
+        games.forEach((_, g) -> g.cleanup());
     }
 }

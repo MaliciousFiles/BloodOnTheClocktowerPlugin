@@ -1,5 +1,6 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.play;
 
+import com.google.common.collect.Lists;
 import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
@@ -88,12 +89,26 @@ public abstract class PlayerWrapper {
     public void glow(List<PlayerWrapper> recipients) {
         CompletableFuture<Void> future = new CompletableFuture<>();
 
-        Packet<?> glow = new ClientboundSetEntityDataPacket(mcPlayer.getEntityId(), List.of(SynchedEntityData.DataValue.create(EntityDataSerializers.BYTE.createAccessor(0), (byte) 0x40)));
+        byte value = (byte) (getPlayer().isInvisible() ? 0x60 : 0x40);
+        Packet<?> glow = new ClientboundSetEntityDataPacket(mcPlayer.getEntityId(), Lists.newArrayList(SynchedEntityData.DataValue.create(EntityDataSerializers.BYTE.createAccessor(0), value)));
         recipients.forEach(p -> ((CraftPlayer) p.mcPlayer).getHandle().connection.send(glow));
+
+        Runnable unregister = PacketManager.registerListener(ClientboundSetEntityDataPacket.class, (player, packet) -> {
+            if (recipients.stream().noneMatch(p->p.getPlayer().equals(player))) return;
+
+            for (int i = 0; i < packet.packedItems().size(); i++) {
+                SynchedEntityData.DataValue<?> val = packet.packedItems().get(i);
+                if (val.value() instanceof Byte && val.id() == 0) {
+                    packet.packedItems().set(i,
+                            SynchedEntityData.DataValue.create(EntityDataSerializers.BYTE.createAccessor(0), value));
+                }
+            }
+        });
 
         Bukkit.getScheduler().runTaskAsynchronously(BloodOnTheClocktower.instance, () -> {
             try {
                 future.get();
+                unregister.run();
                 recipients.forEach(p -> ((CraftPlayer) mcPlayer).getHandle()
                         .refreshEntityData(((CraftPlayer) p.mcPlayer).getHandle()));
             } catch (InterruptedException | ExecutionException e) {

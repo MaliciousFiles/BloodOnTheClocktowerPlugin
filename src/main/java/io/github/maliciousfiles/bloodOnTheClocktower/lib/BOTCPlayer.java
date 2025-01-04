@@ -7,11 +7,16 @@ import io.github.maliciousfiles.bloodOnTheClocktower.play.ScriptDisplay;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
+import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
+import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.entity.Pose;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Pose;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -122,15 +127,19 @@ public class BOTCPlayer extends PlayerWrapper {
     public boolean isAlive() { return alive; }
 
     public void kill() {
-        getPlayer().setPose(Pose.DYING);
-        Bukkit.getScheduler().runTaskLater(BloodOnTheClocktower.instance, () -> {
-            invisible.add(getPlayer());
-            getPlayer().setInvisible(true);
-        }, 10);
-    }
+        game.getPlayers().forEach(p -> {
+            if (p == this) return;
 
-    private static final List<Player> invisible = new ArrayList<>();
-    public static void destruct() {
-        invisible.forEach(p -> p.setInvisible(false));
+            ((CraftPlayer) p.getPlayer()).getHandle().connection.send(new ClientboundSetEntityDataPacket(getPlayer().getEntityId(),
+                    List.of(SynchedEntityData.DataValue.create(EntityDataSerializers.FLOAT.createAccessor(9), 0f))));
+        });
+        Bukkit.getScheduler().runTaskLater(BloodOnTheClocktower.instance, () -> {
+            game.getPlayers().forEach(p -> {
+                ((CraftPlayer) p.getPlayer()).getHandle().connection.send(new ClientboundEntityEventPacket(((CraftPlayer) getPlayer()).getHandle(), (byte) 60));
+                ((CraftPlayer) p.getPlayer()).getHandle().connection.send(new ClientboundSetEntityDataPacket(getPlayer().getEntityId(),
+                        List.of(SynchedEntityData.DataValue.create(EntityDataSerializers.FLOAT.createAccessor(9), (float) getPlayer().getHealth()))));
+            });
+            getPlayer().setInvisible(true);
+        }, 20);
     }
 }

@@ -3,15 +3,26 @@ package io.github.maliciousfiles.bloodOnTheClocktower;
 import io.github.maliciousfiles.bloodOnTheClocktower.commands.BOTCCommand;
 import io.github.maliciousfiles.bloodOnTheClocktower.commands.SeatsCommand;
 import io.github.maliciousfiles.bloodOnTheClocktower.commands.StartGameCommand;
+import io.github.maliciousfiles.bloodOnTheClocktower.lib.Game;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.ScriptInfo;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.*;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.DataComponentPair;
+import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
+import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
+import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.entity.Pose;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.List;
 
 public final class BloodOnTheClocktower extends JavaPlugin {
     public static BloodOnTheClocktower instance;
@@ -54,5 +65,6 @@ public final class BloodOnTheClocktower extends JavaPlugin {
         SeatList.destruct();
         PlayerWrapper.destruct();
         ChoppingBlock.destruct();
+        Game.destruct();
     }
 }
