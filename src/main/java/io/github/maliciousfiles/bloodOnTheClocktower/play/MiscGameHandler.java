@@ -54,11 +54,6 @@ public class MiscGameHandler implements Listener {
     }
 
     @EventHandler
-    public void onClick(InventoryClickEvent evt) {
-        if (RoleInfo.isRoleItem(evt.getCurrentItem())) evt.setCancelled(true);
-    }
-
-    @EventHandler
     public void onAttack(EntityDamageByEntityEvent evt) {
         for (Game game : Game.getGames()) {
             if (game.getPlayers().stream().anyMatch(p->p.getPlayer().equals(evt.getDamager()))

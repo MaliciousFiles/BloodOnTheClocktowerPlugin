@@ -4,7 +4,9 @@ import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.BOTCPlayer;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.Game;
 import io.github.maliciousfiles.bloodOnTheClocktower.lib.ReminderToken;
+import io.github.maliciousfiles.bloodOnTheClocktower.lib.RoleInfo;
 import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.PlayerChoiceHook;
+import io.github.maliciousfiles.bloodOnTheClocktower.play.hooks.RoleChoiceHook;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.CustomPayloadEvent;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.DataComponentPair;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.Pair;
@@ -75,16 +77,15 @@ public class Grimoire implements Listener {
     private final ItemStack REVIVE_ENABLED = createItem(Material.TOTEM_OF_UNDYING,
             DataComponentPair.name(Component.text("Revive", TextColor.color(202, 148, 75))),
             DataComponentPair.lore(Component.text("Bring the player back to life", NamedTextColor.GRAY)));
-    private final ItemStack DRUNK = createItem(Material.PAPER,
-            DataComponentPair.name(Component.text("Drunk", TextColor.color(74, 97, 200))),
-            DataComponentPair.lore(Component.text("Toggle the Storyteller Drunk token", NamedTextColor.GRAY)),
-            DataComponentPair.model("role"),
-            DataComponentPair.cmd("drunk"));
-    private final ItemStack SOBER = createItem(Material.PAPER,
-            DataComponentPair.name(Component.text("Sober", TextColor.color(73, 200, 114))),
-            DataComponentPair.lore(Component.text("Toggle the Storyteller Sober and Healthy token", NamedTextColor.GRAY)),
-            DataComponentPair.model("role"),
-            DataComponentPair.cmd("barista"));
+    private final ItemStack CHANGE_ROLE = createItem(Material.WRITABLE_BOOK,
+            DataComponentPair.name(Component.text("Change Role", TextColor.color(175, 83, 202))),
+            DataComponentPair.lore(Component.text("Does not inform them; manually wake if necessary", NamedTextColor.GRAY)));
+    private final ItemStack CHANGE_ALIGNMENT_GOOD = createItem(Material.BLUE_CONCRETE,
+            DataComponentPair.name(Component.text("Make Evil", TextColor.color(202, 32, 40))),
+            DataComponentPair.lore(Component.text("Does not inform them; manually wake if necessary", NamedTextColor.GRAY)));
+    private final ItemStack CHANGE_ALIGNMENT_EVIL = createItem(Material.RED_CONCRETE,
+            DataComponentPair.name(Component.text("Make Good", TextColor.color(62, 111, 202))),
+            DataComponentPair.lore(Component.text("Does not inform them; manually wake if necessary", NamedTextColor.GRAY)));
     private final ItemStack WAKE = createItem(Material.LIGHT,
             DataComponentPair.name(Component.text("Wake", TextColor.color(209, 189, 44))),
             DataComponentPair.lore(Component.text("Awaken this player", NamedTextColor.GRAY)));
@@ -101,6 +102,16 @@ public class Grimoire implements Listener {
             DataComponentPair.lore(Component.text("Give the player back their dead vote", NamedTextColor.GRAY)),
             DataComponentPair.model("nominate"),
             DataComponentPair.cmd(true));
+    private final ItemStack DRUNK = createItem(Material.PAPER,
+            DataComponentPair.name(Component.text("Drunk", TextColor.color(74, 97, 200))),
+            DataComponentPair.lore(Component.text("Toggle the Storyteller Drunk token", NamedTextColor.GRAY)),
+            DataComponentPair.model("role"),
+            DataComponentPair.cmd("drunk"));
+    private final ItemStack SOBER = createItem(Material.PAPER,
+            DataComponentPair.name(Component.text("Sober", TextColor.color(73, 200, 114))),
+            DataComponentPair.lore(Component.text("Toggle the Storyteller Sober and Healthy token", NamedTextColor.GRAY)),
+            DataComponentPair.model("role"),
+            DataComponentPair.cmd("barista"));
 
     private final ItemStack RETURN = createItem(Material.BARRIER,
             DataComponentPair.name(Component.text("Return", NamedTextColor.RED)));
@@ -112,7 +123,7 @@ public class Grimoire implements Listener {
     private Access access;
     private final PlayerWrapper player;
     private final Game game;
-    private final Inventory inventory;
+    private Inventory inventory;
     private final List<BOTCPlayer> seatOrder;
     private Grimoire(PlayerWrapper player, Game game, Access access, Inventory inventory) {
         this.access = access;
@@ -229,7 +240,7 @@ public class Grimoire implements Listener {
 
         contents[0] = createHead(editing);
         contents[1] = createRole(editing);
-        for (int i = 2; i < 8; i++) contents[i+9] = DARK_FILLER;
+        for (int i = 2; i < 8; i++) contents[i] = DARK_FILLER;
         contents[8] = RETURN;
 
         for (int i = 0; i < 9; i++) contents[i+9] = DARK_FILLER;
@@ -237,14 +248,14 @@ public class Grimoire implements Listener {
         contents[18] = selectedPlayer.isAlive() ? KILL_ENABLED : KILL_DISABLED;
         contents[19] = selectedPlayer.isAlive() ? EXECUTE_ENABLED : EXECUTE_DISABLED;
         contents[20] = !selectedPlayer.isAlive() ? REVIVE_ENABLED : REVIVE_DISABLED;
-        contents[21] = DARK_FILLER;
-        contents[22] = DataComponentPair.of(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE,
+        contents[21] = CHANGE_ROLE;
+        contents[22] = selectedPlayer.getAlignment() == BOTCPlayer.Alignment.GOOD ? CHANGE_ALIGNMENT_GOOD : CHANGE_ALIGNMENT_EVIL;
+        contents[23] = selectedPlayer.isAwake() ? SLEEP : WAKE;
+        contents[24] = !selectedPlayer.hasDeadVote() ? DEAD_VOTE_ENABLED : DEAD_VOTE_DISABLED;
+        contents[25] = DataComponentPair.of(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE,
                 selectedPlayer.reminderTokensOnMe.contains(ReminderToken.STORYTELLER_DRUNK)).apply(DRUNK);
-        contents[23] = DataComponentPair.of(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE,
+        contents[26] = DataComponentPair.of(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE,
                 selectedPlayer.reminderTokensOnMe.contains(ReminderToken.STORYTELLER_SOBER_AND_HEALTHY)).apply(SOBER);
-        contents[24] = DARK_FILLER;
-        contents[25] = selectedPlayer.isAwake() ? SLEEP : WAKE;
-        contents[26] = !selectedPlayer.hasDeadVote() ? DEAD_VOTE_ENABLED : DEAD_VOTE_DISABLED;
 
         for (int i = 0; i < 9; i++) contents[i+27] = DARK_FILLER;
 
@@ -313,6 +324,40 @@ public class Grimoire implements Listener {
         } else if (REVIVE_ENABLED.equals(evt.getCurrentItem())) {
             seatOrder.get(editing).revive();
             inventory.close();
+        } else if (CHANGE_ROLE.equals(evt.getCurrentItem())) {
+            Bukkit.getScheduler().runTaskAsynchronously(BloodOnTheClocktower.instance, () -> {
+                try {
+                    ignoreClose = true;
+                    RoleInfo role = new RoleChoiceHook(player, game, "Select new role for "+seatOrder.get(editing).getName(), 1).get().getFirst();
+                    ignoreClose = false;
+
+                    Bukkit.getScheduler().runTask(BloodOnTheClocktower.instance, () -> player.getPlayer().openInventory(inventory));
+                    seatOrder.get(editing).changeRoleAndAlignment(role, role.alignment());
+                    seatOrder.get(editing).updateRoleItem();
+
+                    renderEditPlayer();
+                } catch (ExecutionException | InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        } else if (CHANGE_ALIGNMENT_GOOD.equals(evt.getCurrentItem())) {
+            seatOrder.get(editing).changeRoleAndAlignment(null, BOTCPlayer.Alignment.EVIL);
+
+            renderEditPlayer();
+        } else if (CHANGE_ALIGNMENT_EVIL.equals(evt.getCurrentItem())) {
+            seatOrder.get(editing).changeRoleAndAlignment(null, BOTCPlayer.Alignment.GOOD);
+
+            renderEditPlayer();
+        } else if (WAKE.equals(evt.getCurrentItem())) {
+            seatOrder.get(editing).wake();
+            renderEditPlayer();
+        } else if (SLEEP.equals(evt.getCurrentItem())) {
+            seatOrder.get(editing).sleep();
+            game.getSeats().forceSit(seatOrder.get(editing));
+            renderEditPlayer();
+        } else if (DEAD_VOTE_ENABLED.equals(evt.getCurrentItem())) {
+            seatOrder.get(editing).returnDeadVote();
+            renderEditPlayer();
         } else if (DRUNK.equals(evt.getCurrentItem())) {
             List<ReminderToken> tokens = seatOrder.get(editing).reminderTokensOnMe;
             if (tokens.contains(ReminderToken.STORYTELLER_DRUNK)) tokens.remove(ReminderToken.STORYTELLER_DRUNK);
@@ -324,15 +369,6 @@ public class Grimoire implements Listener {
             if (tokens.contains(ReminderToken.STORYTELLER_SOBER_AND_HEALTHY)) tokens.remove(ReminderToken.STORYTELLER_SOBER_AND_HEALTHY);
             else tokens.add(ReminderToken.STORYTELLER_SOBER_AND_HEALTHY);
 
-            renderEditPlayer();
-        } else if (WAKE.equals(evt.getCurrentItem())) {
-            seatOrder.get(editing).wake();
-            renderEditPlayer();
-        } else if (SLEEP.equals(evt.getCurrentItem())) {
-            seatOrder.get(editing).sleep();
-            renderEditPlayer();
-        } else if (DEAD_VOTE_ENABLED.equals(evt.getCurrentItem())) {
-            seatOrder.get(editing).returnDeadVote();
             renderEditPlayer();
         } else if (evt.getSlot() >= 45 && evt.getSlot()-45 < seatOrder.get(editing).getMyReminderTokens().size()) {
             Bukkit.getScheduler().runTaskAsynchronously(BloodOnTheClocktower.instance, () -> {
@@ -358,8 +394,11 @@ public class Grimoire implements Listener {
         }
     }
 
+    private boolean ignoreClose = false;
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent evt) {
+        if (ignoreClose) return;
+
         if (!inventory.equals(evt.getInventory())) return;
         if (select != null) {
             Bukkit.getScheduler().runTask(BloodOnTheClocktower.instance, () -> evt.getPlayer().openInventory(inventory));

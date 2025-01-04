@@ -187,6 +187,14 @@ public class BOTCPlayer extends PlayerWrapper {
         game.checkVictory();
     }
 
+    public void updateRoleItem() {
+        for (int i = 0; i < getPlayer().getInventory().getSize(); i++) {
+            if (RoleInfo.isRoleItem(getPlayer().getInventory().getItem(i))) {
+                getPlayer().getInventory().setItem(i, roleInfo.getItem());
+                return;
+            }
+        }
+    }
     public void changeRoleAndAlignment(@Nullable RoleInfo newRole, @Nullable Alignment newAlignment) {
         if (newRole == null) { newRole = roleInfo; }
         if (newAlignment == null) { newAlignment = alignment; }

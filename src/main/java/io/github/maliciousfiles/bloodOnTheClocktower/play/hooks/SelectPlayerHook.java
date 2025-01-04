@@ -32,7 +32,7 @@ public class SelectPlayerHook extends MinecraftHook<List<BOTCPlayer>> {
     private final List<BOTCPlayer> players;
     private final int number;
     private final Game game;
-    private final UUID interacter;
+    private final Player interacter;
     private final boolean shouldGlow;
 
     private final ItemStack selectSelf;
@@ -46,13 +46,14 @@ public class SelectPlayerHook extends MinecraftHook<List<BOTCPlayer>> {
         this.validate = validate;
         this.players = new ArrayList<>();
         this.game = game;
-        this.interacter = interacter.getPlayer().getUniqueId();
+        this.interacter = interacter.getPlayer();
 
         this.shouldGlow = shouldGlow;
 
         selectSelf = createItem(Material.PLAYER_HEAD,
                 DataComponentPair.of(DataComponentTypes.PROFILE, ResolvableProfile.resolvableProfile(interacter.getPlayer().getPlayerProfile())),
                 DataComponentPair.name(Component.text("Select Self", TextColor.color(184, 138, 44))));
+        interacter.getPlayer().getInventory().addItem(selectSelf);
     }
 
     private void select(Player other) {
@@ -72,7 +73,7 @@ public class SelectPlayerHook extends MinecraftHook<List<BOTCPlayer>> {
 
     @EventHandler
     public void onInteract(PlayerInteractEvent evt) {
-        if (!evt.getPlayer().getUniqueId().equals(interacter) ||
+        if (!evt.getPlayer().equals(interacter) ||
             !selectSelf.equals(evt.getItem())) return;
 
         select(evt.getPlayer());
@@ -80,7 +81,7 @@ public class SelectPlayerHook extends MinecraftHook<List<BOTCPlayer>> {
 
     @EventHandler
     public void onPunch(PrePlayerAttackEntityEvent evt) {
-        if (!evt.getPlayer().getUniqueId().equals(interacter) ||
+        if (!evt.getPlayer().equals(interacter) ||
                 !(evt.getAttacked() instanceof Player other)) return;
 
         select(other);
@@ -89,7 +90,7 @@ public class SelectPlayerHook extends MinecraftHook<List<BOTCPlayer>> {
 
     @EventHandler
     public void onInteract(PlayerInteractEntityEvent evt) {
-        if (!evt.getPlayer().getUniqueId().equals(interacter) ||
+        if (!evt.getPlayer().equals(interacter) ||
             !(evt.getRightClicked() instanceof Player other)) return;
 
         select(other);
@@ -98,5 +99,6 @@ public class SelectPlayerHook extends MinecraftHook<List<BOTCPlayer>> {
     @Override
     protected void cleanup() {
         if (isCancelled()) players.forEach(PlayerWrapper::deglow);
+        interacter.getInventory().remove(selectSelf);
     }
 }
