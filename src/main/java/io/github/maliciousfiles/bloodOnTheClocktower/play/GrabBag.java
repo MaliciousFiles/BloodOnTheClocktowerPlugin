@@ -66,7 +66,9 @@ public class GrabBag<D> {
 
     @SuppressWarnings("UnstableApiUsage")
     private static void checkInventory(Inventory inventory) {
-        for (ItemStack item : inventory.getContents()) {
+        for (int i = 0; i < inventory.getContents().length; i++) {
+            ItemStack item = inventory.getItem(i);
+
             String id = getId(item);
             if (id == null) continue;
 
@@ -77,8 +79,8 @@ public class GrabBag<D> {
             }
 
             List<ItemStack> items = new ArrayList<>();
-            for (int i = 0; i < 4; i++) {
-                items.add(bag.visible.get((bag.index+i) % bag.visible.size()));
+            for (int j = 0; j < 4; j++) {
+                items.add(bag.visible.get((bag.index+j) % bag.visible.size()));
             }
             bag.index = bag.index+1 % bag.visible.size();
 
@@ -89,8 +91,8 @@ public class GrabBag<D> {
     public static void register() {
         Bukkit.getScheduler().runTaskTimerAsynchronously(BloodOnTheClocktower.instance, () -> {
             for (Player player : Bukkit.getOnlinePlayers()) {
-                checkInventory(player.getOpenInventory().getTopInventory());
-                checkInventory(player.getOpenInventory().getBottomInventory());
+                new Thread(() -> checkInventory(player.getOpenInventory().getTopInventory())).start();
+                new Thread(() -> checkInventory(player.getOpenInventory().getBottomInventory())).start();
             }
         } ,0, PERIOD);
 
