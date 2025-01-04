@@ -21,7 +21,7 @@ public class ReminderToken {
     }
 
     public ItemStack getItem() {
-        return source.getRole().info.getItem(Material.PAPER, name, false);
+        return source.getRoleInfo().getItem(Material.PAPER, name, false);
     }
 
     public boolean isFunctioning() {

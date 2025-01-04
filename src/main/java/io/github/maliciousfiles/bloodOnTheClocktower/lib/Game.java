@@ -43,7 +43,6 @@ public class Game {
     private final ScriptInfo script;
     private final SeatList seats;
     private final ChoppingBlock block;
-    private final List<Role> rolesInPlay;
     private final Storyteller storyteller;
     private final List<BOTCPlayer> players;
 
@@ -61,13 +60,16 @@ public class Game {
         this.script = script;
         this.storyteller = storyteller;
         this.players = players;
-        this.rolesInPlay = this.players.stream().map(BOTCPlayer::getRole).toList();
         this.turn = 1;
 
         players.forEach(p -> mcPlayerToBOTC.put(p.getPlayer().getUniqueId(), p));
 
         storyteller.setTeam(TEAM);
         players.forEach(p -> p.setTeam(TEAM));
+
+        Component playerList = players.stream().map(ChatComponents::playerInfo).reduce(Component.text("Players: "),
+                (result, p) -> result.append(Component.text(p == players.getFirst() ? "" : ", ")).append(p));
+        log(playerList, LogPriority.HIGH);
     }
     public UUID getId() {
         return uuid;
@@ -87,9 +89,7 @@ public class Game {
     public Storyteller getStoryteller() {
         return storyteller;
     }
-    public List<Role> getRoles() {
-        return rolesInPlay;
-    }
+
     public ScriptInfo getScript() {
         return script;
     }
@@ -137,7 +137,7 @@ public class Game {
 
     private void setup() throws ExecutionException, InterruptedException {
         for (BOTCPlayer player : players) {
-            player.getRole().setup();
+            player.setup();
         }
     }
 
@@ -161,10 +161,10 @@ public class Game {
         @Override
         public void run() throws ExecutionException, InterruptedException {
             List<BOTCPlayer> demons = players.stream()
-                    .filter(p->p.getRole().info.type() == Role.Type.DEMON)
+                    .filter(p->p.getRoleInfo().type() == Role.Type.DEMON)
                     .toList();
             List<BOTCPlayer> minions = players.stream()
-                    .filter(p->p.getRole().info.type() == Role.Type.MINION)
+                    .filter(p->p.getRoleInfo().type() == Role.Type.MINION)
                     .toList();
             minions.forEach(BOTCPlayer::wake);
             for (BOTCPlayer minion : minions) {
@@ -195,10 +195,10 @@ public class Game {
         @Override
         public void run() throws ExecutionException, InterruptedException {
             List<BOTCPlayer> demons = players.stream()
-                    .filter(p->p.getRole().info.type() == Role.Type.DEMON)
+                    .filter(p->p.getRoleInfo().type() == Role.Type.DEMON)
                     .toList();
             List<BOTCPlayer> minions = players.stream()
-                    .filter(p->p.getRole().info.type() == Role.Type.MINION)
+                    .filter(p->p.getRoleInfo().type() == Role.Type.MINION)
                     .toList();
             demons.forEach(BOTCPlayer::wake);
             for (BOTCPlayer demon : demons) {
@@ -230,8 +230,8 @@ public class Game {
         new StorytellerPauseHook(storyteller, "Continue to Night").get();
         players.forEach(BOTCPlayer::sleep);
         for (BOTCPlayer player : players) {
-            if (player.getRole().hasAbility()) player.getRole().handleDusk();
-            nightActions.addAll(player.getRole().getNightActions());
+            if (player.hasAbility()) player.handleDusk();
+            nightActions.addAll(player.getNightActions());
         }
 
         // TODO: uncomment
@@ -257,7 +257,7 @@ public class Game {
         if (isGameOver()) { return; }
         new StorytellerPauseHook(storyteller, "Continue to Dawn").get();
         for (BOTCPlayer player : players) {
-            if (player.getRole().hasAbility()) player.getRole().handleDawn();
+            if (player.hasAbility()) player.handleDawn();
         }
         players.forEach(BOTCPlayer::wake);
     }
@@ -351,7 +351,7 @@ public class Game {
             new AnvilDropHook(block.getOnTheBlock().getPlayer().getLocation().add(0, 8, 0)).get();
 
             Bukkit.getScheduler().callSyncMethod(BloodOnTheClocktower.instance, ()->{
-                block.getOnTheBlock().kill();
+                block.getOnTheBlock().handleDeathAttempt(BOTCPlayer.DeathCause.EXECUTION, null);
                 return null; // it wants a return type >:c
             }).get();
         }
@@ -369,14 +369,14 @@ public class Game {
         boolean demonAlive = false;
         boolean goodVictoryBlocked = false;
         for (BOTCPlayer player : players) {
-            if (player.getRole().countsAsAlive()) {
+            if (player.countsAsAlive()) {
                 alive++;
-                if (player.getRole().info.type() == Role.Type.DEMON) {
+                if (player.getRoleInfo().type() == Role.Type.DEMON) {
                     demonAlive = true;
                     break;
                 }
             }
-            if (player.getRole().blocksGoodVictory()) {
+            if (player.blocksGoodVictory()) {
                 goodVictoryBlocked = true;
                 break;
             }

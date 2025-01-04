@@ -38,7 +38,7 @@ public class Imp extends Role {
         if (!me.isImpaired()) {
             game.log("{0} killed {1}", Game.LogPriority.HIGH, me, dead);
             moveReminderToken(deadReminder, dead);
-            dead.getRole().handleDeathAttempt(BOTCPlayer.DeathCause.PLAYER, me);
+            dead.handleDeathAttempt(BOTCPlayer.DeathCause.PLAYER, me);
         } else {
             game.log("{0} attempted to kill {1}", Game.LogPriority.MEDIUM, me, dead);
         }

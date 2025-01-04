@@ -2,6 +2,7 @@ package io.github.maliciousfiles.bloodOnTheClocktower.lib;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -23,13 +24,22 @@ public abstract class Role {
     }
 
     protected void newReminderToken(ReminderToken token) {
-        if (token.target != null) token.target.reminderTokensOnMe.add(token);
+        if (token.target != null) {
+            game.log("{0} placed reminder token " + token.name + " on {1}", Game.LogPriority.LOW, me, token.target);
+            token.target.reminderTokensOnMe.add(token);
+        }
         myReminderTokens.add(token);
     }
     protected void moveReminderToken(ReminderToken token, @Nullable BOTCPlayer newTarget) {
-        if (token.target != null) token.target.reminderTokensOnMe.remove(token);
+        if (token.target != null) {
+            game.log("Reminder token " + token.name + " removed from {0}", Game.LogPriority.LOW, token.target);
+            token.target.reminderTokensOnMe.remove(token);
+        }
         token.target = newTarget;
-        if (newTarget != null) newTarget.reminderTokensOnMe.add(token);
+        if (newTarget != null) {
+            game.log("{0} placed reminder token " + token.name + " on {1}", Game.LogPriority.LOW, me, token.target);
+            newTarget.reminderTokensOnMe.add(token);
+        }
     }
     protected void removeAllReminderTokens() {
         for (ReminderToken token : myReminderTokens) {
@@ -73,12 +83,13 @@ public abstract class Role {
 
         @Override
         public void run() throws ExecutionException, InterruptedException {
+            game.log("{0} running night", Game.LogPriority.LOW, me);
             handleNight();
             me.sleep();
         }
     }
 
-    public List<Game.NightAction> getNightActions() {
+    public Collection<Game.NightAction> getNightActions() {
         return List.of(new RoleNightAction());
     }
 

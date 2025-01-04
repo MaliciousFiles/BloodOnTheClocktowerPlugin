@@ -16,7 +16,7 @@ public class ChatComponents {
     }
 
     public static Component playerInfo(BOTCPlayer player) {
-        return Component.text(player.getName() + " the ").append(roleInfo(player.getRole().info));
+        return Component.text(player.getName() + " the ").append(roleInfo(player.getRoleInfo()));
     }
 
     public static Component substitutePlayerInfo(String message, TextColor color, BOTCPlayer... players) {

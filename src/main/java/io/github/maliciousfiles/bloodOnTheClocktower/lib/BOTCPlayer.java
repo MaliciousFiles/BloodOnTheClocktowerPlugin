@@ -22,9 +22,12 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class BOTCPlayer extends PlayerWrapper {
+
     public enum DeathCause { STORY, EXECUTION, PLAYER }
     public enum Alignment { GOOD, EVIL }
 
@@ -62,7 +65,7 @@ public class BOTCPlayer extends PlayerWrapper {
         setRole(roleInfo);
         VIEW_SCRIPT.enable(() -> ScriptDisplay.viewRoles(getPlayer(), game.getScript(), 0, Component.text(game.getScript().name)));
     }
-    public Role getRole() { return role; }
+    public RoleInfo getRoleInfo() { return roleInfo; }
     public Alignment getAlignment() { return alignment; }
 
     public boolean isAwake() {
@@ -131,6 +134,28 @@ public class BOTCPlayer extends PlayerWrapper {
     }
 
     public boolean isAlive() { return alive; }
+
+    public boolean hasAbility() { return role.hasAbility(); }
+    public boolean countsAsAlive() { return role.countsAsAlive(); }
+    public boolean blocksGoodVictory() { return role.blocksGoodVictory(); }
+    public void handleDusk() { role.handleDusk(); }
+    public void handleDawn() { role.handleDawn(); }
+    public Collection<Game.NightAction> getNightActions() { return role.getNightActions(); }
+
+    public void setup() throws ExecutionException, InterruptedException {
+        game.log("{0} running setup", Game.LogPriority.LOW, this);
+        role.setup();
+    }
+
+    public void handleDeathAttempt(DeathCause cause, @Nullable BOTCPlayer killer) throws ExecutionException, InterruptedException {
+        if (killer == null) {
+            game.log("{0} had a death attempt from " + cause, Game.LogPriority.LOW, this);
+        } else {
+            game.log("{0} had a death attempt from {1}", Game.LogPriority.LOW, this, killer);
+        }
+
+        role.handleDeathAttempt(cause, killer);
+    }
 
     public void kill() {
         game.getPlayers().forEach(p -> {
