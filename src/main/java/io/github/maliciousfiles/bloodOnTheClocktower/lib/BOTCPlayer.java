@@ -140,12 +140,8 @@ public class BOTCPlayer extends PlayerWrapper {
     public boolean blocksGoodVictory() { return role.blocksGoodVictory(); }
     public void handleDusk() { role.handleDusk(); }
     public void handleDawn() { role.handleDawn(); }
+    public void setup() throws ExecutionException, InterruptedException { role.setup(); }
     public Collection<Game.NightAction> getNightActions() { return role.getNightActions(); }
-
-    public void setup() throws ExecutionException, InterruptedException {
-        game.log("{0} running setup", Game.LogPriority.LOW, this);
-        role.setup();
-    }
 
     public void handleDeathAttempt(DeathCause cause, @Nullable BOTCPlayer killer) throws ExecutionException, InterruptedException {
         if (killer == null) {

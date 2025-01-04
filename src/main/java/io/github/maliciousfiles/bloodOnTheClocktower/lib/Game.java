@@ -133,9 +133,15 @@ public class Game {
             turn++;
         }
         // TODO: announce game end
+        if (winner == Winner.GOOD) {
+            log("The good team has won", LogPriority.HIGH);
+        } else {
+            log("The evil team has won", LogPriority.HIGH);
+        }
     }
 
     private void setup() throws ExecutionException, InterruptedException {
+        log("Setup", LogPriority.LOW);
         for (BOTCPlayer player : players) {
             player.setup();
         }
@@ -225,10 +231,13 @@ public class Game {
     private void runNight() throws ExecutionException, InterruptedException {
         if (isGameOver()) { return; }
 
+        log("Night " + turn, LogPriority.HIGH);
+
         PriorityQueue<NightAction> nightActions = new PriorityQueue<>(Comparator.comparing(NightAction::order));
 
         new StorytellerPauseHook(storyteller, "Continue to Night").get();
         players.forEach(BOTCPlayer::sleep);
+        log("Dusk", LogPriority.LOW);
         for (BOTCPlayer player : players) {
             if (player.hasAbility()) player.handleDusk();
             nightActions.addAll(player.getNightActions());
@@ -256,6 +265,7 @@ public class Game {
 
         if (isGameOver()) { return; }
         new StorytellerPauseHook(storyteller, "Continue to Dawn").get();
+        log("Dawn", LogPriority.LOW);
         for (BOTCPlayer player : players) {
             if (player.hasAbility()) player.handleDawn();
         }
@@ -263,6 +273,10 @@ public class Game {
     }
 
     private void runDay() throws ExecutionException, InterruptedException {
+        if (isGameOver()) { return; }
+
+        log("Day " + turn, LogPriority.HIGH);
+
         seats.setAllCanStand(true);
 
         new StorytellerPauseHook(storyteller, "Continue to call to table").get();
@@ -281,6 +295,9 @@ public class Game {
                 instruction = storyteller.giveInstruction("Select the NOMINEE");
                 BOTCPlayer nominee = new SelectPlayerHook(storyteller, this, 1, _->true).get().getFirst();
                 instruction.complete(null);
+
+                // TODO: give the roles a chance to run actions
+                log("{0} nominated {1}", LogPriority.MEDIUM, nominator, nominee);
 
                 seats.setCanStand(nominator, true);
                 seats.setCanStand(nominee, true);
@@ -324,6 +341,7 @@ public class Game {
                 instructions.forEach(c -> c.complete(null));
                 voteInstruction.complete(null);
 
+                log("{0} received " + voteCount + " votes", LogPriority.MEDIUM, nominee);
                 new StorytellerPauseHook(storyteller, ("Continue to update the block ("+voteCount+" votes)").replace("1 votes", "1 vote")).get();
                 if (block.getVotes() > 0) {
                     if (voteCount > block.getVotes()) {
@@ -347,11 +365,14 @@ public class Game {
         new StorytellerPauseHook(storyteller, "Continue to execution").get();
         storyteller.NOMINATE.disable();
 
-        if (block.getOnTheBlock() != null) {
-            new AnvilDropHook(block.getOnTheBlock().getPlayer().getLocation().add(0, 8, 0)).get();
+        BOTCPlayer executee = block.getOnTheBlock();
+        if (executee != null) {
+            log("{0} was executed", LogPriority.HIGH, executee);
+            // TODO: make this happen on ALL executions (including storyteller ones)
+            new AnvilDropHook(executee.getPlayer().getLocation().add(0, 8, 0)).get();
 
             Bukkit.getScheduler().callSyncMethod(BloodOnTheClocktower.instance, ()->{
-                block.getOnTheBlock().handleDeathAttempt(BOTCPlayer.DeathCause.EXECUTION, null);
+                executee.handleDeathAttempt(BOTCPlayer.DeathCause.EXECUTION, null);
                 return null; // it wants a return type >:c
             }).get();
         }
@@ -384,10 +405,8 @@ public class Game {
 
         if (!demonAlive && !goodVictoryBlocked) {
             winner = Winner.GOOD;
-            log("The good team has won", LogPriority.HIGH);
         } else if (alive <= 2) {
             winner = Winner.EVIL;
-            log("The evil team has won", LogPriority.HIGH);
         }
     }
 
