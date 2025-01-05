@@ -30,8 +30,8 @@ def load(name, i):
       },
       "display": {
         "gui": {
-          "translation": [ -2.5, 2.5, 0 ],
-          "scale": [ 0.6, 0.6, 0.6 ]
+          "translation": [ -3.65, 2.75, 5 ],
+          "scale": [ 0.55, 0.55, 0.55 ]
         }
       }
     }""".replace("{name}", name))
