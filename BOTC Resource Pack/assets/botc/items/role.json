@@ -1174,8 +1174,1173 @@
         "type": "minecraft:condition",
         "property": "minecraft:custom_model_data",
         "on_true": {
-          "type": "minecraft:model",
-          "model": "botc:item/impaired"
+          "type": "minecraft:select",
+          "property": "minecraft:custom_model_data",
+          "index": 1,
+          "cases": [
+            {
+              "when": "acrobat",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/acrobat_mini"
+              }
+            },
+            {
+              "when": "alchemist",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/alchemist_mini"
+              }
+            },
+            {
+              "when": "alsaahir",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/alsaahir_mini"
+              }
+            },
+            {
+              "when": "amnesiac",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/amnesiac_mini"
+              }
+            },
+            {
+              "when": "artist",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/artist_mini"
+              }
+            },
+            {
+              "when": "atheist",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/atheist_mini"
+              }
+            },
+            {
+              "when": "balloonist",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/balloonist_mini"
+              }
+            },
+            {
+              "when": "banshee",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/banshee_mini"
+              }
+            },
+            {
+              "when": "bountyhunter",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/bountyhunter_mini"
+              }
+            },
+            {
+              "when": "cannibal",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/cannibal_mini"
+              }
+            },
+            {
+              "when": "chambermaid",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/chambermaid_mini"
+              }
+            },
+            {
+              "when": "chef",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/chef_mini"
+              }
+            },
+            {
+              "when": "choirboy",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/choirboy_mini"
+              }
+            },
+            {
+              "when": "clockmaker",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/clockmaker_mini"
+              }
+            },
+            {
+              "when": "courtier",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/courtier_mini"
+              }
+            },
+            {
+              "when": "cultleader",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/cultleader_mini"
+              }
+            },
+            {
+              "when": "dreamer",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/dreamer_mini"
+              }
+            },
+            {
+              "when": "empath",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/empath_mini"
+              }
+            },
+            {
+              "when": "engineer",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/engineer_mini"
+              }
+            },
+            {
+              "when": "exorcist",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/exorcist_mini"
+              }
+            },
+            {
+              "when": "farmer",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/farmer_mini"
+              }
+            },
+            {
+              "when": "fisherman",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/fisherman_mini"
+              }
+            },
+            {
+              "when": "flowergirl",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/flowergirl_mini"
+              }
+            },
+            {
+              "when": "fool",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/fool_mini"
+              }
+            },
+            {
+              "when": "fortuneteller",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/fortuneteller_mini"
+              }
+            },
+            {
+              "when": "gambler",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/gambler_mini"
+              }
+            },
+            {
+              "when": "general",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/general_mini"
+              }
+            },
+            {
+              "when": "gossip",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/gossip_mini"
+              }
+            },
+            {
+              "when": "grandmother",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/grandmother_mini"
+              }
+            },
+            {
+              "when": "highpriestess",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/highpriestess_mini"
+              }
+            },
+            {
+              "when": "huntsman",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/huntsman_mini"
+              }
+            },
+            {
+              "when": "innkeeper",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/innkeeper_mini"
+              }
+            },
+            {
+              "when": "investigator",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/investigator_mini"
+              }
+            },
+            {
+              "when": "juggler",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/juggler_mini"
+              }
+            },
+            {
+              "when": "king",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/king_mini"
+              }
+            },
+            {
+              "when": "knight",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/knight_mini"
+              }
+            },
+            {
+              "when": "librarian",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/librarian_mini"
+              }
+            },
+            {
+              "when": "lycanthrope",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/lycanthrope_mini"
+              }
+            },
+            {
+              "when": "magician",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/magician_mini"
+              }
+            },
+            {
+              "when": "mathematician",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/mathematician_mini"
+              }
+            },
+            {
+              "when": "mayor",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/mayor_mini"
+              }
+            },
+            {
+              "when": "minstrel",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/minstrel_mini"
+              }
+            },
+            {
+              "when": "monk",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/monk_mini"
+              }
+            },
+            {
+              "when": "nightwatchman",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/nightwatchman_mini"
+              }
+            },
+            {
+              "when": "noble",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/noble_mini"
+              }
+            },
+            {
+              "when": "oracle",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/oracle_mini"
+              }
+            },
+            {
+              "when": "pacifist",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/pacifist_mini"
+              }
+            },
+            {
+              "when": "philosopher",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/philosopher_mini"
+              }
+            },
+            {
+              "when": "pixie",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/pixie_mini"
+              }
+            },
+            {
+              "when": "poppygrower",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/poppygrower_mini"
+              }
+            },
+            {
+              "when": "preacher",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/preacher_mini"
+              }
+            },
+            {
+              "when": "professor",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/professor_mini"
+              }
+            },
+            {
+              "when": "ravenkeeper",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/ravenkeeper_mini"
+              }
+            },
+            {
+              "when": "sage",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/sage_mini"
+              }
+            },
+            {
+              "when": "sailor",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/sailor_mini"
+              }
+            },
+            {
+              "when": "savant",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/savant_mini"
+              }
+            },
+            {
+              "when": "seamstress",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/seamstress_mini"
+              }
+            },
+            {
+              "when": "shugenja",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/shugenja_mini"
+              }
+            },
+            {
+              "when": "slayer",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/slayer_mini"
+              }
+            },
+            {
+              "when": "snakecharmer",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/snakecharmer_mini"
+              }
+            },
+            {
+              "when": "soldier",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/soldier_mini"
+              }
+            },
+            {
+              "when": "steward",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/steward_mini"
+              }
+            },
+            {
+              "when": "tealady",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/tealady_mini"
+              }
+            },
+            {
+              "when": "towncrier",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/towncrier_mini"
+              }
+            },
+            {
+              "when": "undertaker",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/undertaker_mini"
+              }
+            },
+            {
+              "when": "villageidiot",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/villageidiot_mini"
+              }
+            },
+            {
+              "when": "virgin",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/virgin_mini"
+              }
+            },
+            {
+              "when": "washerwoman",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/washerwoman_mini"
+              }
+            },
+            {
+              "when": "barber",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/barber_mini"
+              }
+            },
+            {
+              "when": "butler",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/butler_mini"
+              }
+            },
+            {
+              "when": "damsel",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/damsel_mini"
+              }
+            },
+            {
+              "when": "drunk",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/drunk_mini"
+              }
+            },
+            {
+              "when": "golem",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/golem_mini"
+              }
+            },
+            {
+              "when": "goon",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/goon_mini"
+              }
+            },
+            {
+              "when": "hatter",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/hatter_mini"
+              }
+            },
+            {
+              "when": "heretic",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/heretic_mini"
+              }
+            },
+            {
+              "when": "klutz",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/klutz_mini"
+              }
+            },
+            {
+              "when": "lunatic",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/lunatic_mini"
+              }
+            },
+            {
+              "when": "moonchild",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/moonchild_mini"
+              }
+            },
+            {
+              "when": "mutant",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/mutant_mini"
+              }
+            },
+            {
+              "when": "ogre",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/ogre_mini"
+              }
+            },
+            {
+              "when": "plaguedoctor",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/plaguedoctor_mini"
+              }
+            },
+            {
+              "when": "politician",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/politician_mini"
+              }
+            },
+            {
+              "when": "puzzlemaster",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/puzzlemaster_mini"
+              }
+            },
+            {
+              "when": "recluse",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/recluse_mini"
+              }
+            },
+            {
+              "when": "saint",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/saint_mini"
+              }
+            },
+            {
+              "when": "snitch",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/snitch_mini"
+              }
+            },
+            {
+              "when": "sweetheart",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/sweetheart_mini"
+              }
+            },
+            {
+              "when": "tinker",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/tinker_mini"
+              }
+            },
+            {
+              "when": "zealot",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/zealot_mini"
+              }
+            },
+            {
+              "when": "assassin",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/assassin_mini"
+              }
+            },
+            {
+              "when": "baron",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/baron_mini"
+              }
+            },
+            {
+              "when": "boffin",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/boffin_mini"
+              }
+            },
+            {
+              "when": "boomdandy",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/boomdandy_mini"
+              }
+            },
+            {
+              "when": "cerenovus",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/cerenovus_mini"
+              }
+            },
+            {
+              "when": "devilsadvocate",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/devilsadvocate_mini"
+              }
+            },
+            {
+              "when": "eviltwin",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/eviltwin_mini"
+              }
+            },
+            {
+              "when": "fearmonger",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/fearmonger_mini"
+              }
+            },
+            {
+              "when": "goblin",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/goblin_mini"
+              }
+            },
+            {
+              "when": "godfather",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/godfather_mini"
+              }
+            },
+            {
+              "when": "harpy",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/harpy_mini"
+              }
+            },
+            {
+              "when": "marionette",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/marionette_mini"
+              }
+            },
+            {
+              "when": "mastermind",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/mastermind_mini"
+              }
+            },
+            {
+              "when": "mezepheles",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/mezepheles_mini"
+              }
+            },
+            {
+              "when": "organgrinder",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/organgrinder_mini"
+              }
+            },
+            {
+              "when": "pithag",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/pithag_mini"
+              }
+            },
+            {
+              "when": "poisoner",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/poisoner_mini"
+              }
+            },
+            {
+              "when": "psychopath",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/psychopath_mini"
+              }
+            },
+            {
+              "when": "scarletwoman",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/scarletwoman_mini"
+              }
+            },
+            {
+              "when": "spy",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/spy_mini"
+              }
+            },
+            {
+              "when": "summoner",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/summoner_mini"
+              }
+            },
+            {
+              "when": "vizier",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/vizier_mini"
+              }
+            },
+            {
+              "when": "widow",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/widow_mini"
+              }
+            },
+            {
+              "when": "witch",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/witch_mini"
+              }
+            },
+            {
+              "when": "xaan",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/xaan_mini"
+              }
+            },
+            {
+              "when": "alhadikhia",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/alhadikhia_mini"
+              }
+            },
+            {
+              "when": "fanggu",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/fanggu_mini"
+              }
+            },
+            {
+              "when": "imp",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/imp_mini"
+              }
+            },
+            {
+              "when": "kazali",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/kazali_mini"
+              }
+            },
+            {
+              "when": "legion",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/legion_mini"
+              }
+            },
+            {
+              "when": "leviathan",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/leviathan_mini"
+              }
+            },
+            {
+              "when": "lilmonsta",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/lilmonsta_mini"
+              }
+            },
+            {
+              "when": "lleech",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/lleech_mini"
+              }
+            },
+            {
+              "when": "lordoftyphon",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/lordoftyphon_mini"
+              }
+            },
+            {
+              "when": "nodashii",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/nodashii_mini"
+              }
+            },
+            {
+              "when": "ojo",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/ojo_mini"
+              }
+            },
+            {
+              "when": "po",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/po_mini"
+              }
+            },
+            {
+              "when": "pukka",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/pukka_mini"
+              }
+            },
+            {
+              "when": "riot",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/riot_mini"
+              }
+            },
+            {
+              "when": "shabaloth",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/shabaloth_mini"
+              }
+            },
+            {
+              "when": "vigormortis",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/vigormortis_mini"
+              }
+            },
+            {
+              "when": "vortox",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/vortox_mini"
+              }
+            },
+            {
+              "when": "yaggababble",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/yaggababble_mini"
+              }
+            },
+            {
+              "when": "zombuul",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/zombuul_mini"
+              }
+            },
+            {
+              "when": "scapegoat",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/scapegoat_mini"
+              }
+            },
+            {
+              "when": "gunslinger",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/gunslinger_mini"
+              }
+            },
+            {
+              "when": "beggar",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/beggar_mini"
+              }
+            },
+            {
+              "when": "bureaucrat",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/bureaucrat_mini"
+              }
+            },
+            {
+              "when": "thief",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/thief_mini"
+              }
+            },
+            {
+              "when": "butcher",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/butcher_mini"
+              }
+            },
+            {
+              "when": "bonecollector",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/bonecollector_mini"
+              }
+            },
+            {
+              "when": "harlot",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/harlot_mini"
+              }
+            },
+            {
+              "when": "barista",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/barista_mini"
+              }
+            },
+            {
+              "when": "deviant",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/deviant_mini"
+              }
+            },
+            {
+              "when": "apprentice",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/apprentice_mini"
+              }
+            },
+            {
+              "when": "matron",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/matron_mini"
+              }
+            },
+            {
+              "when": "voudon",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/voudon_mini"
+              }
+            },
+            {
+              "when": "judge",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/judge_mini"
+              }
+            },
+            {
+              "when": "bishop",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/bishop_mini"
+              }
+            },
+            {
+              "when": "gangster",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/gangster_mini"
+              }
+            },
+            {
+              "when": "doomsayer",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/doomsayer_mini"
+              }
+            },
+            {
+              "when": "angel",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/angel_mini"
+              }
+            },
+            {
+              "when": "buddhist",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/buddhist_mini"
+              }
+            },
+            {
+              "when": "hellslibrarian",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/hellslibrarian_mini"
+              }
+            },
+            {
+              "when": "revolutionary",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/revolutionary_mini"
+              }
+            },
+            {
+              "when": "fiddler",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/fiddler_mini"
+              }
+            },
+            {
+              "when": "toymaker",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/toymaker_mini"
+              }
+            },
+            {
+              "when": "fibbin",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/fibbin_mini"
+              }
+            },
+            {
+              "when": "duchess",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/duchess_mini"
+              }
+            },
+            {
+              "when": "sentinel",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/sentinel_mini"
+              }
+            },
+            {
+              "when": "spiritofivory",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/spiritofivory_mini"
+              }
+            },
+            {
+              "when": "djinn",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/djinn_mini"
+              }
+            },
+            {
+              "when": "bootlegger",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/bootlegger_mini"
+              }
+            },
+            {
+              "when": "ferryman",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/ferryman_mini"
+              }
+            },
+            {
+              "when": "gardener",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/gardener_mini"
+              }
+            },
+            {
+              "when": "stormcatcher",
+              "model": {
+                "type": "minecraft:model",
+                "model": "botc:item/stormcatcher_mini"
+              }
+            }
+          ]
         },
         "on_false": {
           "type": "minecraft:model",
