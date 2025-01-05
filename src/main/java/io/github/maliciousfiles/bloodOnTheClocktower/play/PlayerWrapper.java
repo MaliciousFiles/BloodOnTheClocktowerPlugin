@@ -56,6 +56,7 @@ public abstract class PlayerWrapper {
         return getPlayer().getName();
     }
 
+    private final List<CompletableFuture<Void>> messages = new ArrayList<>();
     private int activeId = 0;
     private CompletableFuture<Void> message(Component message) {
         CompletableFuture<Void> cancel = new CompletableFuture<>();
@@ -74,9 +75,14 @@ public abstract class PlayerWrapper {
             task.cancel();
         });
 
+        messages.add(cancel);
         futures.add(cancel);
         return cancel;
+    }
 
+    public void clearInstructions() {
+        messages.forEach(c->c.complete(null));
+        messages.clear();
     }
 
     public static final TextColor INSTRUCTION_COLOR = TextColor.color(123, 236, 255);

@@ -14,6 +14,7 @@ import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 import javax.annotation.Nullable;
@@ -157,8 +158,14 @@ public class Game {
             log("the evil team has won", null, LogPriority.HIGH);
         }
 
+        halt();
+    }
+
+    public void halt() {
         Bukkit.getScheduler().runTask(BloodOnTheClocktower.instance, this::cleanup);
         games.remove(uuid);
+
+        Thread.currentThread().interrupt();
     }
 
     private void setup() throws ExecutionException, InterruptedException {
@@ -490,6 +497,7 @@ public class Game {
             if (p instanceof BOTCPlayer bp) bp.wake();
 
             p.deglow();
+            p.clearInstructions();
             p.getPlayer().setInvisible(false);
             ((CraftPlayer) p.getPlayer()).getHandle().connection.send(ClientboundSetPlayerTeamPacket.createRemovePacket(TEAM));
             p.resetInventory();
@@ -500,5 +508,13 @@ public class Game {
 
     public static void destruct() {
         games.forEach((_, g) -> g.cleanup());
+    }
+
+    public static Game getGame(Entity player) {
+        for (Game game : getGames()) {
+            if (game.getPlayers().stream().anyMatch(p->p.getPlayer().equals(player))) return game;
+        }
+
+        return null;
     }
 }

@@ -62,17 +62,9 @@ public class MiscGameHandler implements Listener {
         }
     }
 
-    private static Game getGame(Entity player) {
-        for (Game game : Game.getGames()) {
-            if (game.getPlayers().stream().anyMatch(p->p.getPlayer().equals(player))) return game;
-        }
-
-        return null;
-    }
-
     @EventHandler
     public void onAttack(EntityDamageByEntityEvent evt) {
-        if (getGame(evt.getDamager()) != null && getGame(evt.getEntity()) != null) {
+        if (Game.getGame(evt.getDamager()) != null && Game.getGame(evt.getEntity()) != null) {
             evt.setCancelled(true);
         }
     }
@@ -80,7 +72,7 @@ public class MiscGameHandler implements Listener {
     private static final Map<UUID, Inventory> inventories = new HashMap<>();
     @EventHandler
     public void onDisconnect(PlayerQuitEvent evt) {
-        if (getGame(evt.getPlayer()) != null) {
+        if (Game.getGame(evt.getPlayer()) != null) {
             inventories.put(evt.getPlayer().getUniqueId(), evt.getPlayer().getOpenInventory().getTopInventory());
         }
     }
