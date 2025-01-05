@@ -234,13 +234,13 @@ public enum RoleInfo {
             Role.Type.FABLED, TextColor.color(255, 205, 0)
     );
 
-    public ItemStack getItem() {
-        return getItem(Material.PAPER);
+    public ItemStack getItem(boolean impaired) {
+        return getItem(Material.PAPER, impaired);
     }
-    public ItemStack getItem(Material material) {
-        return getItem(material, null, true);
+    public ItemStack getItem(Material material, boolean impaired) {
+        return getItem(material, null, true, impaired);
     }
-    public ItemStack getItem(Material material, String nameOverride, boolean showDescription) {
+    public ItemStack getItem(Material material, String nameOverride, boolean showDescription, boolean impaired) {
         String name = nameOverride == null ? title : nameOverride;
 
         List<Component> lore = new ArrayList<>();
@@ -268,7 +268,7 @@ public enum RoleInfo {
                             .append(Component.text(name.substring(name.length()/2), ROLE_COLORS.get(Role.Type.MINION)))),
                 DataComponentPair.lore(lore.toArray(Component[]::new)),
                 DataComponentPair.model("role"),
-                DataComponentPair.cmd(id()));
+                DataComponentPair.cmd(id(), impaired));
     }
 
     public static boolean isRoleItem(ItemStack item) {

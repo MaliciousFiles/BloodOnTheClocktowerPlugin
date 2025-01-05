@@ -46,18 +46,20 @@ public class DataComponentPair<D> extends Pair<DataComponentType.Valued<D>, D> {
             return c;
         }).toList()));
     }
-    public static DataComponentPair<CustomModelData> cmd(Object value) {
-        if (value instanceof Float f) {
-            return of(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addFloat(f).build());
-        } else if (value instanceof Boolean b) {
-            return of(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addFlag(b).build());
-        } else if (value instanceof String s) {
-            return of(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addString(s).build());
-        } else if (value instanceof Color c) {
-            return of(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addColor(c).build());
-        } else {
-            throw new IllegalArgumentException("Invalid CustomModelData value type: " + value.getClass());
+    public static DataComponentPair<CustomModelData> cmd(Object... values) {
+        CustomModelData.Builder cmd = CustomModelData.customModelData();
+
+        for (Object value : values) {
+            switch (value) {
+                case Float f -> cmd.addFloat(f);
+                case Boolean b -> cmd.addFlag(b);
+                case String s -> cmd.addString(s);
+                case Color c -> cmd.addColor(c);
+                default -> throw new IllegalArgumentException("Invalid CustomModelData value type: " + value.getClass());
+            }
         }
+
+        return of(DataComponentTypes.CUSTOM_MODEL_DATA, cmd.build());
     }
     public static DataComponentPair<Key> model(String name) {
         return of(DataComponentTypes.ITEM_MODEL, BloodOnTheClocktower.key(name));
