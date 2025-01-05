@@ -45,6 +45,8 @@ public class MiscGameHandler implements Listener {
                     case "role":
                     case "no":
                     case "yes":
+                    case "cancel":
+                    case "continue":
                         packet.getSlots().set(i, Pair.of(packet.getSlots().get(i).getFirst(), MYSTERY));
                     default:
                         break;

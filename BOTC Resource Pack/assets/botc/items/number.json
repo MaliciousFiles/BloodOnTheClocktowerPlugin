@@ -1,0 +1,58 @@
+{
+  "model": {
+    "type": "minecraft:range_dispatch",
+    "property": "minecraft:custom_model_data",
+    "entries": [
+      {
+        "threshold": 0,
+        "type": "minecraft:model",
+        "model": "botc:item/number_0"
+      },
+      {
+        "threshold": 1,
+        "type": "minecraft:model",
+        "model": "botc:item/number_1"
+      },
+      {
+          "threshold": 2,
+          "type": "minecraft:model",
+          "model": "botc:item/number_2"
+      },
+      {
+          "threshold": 3,
+          "type": "minecraft:model",
+          "model": "botc:item/number_3"
+      },
+      {
+          "threshold": 4,
+          "type": "minecraft:model",
+          "model": "botc:item/number_4"
+      },
+      {
+          "threshold": 5,
+          "type": "minecraft:model",
+          "model": "botc:item/number_5"
+      },
+      {
+          "threshold": 6,
+          "type": "minecraft:model",
+          "model": "botc:item/number_6"
+      },
+      {
+          "threshold": 7,
+          "type": "minecraft:model",
+          "model": "botc:item/number_7"
+      },
+      {
+          "threshold": 8,
+          "type": "minecraft:model",
+          "model": "botc:item/number_8"
+      },
+      {
+          "threshold": 9,
+          "type": "minecraft:model",
+          "model": "botc:item/number_9"
+      }
+    ]
+  }
+}
