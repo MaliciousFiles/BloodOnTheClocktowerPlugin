@@ -16,6 +16,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -113,16 +114,18 @@ public class Game {
         }
     }
 
-    public void logDirect(Component message, LogPriority priority) {
-        message = Component.empty().append(Component.text("[BOTC] ", NamedTextColor.BLUE))
-                .append(message.color(priority.color));
-
+    private void logMessage(Component message, LogPriority priority) {
         if (priority != LogPriority.LOW) storyteller.giveInfo(message);
         BloodOnTheClocktower.logger().info(message);
     }
 
+    public void logDirect(Component message, LogPriority priority) {
+        logMessage(Component.empty().append(Component.text("[BOTC] ", NamedTextColor.BLUE))
+                .append(message.color(priority.color)), priority);
+    }
+
     // Include a "{n}" in message to substitute in a component for players[n]
-    public void log(String message, BOTCPlayer source, LogPriority priority, BOTCPlayer... players) {
+    public void log(String message, @Nullable BOTCPlayer source, LogPriority priority, BOTCPlayer... players) {
         Component component = ChatComponents.substitutePlayerInfo(" "+message, priority.color, players);
 
         if (source != null) {
@@ -130,9 +133,7 @@ public class Game {
         } else {
             component = Component.empty().append(Component.text("[BOTC]", NamedTextColor.BLUE)).append(component);
         }
-
-        if (priority != LogPriority.LOW) storyteller.giveInfo(component);
-        BloodOnTheClocktower.logger().info(component);
+        logMessage(component, priority);
     }
 
     public void startGame() throws ExecutionException, InterruptedException {
