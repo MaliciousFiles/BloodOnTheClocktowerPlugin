@@ -51,7 +51,7 @@ public abstract class Role {
     public boolean hasAbility() {
         return me.isAlive() || me.reminderTokensOnMe.stream().anyMatch(tok -> tok.getEffect() == ReminderToken.Effect.HAS_ABILITY);
     }
-    protected abstract boolean hasNightAction();
+    protected boolean hasNightAction() { return false; }
     public final boolean shouldRunNight() {
         return hasAbility() && hasNightAction();
     }
