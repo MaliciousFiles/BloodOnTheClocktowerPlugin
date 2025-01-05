@@ -1,9 +1,7 @@
 package io.github.maliciousfiles.bloodOnTheClocktower.lib;
 
 import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
-import io.github.maliciousfiles.bloodOnTheClocktower.lib.roles.Imp;
-import io.github.maliciousfiles.bloodOnTheClocktower.lib.roles.Poisoner;
-import io.github.maliciousfiles.bloodOnTheClocktower.lib.roles.Washerwoman;
+import io.github.maliciousfiles.bloodOnTheClocktower.lib.roles.*;
 import io.github.maliciousfiles.bloodOnTheClocktower.util.DataComponentPair;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import net.kyori.adventure.text.Component;
@@ -32,7 +30,7 @@ public enum RoleInfo {
     BOUNTYHUNTER("Bounty Hunter", "You start knowing 1 evil player. If the player you know dies, you learn another evil player tonight. [1 Townsfolk is evil]", Role.Type.TOWNSFOLK, 65, Poisoner.class),
     CANNIBAL("Cannibal", "You have the ability of the recently killed executee. If they are evil, you are poisoned until a good player dies by execution.", Role.Type.TOWNSFOLK, -1, Poisoner.class),
     CHAMBERMAID("Chambermaid", "Each night, choose 2 alive players (not yourself): you learn how many woke tonight due to their ability.", Role.Type.TOWNSFOLK, 98, Poisoner.class),
-    CHEF("Chef", "You start knowing how many pairs of evil players there are.", Role.Type.TOWNSFOLK, 85, Poisoner.class),
+    CHEF("Chef", "You start knowing how many pairs of evil players there are.", Role.Type.TOWNSFOLK, 85, Chef.class),
     CHOIRBOY("Choirboy", "If the Demon kills the King, you learn which player is the Demon. [+the King]", Role.Type.TOWNSFOLK, 57, Poisoner.class),
     CLOCKMAKER("Clockmaker", "You start knowing how many steps from the Demon to its nearest Minion.", Role.Type.TOWNSFOLK, -1, Poisoner.class),
     COURTIER("Courtier", "Once per game, at night, choose a character: they are drunk for 3 nights & 3 days.", Role.Type.TOWNSFOLK, 17, Poisoner.class),
@@ -53,17 +51,17 @@ public enum RoleInfo {
     HIGHPRIESTESS("High Priestess", "Each night, learn which player the Storyteller believes you should talk to most.", Role.Type.TOWNSFOLK, 96, Poisoner.class),
     HUNTSMAN("Huntsman", "Once per game, at night, choose a living player: the Damsel, if chosen, becomes a not-in-play Townsfolk. [+the Damsel]", Role.Type.TOWNSFOLK, 58, Poisoner.class),
     INNKEEPER("Innkeeper", "Each night*, choose 2 players: they can't die tonight, but 1 is drunk until dusk.", Role.Type.TOWNSFOLK, -1, Poisoner.class),
-    INVESTIGATOR("Investigator", "You start knowing that 1 of 2 players is a particular Minion.", Role.Type.TOWNSFOLK, 84, Poisoner.class),
+    INVESTIGATOR("Investigator", "You start knowing that 1 of 2 players is a particular Minion.", Role.Type.TOWNSFOLK, 84, Investigator.class),
     JUGGLER("Juggler", "On your 1st day, publicly guess up to 5 players' characters. That night, you learn how many you got correct.", Role.Type.TOWNSFOLK, 90, Poisoner.class),
     KING("King", "Each night, if the dead equal or outnumber the living, you learn 1 alive character. The Demon knows you are the King.", Role.Type.TOWNSFOLK, 64, Poisoner.class),
     KNIGHT("Knight", "You start knowing 2 players that are not the Demon.", Role.Type.TOWNSFOLK, 87, Poisoner.class),
-    LIBRARIAN("Librarian", "You start knowing that 1 of 2 players is a particular Outsider. (Or that zero are in play.)", Role.Type.TOWNSFOLK, 83, Poisoner.class),
+    LIBRARIAN("Librarian", "You start knowing that 1 of 2 players is a particular Outsider. (Or that zero are in play.)", Role.Type.TOWNSFOLK, 83, Librarian.class),
     LYCANTHROPE("Lycanthrope", "Each night*, choose an alive player. If good, they die & the Demon doesn’t kill tonight. One good player registers as evil.", Role.Type.TOWNSFOLK, 34, Poisoner.class),
     MAGICIAN("Magician", "The Demon thinks you are a Minion. Minions think you are a Demon.", Role.Type.TOWNSFOLK, 10, Poisoner.class),
     MATHEMATICIAN("Mathematician", "Each night, you learn how many players' abilities worked abnormally (since dawn) due to another character's ability.", Role.Type.TOWNSFOLK, 99, Poisoner.class),
     MAYOR("Mayor", "If only 3 players live & no execution occurs, your team wins. If you die at night, another player might die instead.", Role.Type.TOWNSFOLK, -1, Poisoner.class),
     MINSTREL("Minstrel", "When a Minion dies by execution, all other players (except Travellers) are drunk until dusk tomorrow.", Role.Type.TOWNSFOLK, -1, Poisoner.class),
-    MONK("Monk", "Each night*, choose a player (not yourself): they are safe from the Demon tonight.", Role.Type.TOWNSFOLK, 21, Poisoner.class),
+    MONK("Monk", "Each night*, choose a player (not yourself): they are safe from the Demon tonight.", Role.Type.TOWNSFOLK, 21, Monk.class),
     NIGHTWATCHMAN("Nightwatchman", "Once per game, at night, choose a player: they learn you are the Nightwatchman.", Role.Type.TOWNSFOLK, 66, Poisoner.class),
     NOBLE("Noble", "You start knowing 3 players, 1 and only 1 of which is evil.", Role.Type.TOWNSFOLK, 88, Poisoner.class),
     ORACLE("Oracle", "Each night*, you learn how many dead players are evil.", Role.Type.TOWNSFOLK, 80, Poisoner.class),
@@ -81,7 +79,7 @@ public enum RoleInfo {
     SHUGENJA("Shugenja", "You start knowing if your closest evil player is clockwise or anti-clockwise. If equidistant, this info is arbitrary.", Role.Type.TOWNSFOLK, 89, Poisoner.class),
     SLAYER("Slayer", "Once per game, during the day, publicly choose a player: if they are the Demon, they die.", Role.Type.TOWNSFOLK, -1, Poisoner.class),
     SNAKECHARMER("Snake Charmer", "Each night, choose an alive player: a chosen Demon swaps characters & alignments with you & is then poisoned.", Role.Type.TOWNSFOLK, 20, Poisoner.class),
-    SOLDIER("Soldier", "You are safe from the Demon.", Role.Type.TOWNSFOLK, -1, Poisoner.class),
+    SOLDIER("Soldier", "You are safe from the Demon.", Role.Type.TOWNSFOLK, -1, Soldier.class),
     STEWARD("Steward", "You start knowing 1 good player.", Role.Type.TOWNSFOLK, 86, Poisoner.class),
     TEALADY("Tea Lady", "If both your alive neighbors are good, they can't die.", Role.Type.TOWNSFOLK, -1, Poisoner.class),
     TOWNCRIER("Town Crier", "Each night*, you learn if a Minion nominated today.", Role.Type.TOWNSFOLK, 79, Poisoner.class),

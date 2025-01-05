@@ -15,7 +15,12 @@ public class ReminderToken {
         public boolean isFunctioning() { return true; }
     };
 
-    public enum Effect { NONE, DRUNK, POISONED, HAS_ABILITY, SOBER_AND_HEALTHY }
+    public enum Effect {
+        NONE,
+        DRUNK, POISONED, SOBER_AND_HEALTHY,
+        HAS_ABILITY, NO_ABILITY,
+        SAFE_FROM_DEMON, CANNOT_DIE
+    }
 
     public final String name;
     public final BOTCPlayer source;

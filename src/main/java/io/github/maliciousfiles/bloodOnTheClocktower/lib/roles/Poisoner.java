@@ -40,14 +40,14 @@ public class Poisoner extends Role {
 
         List<BOTCPlayer> poisoned = hook.get();
         instruction.complete(null);
-
         if (hook.isCancelled()) return;
+        BOTCPlayer poisonedPlayer = poisoned.getFirst();
 
         if (!me.isImpaired()) {
-            moveReminderToken(poisonedReminder, poisoned.getFirst());
-            game.log("poisoned {0}", me, Game.LogPriority.HIGH, poisoned.getFirst());
+            moveReminderToken(poisonedReminder, poisonedPlayer);
+            game.log("poisoned {0}", me, Game.LogPriority.HIGH, poisonedPlayer);
         } else {
-            game.log("attempted to poison {0}", me, Game.LogPriority.MEDIUM, poisoned.getFirst());
+            game.log("attempted to poison {0}", me, Game.LogPriority.MEDIUM, poisonedPlayer);
         }
     }
 }

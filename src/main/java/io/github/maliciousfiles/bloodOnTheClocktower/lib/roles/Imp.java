@@ -39,13 +39,14 @@ public class Imp extends Role {
         List<BOTCPlayer> dead = hook.get();
         instruction.complete(null);
         if (hook.isCancelled()) return;
+        BOTCPlayer deadPlayer = dead.getFirst();
 
-        if (!me.isImpaired()) {
-            game.log("killed {0}", me, Game.LogPriority.HIGH, dead.getFirst());
-            moveReminderToken(deadReminder, dead.getFirst());
-            dead.getFirst().handleDeathAttempt(BOTCPlayer.DeathCause.PLAYER, me);
+        if (!me.isImpaired() && !deadPlayer.isSafeFromDemon()) {
+            game.log("killed {0}", me, Game.LogPriority.HIGH, deadPlayer);
+            moveReminderToken(deadReminder, deadPlayer);
+            deadPlayer.handleDeathAttempt(BOTCPlayer.DeathCause.PLAYER, me);
         } else {
-            game.log("attempted to kill {0}", me, Game.LogPriority.MEDIUM, dead.getFirst());
+            game.log("attempted to kill {0}", me, Game.LogPriority.MEDIUM, deadPlayer);
         }
     }
 
