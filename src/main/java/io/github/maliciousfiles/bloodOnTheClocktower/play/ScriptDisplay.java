@@ -174,7 +174,7 @@ public class ScriptDisplay implements Listener {
             contents[itemIdx] = createItem(Material.BUNDLE,
                     DataComponentPair.name(Component.text(script)),
                     DataComponentPair.of(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, selected == index),
-                    DataComponentPair.of(DataComponentTypes.BUNDLE_CONTENTS, BundleContents.bundleContents(((ScriptInfo) config.get(script)).roles.stream().map(RoleInfo::getItem).toList())));
+                    DataComponentPair.of(DataComponentTypes.BUNDLE_CONTENTS, BundleContents.bundleContents(((ScriptInfo) config.get(script)).roles.stream().map(r->r.getItem(false)).toList())));
         }
 
         inventory.setContents(contents);
@@ -193,14 +193,14 @@ public class ScriptDisplay implements Listener {
         int midpoint = roles.get(Role.Type.TOWNSFOLK).size()/2+1;
         for (int i = 0; i < 9; i++) {
             RoleInfo role = i < midpoint ? roles.get(Role.Type.TOWNSFOLK).get(i) : null;
-            contents[i] = Optional.ofNullable(role).map(RoleInfo::getItem).orElse(TOWNSFOLK_FILLER);
+            contents[i] = Optional.ofNullable(role).map(r->r.getItem(false)).orElse(TOWNSFOLK_FILLER);
             if (selectedRoles.contains(role)) {
                 contents[i].setData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
             }
         }
         for (int i = 0; i < 9; i++) {
             RoleInfo role = i+midpoint < roles.get(Role.Type.TOWNSFOLK).size() ? roles.get(Role.Type.TOWNSFOLK).get(i+midpoint) : null;
-            contents[i+9] = Optional.ofNullable(role).map(RoleInfo::getItem).orElse(TOWNSFOLK_FILLER);
+            contents[i+9] = Optional.ofNullable(role).map(r->r.getItem(false)).orElse(TOWNSFOLK_FILLER);
             if (selectedRoles.contains(role)) {
                 contents[i+9].setData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
             }
@@ -208,7 +208,7 @@ public class ScriptDisplay implements Listener {
 
         for (int i = 0; i < 9; i++) {
             RoleInfo role = i < roles.get(Role.Type.OUTSIDER).size() ? roles.get(Role.Type.OUTSIDER).get(i) : null;
-            contents[i+18] = Optional.ofNullable(role).map(RoleInfo::getItem).orElse(OUTSIDER_FILLER);
+            contents[i+18] = Optional.ofNullable(role).map(r->r.getItem(false)).orElse(OUTSIDER_FILLER);
             if (selectedRoles.contains(role)) {
                 contents[i+18].setData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
             }
@@ -216,7 +216,7 @@ public class ScriptDisplay implements Listener {
 
         for (int i = 0; i < 9; i++) {
             RoleInfo role = i < roles.get(Role.Type.MINION).size() ? roles.get(Role.Type.MINION).get(i) : null;
-            contents[i+27] = Optional.ofNullable(role).map(RoleInfo::getItem).orElse(MINION_FILLER);
+            contents[i+27] = Optional.ofNullable(role).map(r->r.getItem(false)).orElse(MINION_FILLER);
             if (selectedRoles.contains(role)) {
                 contents[i+27].setData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
             }
@@ -224,7 +224,7 @@ public class ScriptDisplay implements Listener {
 
         for (int i = 0; i < 9; i++) {
             RoleInfo role = i < roles.get(Role.Type.DEMON).size() ? roles.get(Role.Type.DEMON).get(i) : null;
-            contents[i+36] = Optional.ofNullable(role).map(RoleInfo::getItem).orElse(DEMON_FILLER);
+            contents[i+36] = Optional.ofNullable(role).map(r->r.getItem(false)).orElse(DEMON_FILLER);
             if (selectedRoles.contains(role)) {
                 contents[i+36].setData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
             }
@@ -268,7 +268,7 @@ public class ScriptDisplay implements Listener {
                                     .append(Component.text(1, RoleInfo.ROLE_COLORS.get(Role.Type.DEMON)))));
         } else {
             for (int i = 0; i < (viewingScript == null ? 8 : 9); i++) {
-                contents[i+45] = i < roles.get(Role.Type.TRAVELLER).size() ? roles.get(Role.Type.TRAVELLER).get(i).getItem() : TRAVELLER_FILLER;
+                contents[i+45] = i < roles.get(Role.Type.TRAVELLER).size() ? roles.get(Role.Type.TRAVELLER).get(i).getItem(false) : TRAVELLER_FILLER;
             }
 
             if (viewingScript == null) contents[53] = RETURN;

@@ -89,7 +89,7 @@ public class GameInit {
         for (int i = 0; i < botcPlayers.size(); i++) {
             botcPlayers.get(i).setRole(roles.get(i));
             botcPlayers.get(i).setAlignment(roles.get(i).alignment());
-            botcPlayers.get(i).getPlayer().getInventory().addItem(roles.get(i).getItem());
+            botcPlayers.get(i).getPlayer().getInventory().addItem(roles.get(i).getItem(false));
 
             botcPlayers.get(i).getPlayer().sendMessage(Component.text("You are the ").append(ChatComponents.roleInfo(roles.get(i))));
             game.logDirect(Component.text(botcPlayers.get(i).getPlayer().getName()+" is the ").append(ChatComponents.roleInfo(roles.get(i))), Game.LogPriority.HIGH);

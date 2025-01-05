@@ -7,11 +7,11 @@ import javax.annotation.Nullable;
 
 public class ReminderToken {
     public static final ReminderToken STORYTELLER_DRUNK = new ReminderToken("[ST] Drunk", null, null, Effect.DRUNK) {
-        public ItemStack getItem() { return RoleInfo.DRUNK.getItem(Material.PAPER, name, false); }
+        public ItemStack getItem() { return RoleInfo.DRUNK.getItem(Material.PAPER, name, false, false); }
         public boolean isFunctioning() { return true; }
     };
     public static final ReminderToken STORYTELLER_SOBER_AND_HEALTHY = new ReminderToken("[ST] Sober and Healthy", null, null, Effect.SOBER_AND_HEALTHY) {
-        public ItemStack getItem() { return RoleInfo.BARISTA.getItem(Material.PAPER, name, false); }
+        public ItemStack getItem() { return RoleInfo.BARISTA.getItem(Material.PAPER, name, false, false); }
         public boolean isFunctioning() { return true; }
     };
 
@@ -30,7 +30,7 @@ public class ReminderToken {
     }
 
     public ItemStack getItem() {
-        return source.getRoleInfo().getItem(Material.PAPER, name, false);
+        return source.getRoleInfo().getItem(Material.PAPER, name, false, source.isImpaired());
     }
 
     public boolean isFunctioning() {

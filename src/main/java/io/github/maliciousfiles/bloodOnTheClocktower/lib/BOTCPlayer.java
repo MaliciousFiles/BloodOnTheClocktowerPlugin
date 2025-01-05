@@ -190,7 +190,7 @@ public class BOTCPlayer extends PlayerWrapper {
     public void updateRoleItem() {
         for (int i = 0; i < getPlayer().getInventory().getSize(); i++) {
             if (RoleInfo.isRoleItem(getPlayer().getInventory().getItem(i))) {
-                getPlayer().getInventory().setItem(i, roleInfo.getItem());
+                getPlayer().getInventory().setItem(i, roleInfo.getItem(isImpaired()));
                 return;
             }
         }
