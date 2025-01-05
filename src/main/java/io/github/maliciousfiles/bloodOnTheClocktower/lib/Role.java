@@ -56,6 +56,8 @@ public abstract class Role {
         return hasAbility() && hasNightAction();
     }
 
+    public boolean isSafeFromDemon() { return false; }
+
     public void setup() throws ExecutionException, InterruptedException {}
     public void handleRoleChange() {
         removeAllReminderTokens();

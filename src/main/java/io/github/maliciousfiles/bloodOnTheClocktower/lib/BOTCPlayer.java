@@ -149,6 +149,18 @@ public class BOTCPlayer extends PlayerWrapper {
         return isImpaired;
     }
 
+    public boolean isSafeFromDemon() {
+        if (role.isSafeFromDemon()) {
+            return true;
+        }
+        for (ReminderToken token : reminderTokensOnMe) {
+            if (token.getEffect() == ReminderToken.Effect.SAFE_FROM_DEMON) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void revive() throws ExecutionException, InterruptedException {
         alive = true;
         returnDeadVote();
