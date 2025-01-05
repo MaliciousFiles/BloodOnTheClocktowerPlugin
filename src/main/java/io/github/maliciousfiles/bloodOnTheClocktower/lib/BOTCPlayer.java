@@ -149,11 +149,13 @@ public class BOTCPlayer extends PlayerWrapper {
         return isImpaired;
     }
 
-    public void revive() {
+    public void revive() throws ExecutionException, InterruptedException {
         alive = true;
         returnDeadVote();
         game.log("revived", this, Game.LogPriority.MEDIUM);
         getPlayer().setInvisible(false);
+
+        role.setup();
     }
 
     public void visuallyDie() {
@@ -195,7 +197,7 @@ public class BOTCPlayer extends PlayerWrapper {
             }
         }
     }
-    public void changeRoleAndAlignment(@Nullable RoleInfo newRole, @Nullable Alignment newAlignment) {
+    public void changeRoleAndAlignment(@Nullable RoleInfo newRole, @Nullable Alignment newAlignment) throws ExecutionException, InterruptedException {
         if (newRole == null) { newRole = roleInfo; }
         if (newAlignment == null) { newAlignment = alignment; }
 
@@ -209,7 +211,8 @@ public class BOTCPlayer extends PlayerWrapper {
         setAlignment(newAlignment);
         role = roleInfo.getInstance(this, game);
         game.log("{0} became the " + newAlignment + " " + newRole.title(), null, Game.LogPriority.MEDIUM, this);
-        // TODO: tell new role/alignment and do new role setup
+
+        role.setup();
     }
 
     public boolean isAlive() { return alive; }

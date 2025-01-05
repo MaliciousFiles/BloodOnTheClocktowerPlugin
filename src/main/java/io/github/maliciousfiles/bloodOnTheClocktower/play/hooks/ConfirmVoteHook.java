@@ -14,12 +14,12 @@ import java.util.function.Consumer;
 
 public class ConfirmVoteHook extends MinecraftHook<Boolean> {
     private final BOTCPlayer voter;
-    private final Player storyteller;
+    private final Storyteller storyteller;
     private final Consumer<SeatList.VoteState> setVote;
 
     public ConfirmVoteHook(BOTCPlayer voter, Storyteller storyteller, Consumer<SeatList.VoteState> setVote) {
         (this.voter = voter).VOTE.enable(null);
-        this.storyteller = storyteller.getPlayer();
+        this.storyteller = storyteller;
         this.setVote = setVote;
 
         if (voter.VOTE.isItem(voter.getPlayer().getInventory().getItemInMainHand())) setVote.accept(SeatList.VoteState.MAYBE);
@@ -44,14 +44,14 @@ public class ConfirmVoteHook extends MinecraftHook<Boolean> {
 
     @EventHandler
     public void onPunch(PrePlayerAttackEntityEvent evt) {
-        if (!evt.getPlayer().equals(storyteller) || !evt.getAttacked().equals(voter.getPlayer())) return;
+        if (!evt.getPlayer().equals(storyteller.getPlayer()) || !evt.getAttacked().equals(voter.getPlayer())) return;
 
         evt.setCancelled(true);
         handleSelect();
     }
     @EventHandler
     public void onInteract(PlayerInteractEntityEvent evt) {
-        if (!evt.getPlayer().equals(storyteller) || !evt.getRightClicked().equals(voter.getPlayer())) return;
+        if (!evt.getPlayer().equals(storyteller.getPlayer()) || !evt.getRightClicked().equals(voter.getPlayer())) return;
 
         evt.setCancelled(true);
         handleSelect();

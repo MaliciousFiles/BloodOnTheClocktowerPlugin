@@ -49,6 +49,7 @@ public class Game {
     private Winner winner = Winner.NONE;
 
     public Game(SeatList seats, ChoppingBlock block, ScriptInfo script, Storyteller storyteller, List<BOTCPlayer> players) {
+        storyteller.setGame(this);
         players.forEach(p->p.setGame(this));
 
         this.uuid = UUID.randomUUID();

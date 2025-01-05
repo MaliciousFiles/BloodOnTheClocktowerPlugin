@@ -12,6 +12,7 @@ import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 
 import javax.annotation.Nullable;
@@ -179,6 +180,14 @@ public class SeatList {
                 return;
             }
 
+            exit();
+        }
+
+        @EventHandler
+        public void onDisconnect(PlayerQuitEvent evt) {
+            if (!evt.getPlayer().equals(owner)) return;
+
+            interaction.eject();
             exit();
         }
     }

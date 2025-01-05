@@ -13,11 +13,20 @@ import net.minecraft.world.item.ItemStack;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.Inventory;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 import static io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower.createItem;
 
@@ -53,14 +62,34 @@ public class MiscGameHandler implements Listener {
         }
     }
 
+    private static Game getGame(Entity player) {
+        for (Game game : Game.getGames()) {
+            if (game.getPlayers().stream().anyMatch(p->p.getPlayer().equals(player))) return game;
+        }
+
+        return null;
+    }
+
     @EventHandler
     public void onAttack(EntityDamageByEntityEvent evt) {
-        for (Game game : Game.getGames()) {
-            if (game.getPlayers().stream().anyMatch(p->p.getPlayer().equals(evt.getDamager()))
-                    && game.getPlayers().stream().anyMatch(p->p.getPlayer().equals(evt.getEntity()))) {
-                evt.setCancelled(true);
-                return;
-            }
+        if (getGame(evt.getDamager()) != null && getGame(evt.getEntity()) != null) {
+            evt.setCancelled(true);
+        }
+    }
+
+    private static final Map<UUID, Inventory> inventories = new HashMap<>();
+    @EventHandler
+    public void onDisconnect(PlayerQuitEvent evt) {
+        if (getGame(evt.getPlayer()) != null) {
+            inventories.put(evt.getPlayer().getUniqueId(), evt.getPlayer().getOpenInventory().getTopInventory());
+        }
+    }
+
+    @EventHandler
+    public void onJoin(PlayerJoinEvent evt) {
+        if (inventories.containsKey(evt.getPlayer().getUniqueId())) {
+            evt.getPlayer().openInventory(inventories.get(evt.getPlayer().getUniqueId()));
+            inventories.remove(evt.getPlayer().getUniqueId());
         }
     }
 }

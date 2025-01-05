@@ -420,17 +420,31 @@ public class Grimoire implements Listener {
     public static ItemStack createGrimoire(Game game) {
         return DataComponentPair.custom(Pair.of(GAME_ID, StringTag.valueOf(game.getId().toString()))).apply(GRIMOIRE.clone());
     }
-    public static Inventory openInventory(Game game, Player player, Access access, Component title) {
+
+    private static Grimoire makeGrimoire(Game game, Player player, Access access, Component title) {
         PlayerWrapper botcPlayer = player == game.getStoryteller().getPlayer() ? game.getStoryteller()
                 : game.getBOTCPlayer(player);
         Inventory inventory = Bukkit.createInventory(null, 54, title);
 
         Grimoire grimoire = new Grimoire(botcPlayer, game, access, inventory);
-        grimoire.render();
         Bukkit.getPluginManager().registerEvents(grimoire, BloodOnTheClocktower.instance);
-        player.openInventory(inventory);
 
-        return inventory;
+        return grimoire;
+    }
+    public static Inventory openInventory(Game game, Player player, Access access, Component title) {
+        Grimoire grimoire = makeGrimoire(game, player, access, title);
+
+        grimoire.render();
+        player.openInventory(grimoire.inventory);
+
+        return grimoire.inventory;
+    }
+    public static void editPlayer(Game game, Player player, Access access, Component title, BOTCPlayer editing) {
+        Grimoire grimoire = makeGrimoire(game, player, access, title);
+
+        grimoire.editing = grimoire.seatOrder.indexOf(editing);
+        grimoire.renderEditPlayer();
+        player.openInventory(grimoire.inventory);
     }
     public static void register() {
         Bukkit.getPluginManager().registerEvents(new Listener() {

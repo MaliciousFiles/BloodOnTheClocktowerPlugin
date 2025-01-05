@@ -2,6 +2,7 @@ package io.github.maliciousfiles.bloodOnTheClocktower.play;
 
 import com.google.common.collect.Lists;
 import io.github.maliciousfiles.bloodOnTheClocktower.BloodOnTheClocktower;
+import io.github.maliciousfiles.bloodOnTheClocktower.util.EntityHolder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -28,10 +29,10 @@ import java.util.concurrent.ExecutionException;
 
 public abstract class PlayerWrapper {
     private ItemStack[] inventory;
-    private final Player mcPlayer;
+    private final EntityHolder<Player> mcPlayer;
 
     public PlayerWrapper(Player mcPlayer) {
-        this.mcPlayer = mcPlayer;
+        this.mcPlayer = new EntityHolder<>(mcPlayer);
     }
 
     public void setupInventory() {
@@ -44,15 +45,15 @@ public abstract class PlayerWrapper {
     }
 
     public void setTeam(PlayerTeam team) {
-        ((CraftPlayer) mcPlayer).getHandle().connection.send(ClientboundSetPlayerTeamPacket.createAddOrModifyPacket(team, false));
-        ((CraftPlayer) mcPlayer).getHandle().connection.send(ClientboundSetPlayerTeamPacket.createAddOrModifyPacket(team, true));
+        ((CraftPlayer) getPlayer()).getHandle().connection.send(ClientboundSetPlayerTeamPacket.createAddOrModifyPacket(team, false));
+        ((CraftPlayer) getPlayer()).getHandle().connection.send(ClientboundSetPlayerTeamPacket.createAddOrModifyPacket(team, true));
     }
 
     public Player getPlayer() {
-        return mcPlayer;
+        return mcPlayer.get();
     }
     public String getName() {
-        return mcPlayer.getName();
+        return getPlayer().getName();
     }
 
     private int activeId = 0;
@@ -61,7 +62,7 @@ public abstract class PlayerWrapper {
 
         final int id = activeId += 1;
         BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(BloodOnTheClocktower.instance,
-                () -> { if (activeId == id) mcPlayer.sendActionBar(message); }, 0, 20);
+                () -> { if (activeId == id) getPlayer().sendActionBar(message); }, 0, 20);
 
         Bukkit.getScheduler().runTaskAsynchronously(BloodOnTheClocktower.instance, () -> {
             try {
@@ -88,7 +89,7 @@ public abstract class PlayerWrapper {
     }
 
     public void giveInfo(Component info) {
-        mcPlayer.sendMessage(info);
+        getPlayer().sendMessage(info);
     }
 
     private static final List<CompletableFuture<Void>> futures = new ArrayList<>();
@@ -101,8 +102,8 @@ public abstract class PlayerWrapper {
         CompletableFuture<Void> future = new CompletableFuture<>();
 
         byte value = (byte) (getPlayer().isInvisible() ? 0x60 : 0x40);
-        Packet<?> glow = new ClientboundSetEntityDataPacket(mcPlayer.getEntityId(), Lists.newArrayList(SynchedEntityData.DataValue.create(EntityDataSerializers.BYTE.createAccessor(0), value)));
-        recipients.forEach(p -> ((CraftPlayer) p.mcPlayer).getHandle().connection.send(glow));
+        Packet<?> glow = new ClientboundSetEntityDataPacket(getPlayer().getEntityId(), Lists.newArrayList(SynchedEntityData.DataValue.create(EntityDataSerializers.BYTE.createAccessor(0), value)));
+        recipients.forEach(p -> ((CraftPlayer) p.getPlayer()).getHandle().connection.send(glow));
 
         Runnable unregister = PacketManager.registerListener(ClientboundSetEntityDataPacket.class, (player, packet) -> {
             if (!player.equals(mcPlayer) || recipients.stream().noneMatch(p->p.getPlayer().equals(player))) return;
@@ -121,7 +122,7 @@ public abstract class PlayerWrapper {
                 future.get();
                 unregister.run();
                 recipients.forEach(p ->
-                        ((CraftPlayer) p.mcPlayer).getHandle().connection.send(new ClientboundSetEntityDataPacket(getPlayer().getEntityId(), ((CraftPlayer) mcPlayer).getHandle().getEntityData().packAll())));
+                        ((CraftPlayer) p.getPlayer()).getHandle().connection.send(new ClientboundSetEntityDataPacket(getPlayer().getEntityId(), ((CraftPlayer) getPlayer()).getHandle().getEntityData().packAll())));
                 futures.remove(future);
             } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException(e);
