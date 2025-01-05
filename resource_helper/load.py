@@ -29,35 +29,7 @@ def load(name, i):
         "layer0": "botc:item/{name}"
       },
       "display": {
-        "thirdperson_righthand": {
-          "translation": [ -2.5, 2.5, 0 ],
-          "scale": [ 0.6, 0.6, 0.6 ]
-        },
-        "thirdperson_lefthand": {
-         "translation": [ -2.5, 2.5, 0 ],
-         "scale": [ 0.6, 0.6, 0.6 ]
-        },
-        "firstperson_righthand": {
-         "translation": [ -2.5, 2.5, 0 ],
-         "scale": [ 0.6, 0.6, 0.6 ]
-        },
-        "firstperson_lefthand": {
-          "translation": [ -2.5, 2.5, 0 ],
-          "scale": [ 0.6, 0.6, 0.6 ]
-        },
         "gui": {
-          "translation": [ -2.5, 2.5, 0 ],
-          "scale": [ 0.6, 0.6, 0.6 ]
-        },
-        "head": {
-          "translation": [ -2.5, 2.5, 0 ],
-          "scale": [ 0.6, 0.6, 0.6 ]
-        },
-        "ground": {
-          "translation": [ -2.5, 2.5, 0 ],
-          "scale": [ 0.6, 0.6, 0.6 ]
-        },
-        "fixed": {
           "translation": [ -2.5, 2.5, 0 ],
           "scale": [ 0.6, 0.6, 0.6 ]
         }
