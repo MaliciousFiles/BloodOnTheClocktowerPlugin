@@ -35,8 +35,8 @@ public class Monk extends Role {
     public void handleNight() throws InterruptedException, ExecutionException {
         CompletableFuture<Void> instruction = me.giveInstruction("Choose a player to protect");
 
-        MinecraftHook<List<BOTCPlayer>> hook = new SelectPlayerHook(me, game, 1, _->true)
-                .cancellable(game.getStoryteller().CANCEL, "cancel choosing protected");
+        MinecraftHook<List<BOTCPlayer>> hook = new SelectPlayerHook(me, game, 1, p -> p != me)
+                .cancellable(game.getStoryteller().CANCEL, "cancel Monk action");
 
         List<BOTCPlayer> safe = hook.get();
         instruction.complete(null);

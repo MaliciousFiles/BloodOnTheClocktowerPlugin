@@ -34,7 +34,7 @@ public class Imp extends Role {
         CompletableFuture<Void> instruction = me.giveInstruction("Choose a player to kill");
 
         MinecraftHook<List<BOTCPlayer>> hook = new SelectPlayerHook(me, game, 1, _->true)
-                .cancellable(game.getStoryteller().CANCEL, "cancel choosing killed");
+                .cancellable(game.getStoryteller().CANCEL, "cancel Imp action");
 
         List<BOTCPlayer> dead = hook.get();
         instruction.complete(null);
@@ -54,7 +54,7 @@ public class Imp extends Role {
     public void handleDeathAttempt(BOTCPlayer.DeathCause cause, BOTCPlayer killer) throws ExecutionException, InterruptedException {
         if (cause == BOTCPlayer.DeathCause.PLAYER && killer == me) {
             BOTCPlayer newImp = new PlayerChoiceHook(game, "Pick a minion for the Imp to jump to").get();
-            game.log("jumped to {1}", me, Game.LogPriority.HIGH, newImp);
+            game.log("jumped to {0}", me, Game.LogPriority.HIGH, newImp);
             newImp.changeRoleAndAlignment(info, null);
         }
         super.handleDeathAttempt(cause, killer);

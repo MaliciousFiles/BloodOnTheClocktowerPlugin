@@ -179,7 +179,7 @@ public class Game {
         String name();
         boolean shouldRun();
         float order();
-        public List<BOTCPlayer> players();
+        List<BOTCPlayer> players();
         void run() throws ExecutionException, InterruptedException;
     }
 

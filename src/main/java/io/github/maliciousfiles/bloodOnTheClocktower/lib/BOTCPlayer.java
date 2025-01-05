@@ -69,6 +69,9 @@ public class BOTCPlayer extends PlayerWrapper {
     public List<ReminderToken> getMyReminderTokens() { return new ArrayList<>(role.myReminderTokens); }
     public void moveReminderToken(ReminderToken token, BOTCPlayer target) { role.moveReminderToken(token, target); }
 
+    public RoleInfo getRegisteringRole() { return role.getRegisteringRole(); }
+    public BOTCPlayer.Alignment getRegisteringAlignment() { return role.getRegisteringAlignment(); }
+
     @Override
     public void setupInventory() {
         super.setupInventory();

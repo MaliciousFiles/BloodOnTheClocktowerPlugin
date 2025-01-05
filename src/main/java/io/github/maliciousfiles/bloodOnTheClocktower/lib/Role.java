@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public abstract class Role {
+public class Role {
 
     public enum Type { TOWNSFOLK, OUTSIDER, MINION, DEMON, TRAVELLER, FABLED }
 
@@ -102,4 +102,7 @@ public abstract class Role {
     }
 
     public boolean blocksGoodVictory() { return false; }
+
+    public RoleInfo getRegisteringRole() { return info; }
+    public BOTCPlayer.Alignment getRegisteringAlignment() { return me.getAlignment(); }
 }

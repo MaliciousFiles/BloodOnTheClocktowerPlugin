@@ -36,7 +36,7 @@ public class Poisoner extends Role {
         CompletableFuture<Void> instruction = me.giveInstruction("Choose a player to poison");
 
         MinecraftHook<List<BOTCPlayer>> hook = new SelectPlayerHook(me, game, 1, _->true)
-                .cancellable(game.getStoryteller().CANCEL, "cancel choosing poisoned");
+                .cancellable(game.getStoryteller().CANCEL, "cancel Poisoner action");
 
         List<BOTCPlayer> poisoned = hook.get();
         instruction.complete(null);
